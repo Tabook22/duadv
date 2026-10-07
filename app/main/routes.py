@@ -1,7 +1,7 @@
 """Main application routes"""
 
 import os
-from flask import render_template, request, jsonify, current_app
+from flask import render_template, request, jsonify, current_app, url_for
 from app.main import bp
 from app.scraper.university_scraper import UniversitySystemManager
 from app.utils import save_students_to_file, load_students_from_file
@@ -1163,13 +1163,20 @@ def meeting_room_view(room_id):
         group_students=group_students
     )
 
-@bp.route('/api/meeting/<room_id>/join', methods=['POST'])
-def api_meeting_join(room_id):
-    """Register/heartbeat participant in room"""
+def _get_or_create_meeting_room(room_id):
     from app.meeting_engine import meeting_manager
     room = meeting_manager.get_room(room_id)
     if not room:
-        return jsonify({'status': 'error', 'message': 'Meeting room not found'}), 404
+        room = meeting_manager.create_room(
+            title=f"Advising Call ({room_id})",
+            custom_room_id=room_id
+        )
+    return room
+
+@bp.route('/api/meeting/<room_id>/join', methods=['POST'])
+def api_meeting_join(room_id):
+    """Register/heartbeat participant in room"""
+    room = _get_or_create_meeting_room(room_id)
         
     data = request.get_json() or {}
     session_id = data.get('session_id')
@@ -1189,10 +1196,7 @@ def api_meeting_join(room_id):
 @bp.route('/api/meeting/<room_id>/leave', methods=['POST'])
 def api_meeting_leave(room_id):
     """Leave participant from room"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     data = request.get_json() or {}
     session_id = data.get('session_id')
@@ -1206,10 +1210,7 @@ def api_meeting_leave(room_id):
 @bp.route('/api/meeting/<room_id>/signal', methods=['POST'])
 def api_meeting_signal(room_id):
     """Exchange WebRTC SDP offer/answer or ICE candidate"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     data = request.get_json() or {}
     sender_id = data.get('sender_id')
@@ -1227,10 +1228,7 @@ def api_meeting_signal(room_id):
 @bp.route('/api/meeting/<room_id>/poll')
 def api_meeting_poll(room_id):
     """Poll for pending WebRTC signals, chat messages, notes and files"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     session_id = request.args.get('session_id')
     since_chat_id = request.args.get('since_chat_id')
@@ -1263,10 +1261,7 @@ def api_meeting_poll(room_id):
 @bp.route('/api/meeting/<room_id>/chat', methods=['POST'])
 def api_meeting_chat(room_id):
     """Send in-meeting chat message"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     data = request.get_json() or {}
     sender = data.get('sender', 'Anonymous')
@@ -1282,10 +1277,7 @@ def api_meeting_chat(room_id):
 @bp.route('/api/meeting/<room_id>/notes', methods=['POST'])
 def api_meeting_notes(room_id):
     """Update shared advising notepad"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     data = request.get_json() or {}
     notes = data.get('notes', '')
@@ -1297,10 +1289,7 @@ def api_meeting_notes(room_id):
 @bp.route('/api/meeting/<room_id>/upload', methods=['POST'])
 def api_meeting_upload(room_id):
     """Upload a file to the meeting room for live sharing"""
-    from app.meeting_engine import meeting_manager
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+    room = _get_or_create_meeting_room(room_id)
         
     if 'file' not in request.files:
         return jsonify({'status': 'error', 'message': 'No file uploaded'}), 400
@@ -1317,12 +1306,8 @@ def api_meeting_upload(room_id):
 @bp.route('/api/meeting/<room_id>/file/<filename>')
 def api_meeting_download_file(room_id, filename):
     """Download shared document from meeting room"""
-    from app.meeting_engine import meeting_manager
+    room = _get_or_create_meeting_room(room_id)
     from flask import send_file
-    room = meeting_manager.get_room(room_id)
-    if not room:
-        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
-        
     filepath = room.get_file_path(filename)
     if not filepath:
         return jsonify({'status': 'error', 'message': 'File not found'}), 404

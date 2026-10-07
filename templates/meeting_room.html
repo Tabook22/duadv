@@ -266,6 +266,11 @@
             </div>
         </div>
 
+        <!-- Audio unlock prompt for mobile devices -->
+        <div id="audioUnlockBanner" onclick="unlockAudio()" style="display: none; position: absolute; top: 72px; left: 50%; transform: translateX(-50%); background: #1a73e8; color: #fff; padding: 10px 22px; border-radius: 28px; font-weight: 500; font-size: 0.9rem; z-index: 100; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.5);">
+            <i class="fas fa-volume-up me-2"></i> Tap to enable sound
+        </div>
+
         <!-- Video Grid Area -->
         <div class="video-grid" id="videoGrid">
             <!-- Local Participant Card -->
@@ -520,30 +525,42 @@ let notesDirtyTimeout = null;
 let unreadChatCount = 0;
 let activePanel = null;
 
-// Standard public Google STUN configuration
+// Enhanced multi-vendor STUN configuration
 const rtcConfig = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+    ],
+    iceCandidatePoolSize: 10
 };
 
-// Initialize Media and Join
+let pendingCandidates = [];
+let isNegotiating = false;
+let lastOfferTimestamp = 0;
+let remoteParticipantName = '';
+
+// Initialize Media and Join Room
 async function initCall() {
     startCallTimer();
     
+    // 1. Request camera and microphone
     try {
         localStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: { echoCancellation: true, noiseSuppression: true }
         });
         document.getElementById('localVideo').srcObject = localStream;
     } catch (err) {
-        console.warn("Camera/Mic not accessible, trying audio-only or placeholder", err);
+        console.warn("Camera/Mic not accessible, trying audio-only or fallback", err);
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: true, noiseSuppression: true } 
+            });
         } catch (e2) {
-            console.warn("Running in audio/video simulation mode");
+            console.warn("Running in viewer/transceiver-only mode (no local inputs)", e2);
         }
         document.getElementById('localAvatar').style.display = 'flex';
         document.getElementById('localVideo').style.display = 'none';
@@ -551,28 +568,30 @@ async function initCall() {
         isVideoStopped = true;
     }
 
-    // Register with backend room
+    // 2. Register participant on backend
     await joinRoom();
 
-    // Start signaling & polling loop
-    setInterval(pollRoom, 1500);
+    // 3. Announce arrival to room peers
+    await sendSignal('user-joined', { name: USER_NAME, role: USER_ROLE });
 
-    // If advisor, initiate WebRTC offer
-    if (USER_ROLE === 'advisor') {
-        setTimeout(initiatePeerConnection, 1000);
-    }
+    // 4. Start active signaling & heartbeat loop (every 1s)
+    setInterval(pollRoom, 1000);
 }
 
 async function joinRoom() {
-    await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/join`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            session_id: SESSION_ID,
-            name: USER_NAME,
-            role: USER_ROLE
-        })
-    });
+    try {
+        await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/join`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                session_id: SESSION_ID,
+                name: USER_NAME,
+                role: USER_ROLE
+            })
+        });
+    } catch (e) {
+        console.error("Join room error:", e);
+    }
 }
 
 function startCallTimer() {
@@ -585,47 +604,130 @@ function startCallTimer() {
     }, 1000);
 }
 
-// PeerConnection setup
+// PeerConnection Factory & Event Setup
 function createPeerConnection() {
     if (peerConnection) return peerConnection;
 
+    console.log("[WebRTC] Creating new RTCPeerConnection...");
     peerConnection = new RTCPeerConnection(rtcConfig);
 
+    // Add local tracks if available
     if (localStream) {
         localStream.getTracks().forEach(track => {
+            console.log("[WebRTC] Adding local track:", track.kind);
             peerConnection.addTrack(track, localStream);
         });
     }
 
+    // Ensure transceiver lines for receiving audio and video even if local mic/cam not active
+    const senders = peerConnection.getSenders();
+    const hasAudio = senders.some(s => s.track && s.track.kind === 'audio');
+    const hasVideo = senders.some(s => s.track && s.track.kind === 'video');
+    if (!hasAudio) {
+        try { peerConnection.addTransceiver('audio', { direction: 'recvonly' }); } catch(e){}
+    }
+    if (!hasVideo) {
+        try { peerConnection.addTransceiver('video', { direction: 'recvonly' }); } catch(e){}
+    }
+
+    // Inbound media track received
     peerConnection.ontrack = (event) => {
+        console.log("[WebRTC] Inbound track received:", event.track.kind, event);
         const remoteVideo = document.getElementById('remoteVideo');
         if (event.streams && event.streams[0]) {
             remoteVideo.srcObject = event.streams[0];
-            document.getElementById('remoteAvatar').style.display = 'none';
-            remoteVideo.style.display = 'block';
+        } else {
+            let stream = remoteVideo.srcObject;
+            if (!stream || !(stream instanceof MediaStream)) {
+                stream = new MediaStream();
+                remoteVideo.srcObject = stream;
+            }
+            stream.addTrack(event.track);
+        }
+
+        // Show remote video element, hide placeholder avatar
+        document.getElementById('remoteAvatar').style.display = 'none';
+        remoteVideo.style.display = 'block';
+
+        // Play video (with mobile policy recovery)
+        const playPromise = remoteVideo.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                hideAudioBanner();
+            }).catch(err => {
+                console.warn("[WebRTC] Autoplay restricted by mobile browser policy:", err);
+                showAudioBanner();
+            });
         }
     };
 
+    // ICE Candidate gathering
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
             sendSignal('candidate', event.candidate);
         }
     };
 
+    // Peer connection state updates
     peerConnection.onconnectionstatechange = () => {
-        if (peerConnection.connectionState === 'connected') {
-            document.getElementById('remoteNameLabel').innerText = "Student Connected";
+        const state = peerConnection.connectionState;
+        console.log("[WebRTC] Connection state changed:", state);
+        const label = document.getElementById('remoteNameLabel');
+        const displayName = remoteParticipantName || (USER_ROLE === 'advisor' ? 'Student' : 'Advisor');
+
+        if (state === 'connected') {
+            label.innerHTML = `<i class="fas fa-circle text-success me-1"></i> ${displayName} (Connected)`;
+            hideAudioBanner();
+        } else if (state === 'connecting') {
+            label.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Connecting to ${displayName}...`;
+        } else if (state === 'disconnected') {
+            label.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-1"></i> ${displayName} (Reconnecting...)`;
+        } else if (state === 'failed') {
+            label.innerHTML = `<i class="fas fa-times-circle text-danger me-1"></i> Connection failed, retrying...`;
+            setTimeout(() => {
+                if (peerConnection && peerConnection.connectionState === 'failed') {
+                    resetPeerConnection();
+                    if (USER_ROLE === 'advisor') initiateOffer();
+                }
+            }, 2500);
         }
     };
 
     return peerConnection;
 }
 
-async function initiatePeerConnection() {
-    const pc = createPeerConnection();
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal('offer', offer);
+function resetPeerConnection() {
+    if (peerConnection) {
+        try { peerConnection.close(); } catch(e){}
+        peerConnection = null;
+    }
+    pendingCandidates = [];
+    isNegotiating = false;
+}
+
+async function initiateOffer(targetId = null) {
+    const now = Date.now();
+    if (isNegotiating || (now - lastOfferTimestamp < 2500)) {
+        return;
+    }
+    isNegotiating = true;
+    lastOfferTimestamp = now;
+
+    try {
+        const pc = createPeerConnection();
+        console.log("[WebRTC] Creating SDP offer for peer:", targetId || 'all');
+        const offer = await pc.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+        });
+        await pc.setLocalDescription(offer);
+        await sendSignal('offer', offer, targetId);
+        console.log("[WebRTC] SDP offer sent successfully");
+    } catch (err) {
+        console.error("[WebRTC] Failed to create offer:", err);
+    } finally {
+        setTimeout(() => { isNegotiating = false; }, 1500);
+    }
 }
 
 async function sendSignal(type, payload, recipientId = null) {
@@ -642,7 +744,7 @@ async function sendSignal(type, payload, recipientId = null) {
             })
         });
     } catch (e) {
-        console.error("Signal error:", e);
+        console.error("Signal send error:", e);
     }
 }
 
@@ -654,20 +756,39 @@ async function pollRoom() {
         const data = await res.json();
 
         if (data.status === 'success') {
-            // Process incoming WebRTC signals
+            // 1. Process incoming WebRTC signaling messages
             if (data.signals && data.signals.length > 0) {
                 for (const sig of data.signals) {
                     await handleSignal(sig);
                 }
             }
 
-            // Remote participant name
-            const others = data.participants.filter(p => p.session_id !== SESSION_ID);
+            // 2. Track remote participants and auto-negotiate
+            const others = (data.participants || []).filter(p => p.session_id !== SESSION_ID);
             if (others.length > 0) {
-                document.getElementById('remoteNameLabel').innerText = others[0].name;
+                const primaryOther = others[0];
+                remoteParticipantName = primaryOther.name;
+
+                // If Advisor and connection is not established, trigger offer to the student
+                if (USER_ROLE === 'advisor') {
+                    const pc = peerConnection;
+                    const needsNegotiation = !pc || 
+                        pc.connectionState === 'new' || 
+                        pc.connectionState === 'disconnected' || 
+                        pc.connectionState === 'failed';
+
+                    if (needsNegotiation && !isNegotiating && (Date.now() - lastOfferTimestamp > 3000)) {
+                        console.log("[WebRTC] Remote participant active, auto-initiating offer to:", primaryOther.name);
+                        initiateOffer(primaryOther.session_id);
+                    }
+                }
+            } else {
+                if (!peerConnection || peerConnection.connectionState !== 'connected') {
+                    document.getElementById('remoteNameLabel').innerText = "Waiting for other participant to join...";
+                }
             }
 
-            // In-room chat updates
+            // 3. In-room chat updates
             if (data.chat_messages && data.chat_messages.length > 0) {
                 for (const msg of data.chat_messages) {
                     appendChatMessage(msg);
@@ -681,7 +802,7 @@ async function pollRoom() {
                 }
             }
 
-            // Shared Notes updates
+            // 4. Shared Notes updates
             if (data.notes && data.notes_version > knownNotesVersion) {
                 knownNotesVersion = data.notes_version;
                 const area = document.getElementById('notesArea');
@@ -690,7 +811,7 @@ async function pollRoom() {
                 }
             }
 
-            // Shared files
+            // 5. Shared files updates
             if (data.files) {
                 renderSharedFiles(data.files);
             }
@@ -701,29 +822,100 @@ async function pollRoom() {
 }
 
 async function handleSignal(sig) {
-    const pc = createPeerConnection();
+    if (sig.sender_id === SESSION_ID) return;
+
+    if (sig.type === 'user-joined') {
+        console.log("[WebRTC] Peer joined room:", sig.sender_name, sig.sender_id);
+        remoteParticipantName = sig.sender_name;
+        document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
+        if (USER_ROLE === 'advisor') {
+            initiateOffer(sig.sender_id);
+        }
+        return;
+    }
 
     if (sig.type === 'offer') {
-        await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        sendSignal('answer', answer, sig.sender_id);
-    } else if (sig.type === 'answer') {
-        if (pc.signalingState !== 'stable') {
+        console.log("[WebRTC] Received offer from:", sig.sender_name);
+        remoteParticipantName = sig.sender_name;
+        document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
+        const pc = createPeerConnection();
+        try {
             await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+            await drainPendingCandidates();
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await sendSignal('answer', answer, sig.sender_id);
+            console.log("[WebRTC] Answer generated and sent to:", sig.sender_id);
+        } catch (err) {
+            console.error("[WebRTC] Error handling offer:", err);
+        }
+    } else if (sig.type === 'answer') {
+        console.log("[WebRTC] Received answer from:", sig.sender_name);
+        if (peerConnection && peerConnection.signalingState !== 'stable') {
+            try {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
+                await drainPendingCandidates();
+                console.log("[WebRTC] Remote answer applied successfully");
+            } catch (err) {
+                console.error("[WebRTC] Error applying answer:", err);
+            }
         }
     } else if (sig.type === 'candidate') {
-        try {
-            await pc.addIceCandidate(new RTCIceCandidate(sig.payload));
-        } catch (e) {
-            console.warn("Failed to add ice candidate", e);
+        if (!sig.payload) return;
+        const candidate = new RTCIceCandidate(sig.payload);
+        if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
+            try {
+                await peerConnection.addIceCandidate(candidate);
+            } catch (err) {
+                console.warn("[WebRTC] Failed to add ICE candidate:", err);
+            }
+        } else {
+            pendingCandidates.push(candidate);
         }
     } else if (sig.type === 'user-left') {
-        document.getElementById('remoteNameLabel').innerText = "Student left call";
+        console.log("[WebRTC] Participant left call:", sig.sender_name);
+        const displayName = sig.sender_name || 'Participant';
+        document.getElementById('remoteNameLabel').innerText = `${displayName} left the call`;
         document.getElementById('remoteAvatar').style.display = 'flex';
         document.getElementById('remoteVideo').style.display = 'none';
+        resetPeerConnection();
     }
 }
+
+async function drainPendingCandidates() {
+    if (!peerConnection || !peerConnection.remoteDescription) return;
+    while (pendingCandidates.length > 0) {
+        const cand = pendingCandidates.shift();
+        try {
+            await peerConnection.addIceCandidate(cand);
+        } catch (e) {
+            console.warn("[WebRTC] Error applying queued candidate:", e);
+        }
+    }
+}
+
+// Mobile Audio Unlock Controls
+function showAudioBanner() {
+    const banner = document.getElementById('audioUnlockBanner');
+    if (banner) banner.style.display = 'block';
+}
+
+function hideAudioBanner() {
+    const banner = document.getElementById('audioUnlockBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function unlockAudio() {
+    const remoteVideo = document.getElementById('remoteVideo');
+    if (remoteVideo) {
+        remoteVideo.muted = false;
+        remoteVideo.play().then(() => {
+            hideAudioBanner();
+        }).catch(() => {});
+    }
+}
+document.addEventListener('click', unlockAudio);
+document.addEventListener('touchstart', unlockAudio);
 
 // Media Controls (Mic, Cam, Screen Share)
 function toggleMic() {
