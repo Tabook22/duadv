@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}Course Offerings & Section Schedule - Dhofar University{% endblock %}
+
+{% block extra_css %}
+<style>
+    .schedule-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.75rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+    }
+    .metric-card {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+    }
+    .badge-morning {
+        background-color: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+        font-weight: 600;
+    }
+    .badge-evening {
+        background-color: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+        font-weight: 600;
+    }
+    .badge-open {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+        font-weight: 600;
+    }
+    .badge-full {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        font-weight: 600;
+    }
+    .table-schedule th {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        vertical-align: middle;
+        white-space: nowrap;
+        padding: 0.75rem 0.6rem;
+    }
+    .table-schedule td {
+        vertical-align: middle;
+        font-size: 0.85rem;
+        padding: 0.65rem 0.6rem;
+    }
+    .capacity-bar {
+        height: 6px;
+        border-radius: 3px;
+        background-color: #e2e8f0;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+    .capacity-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    .days-badge {
+        font-size: 0.78rem;
+        padding: 0.2rem 0.45rem;
+        border-radius: 4px;
+        background-color: #f1f5f9;
+        color: #334155;
+        font-weight: 600;
+        border: 1px solid #cbd5e1;
+    }
+    .filter-btn.active {
+        background-color: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Header Banner -->
+    <div class="schedule-header">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary px-3 py-1 text-uppercase fw-semibold" style="letter-spacing: 1px;">
+                        <i class="fas fa-university me-1"></i> Dhofar University SIS
+                    </span>
+                    <span class="badge bg-light text-dark px-3 py-1 fw-bold">
+                        <i class="fas fa-calendar-alt me-1 text-primary"></i> {{ schedule_data.semester }}
+                    </span>
+                </div>
+                <h2 class="h3 fw-bold mb-1">Official Course Offerings & Section Schedule</h2>
+                <p class="text-slate-200 mb-0 opacity-90 small">
+                    <i class="fas fa-info-circle me-1"></i> Live university timetable, classroom venues, scheduled days, instructors, and seat capacities cross-referenced with student advising plans.
+                </p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
+                <a href="{{ url_for('main.download_section_schedule_pdf') }}" class="btn btn-warning fw-semibold shadow-sm">
+                    <i class="fas fa-file-pdf me-1"></i> Download Official PDF
+                </a>
+                <button type="button" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#uploadScheduleModal">
+                    <i class="fas fa-file-upload me-1"></i> Upload Schedule
+                </button>
+                <button type="button" class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#syncScheduleModal">
+                    <i class="fas fa-sync-alt me-1"></i> Sync from DU SIS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert / Toast Message Container -->
+    <div id="liveAlertPlaceholder"></div>
+
+    <!-- Summary Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-semibold text-uppercase">Total Offerings</div>
+                    <div class="h3 fw-bold mb-0 text-dark" id="metricTotalSections">{{ schedule_data.total_sections }}</div>
+                    <div class="small text-muted">Course sections active</div>
+                </div>
+                <div class="p-3 bg-blue-50 text-primary rounded-circle">
+                    <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-semibold text-uppercase">Unique Courses</div>
+                    <div class="h3 fw-bold mb-0 text-dark" id="metricUniqueCourses">{{ unique_courses_count }}</div>
+                    <div class="small text-muted">Across departments</div>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo rounded-circle">
+                    <i class="fas fa-book fa-2x" style="color: #4f46e5;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-semibold text-uppercase">Total Enrollment</div>
+                    <div class="h3 fw-bold mb-0 text-success" id="metricTotalEnrolled">{{ total_enrolled }} / {{ total_capacity }}</div>
+                    <div class="small text-muted">{{ (total_enrolled / total_capacity * 100)|round(1) if total_capacity > 0 else 0 }}% seat utilization</div>
+                </div>
+                <div class="p-3 bg-green-50 text-success rounded-circle">
+                    <i class="fas fa-user-graduate fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="metric-card d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small fw-semibold text-uppercase">Available Seats</div>
+                    <div class="h3 fw-bold mb-0 text-primary" id="metricAvailableSeats">{{ total_capacity - total_enrolled }}</div>
+                    <div class="small text-muted">Open registration slots</div>
+                </div>
+                <div class="p-3 bg-amber-50 text-warning rounded-circle">
+                    <i class="fas fa-chair fa-2x" style="color: #d97706;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+                <!-- Search Input -->
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="scheduleSearchInput" class="form-control border-start-0 ps-0" placeholder="Search course code, title, instructor, room...">
+                    </div>
+                </div>
+
+                <!-- Department Filter Buttons -->
+                <div class="col-12 col-md-5">
+                    <div class="d-flex flex-wrap gap-1" id="deptFilterGroup">
+                        <button class="btn btn-sm btn-outline-secondary filter-btn active" data-filter="dept" data-value="ALL">All Depts</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="CMPS">CMPS</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="MATH">MATH</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="ACCT">ACCT</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="ENGL">ENGL</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="PHYS">PHYS</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="EECE">EECE</button>
+                    </div>
+                </div>
+
+                <!-- Session & Availability Dropdowns -->
+                <div class="col-6 col-md-3 d-flex gap-2">
+                    <select id="sessionFilter" class="form-select form-select-sm">
+                        <option value="ALL">All Sessions</option>
+                        <option value="Morning">Morning</option>
+                        <option value="Evening">Evening</option>
+                    </select>
+                    <select id="seatFilter" class="form-select form-select-sm">
+                        <option value="ALL">All Seats</option>
+                        <option value="OPEN">Open Only</option>
+                        <option value="FULL">Full Only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Schedule Table -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="fas fa-list-alt text-primary me-2"></i>Course Offerings Timetable
+                <span class="badge bg-secondary ms-2 small" id="showingCountBadge">Showing {{ schedule_data.total_sections }} sections</span>
+            </h5>
+            <div class="text-muted small">
+                <i class="fas fa-history me-1"></i>Last Updated: {{ schedule_data.last_updated[:16]|replace('T', ' ') if schedule_data.last_updated else 'N/A' }}
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-schedule mb-0" id="sectionScheduleTable">
+                <thead>
+                    <tr>
+                        <th>Crs. #</th>
+                        <th>Course Title</th>
+                        <th class="text-center">Cr</th>
+                        <th class="text-center">Sec</th>
+                        <th class="text-center">Session</th>
+                        <th class="text-center">Lang</th>
+                        <th class="text-center">Cap</th>
+                        <th class="text-center">Enr</th>
+                        <th style="min-width: 100px;">Seats</th>
+                        <th>Instructor</th>
+                        <th class="text-center">Room</th>
+                        <th class="text-center">Days</th>
+                        <th>Time</th>
+                        <th>Remark / Prereq</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                    {% for sec in schedule_data.sections %}
+                    {% set seats_left = sec.capacity - sec.enrolled %}
+                    {% set pct = (sec.enrolled / sec.capacity * 100) if sec.capacity > 0 else 0 %}
+                    <tr class="section-row" 
+                        data-code="{{ sec.course_code }}"
+                        data-title="{{ sec.title }}"
+                        data-dept="{{ sec.course_code.split()[0] }}"
+                        data-session="{{ sec.session_type }}"
+                        data-status="{{ 'OPEN' if seats_left > 0 else 'FULL' }}"
+                        data-instructor="{{ sec.instructor }}"
+                        data-room="{{ sec.room }}">
+                        <td class="fw-bold text-primary font-monospace">{{ sec.course_code }}</td>
+                        <td class="fw-semibold text-dark">{{ sec.title }}</td>
+                        <td class="text-center">{{ sec.credits }}</td>
+                        <td class="text-center fw-bold">{{ sec.section }}</td>
+                        <td class="text-center">
+                            <span class="badge {{ 'badge-morning' if sec.session_type == 'Morning' else 'badge-evening' }}">
+                                {{ sec.session_type }}
+                            </span>
+                        </td>
+                        <td class="text-center small">{{ sec.language }}</td>
+                        <td class="text-center text-muted">{{ sec.capacity }}</td>
+                        <td class="text-center fw-bold">{{ sec.enrolled }}</td>
+                        <td>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge {{ 'badge-open' if seats_left > 0 else 'badge-full' }} px-2 py-0">
+                                    {{ seats_left }} left
+                                </span>
+                                <small class="text-muted" style="font-size: 0.72rem;">{{ pct|round(0)|int }}%</small>
+                            </div>
+                            <div class="capacity-bar">
+                                <div class="capacity-fill {{ 'bg-success' if pct < 80 else ('bg-warning' if pct < 100 else 'bg-danger') }}" style="width: {{ pct }}%;"></div>
+                            </div>
+                        </td>
+                        <td class="text-nowrap">{{ sec.instructor }}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ sec.room }}</span></td>
+                        <td class="text-center"><span class="days-badge">{{ sec.days }}</span></td>
+                        <td class="text-nowrap small text-muted"><i class="far fa-clock me-1 text-primary"></i>{{ sec.time }}</td>
+                        <td class="small text-secondary">{{ sec.remark }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Sync from DU SIS -->
+<div class="modal fade" id="syncScheduleModal" tabindex="-1" aria-labelledby="syncScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="syncScheduleModalLabel">
+                    <i class="fas fa-sync-alt me-2 text-primary"></i>Sync Live Section Schedule from DU SIS
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="syncScheduleForm">
+                <div class="modal-body p-4">
+                    <div class="alert alert-info py-2 small mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Connects directly to <code>web.du.edu.om</code>, executes Section Schedule query for Fall 2026-2027, exports official landscape PDF, and updates the Advising Second-Brain Wiki.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Staff ID / Username</label>
+                        <input type="text" class="form-control" name="username" id="syncUsername" value="001097" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">University Portal Password</label>
+                        <input type="password" class="form-control" name="password" id="syncPassword" placeholder="Enter your SIS password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Target Semester</label>
+                        <input type="text" class="form-control" name="semester" id="syncSemester" value="Fall 2026-2027" required>
+                    </div>
+                    <div id="syncStatusAlert" class="d-none alert alert-warning small">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Navigating to SIS Schedule & exporting PDF. This takes 15-25 seconds...
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold" id="btnStartSync">
+                        <i class="fas fa-cloud-download-alt me-1"></i> Start Automated Sync
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Upload Schedule PDF / HTML -->
+<div class="modal fade" id="uploadScheduleModal" tabindex="-1" aria-labelledby="uploadScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="uploadScheduleModalLabel">
+                    <i class="fas fa-file-upload me-2 text-warning"></i>Upload Section Schedule File
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="uploadScheduleForm" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="alert alert-secondary py-2 small mb-3">
+                        <i class="fas fa-lightbulb me-1 text-warning"></i>
+                        You can upload the <strong>PDF or HTML file</strong> saved directly from the DU Section Schedule page. The application will parse all rows, recalculate advisee matching, and update the Advising Wiki.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Select Schedule File (.pdf or .html)</label>
+                        <input type="file" class="form-control" name="schedule_file" id="scheduleFileInput" accept=".pdf,.html,.htm" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Semester Label</label>
+                        <input type="text" class="form-control" name="semester" id="uploadSemester" value="Fall 2026-2027" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning fw-bold text-dark" id="btnStartUpload">
+                        <i class="fas fa-upload me-1"></i> Ingest & Parse Schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('scheduleSearchInput');
+    const deptFilterBtns = document.querySelectorAll('#deptFilterGroup button');
+    const sessionFilter = document.getElementById('sessionFilter');
+    const seatFilter = document.getElementById('seatFilter');
+    const tableRows = document.querySelectorAll('#scheduleTableBody tr.section-row');
+    const countBadge = document.getElementById('showingCountBadge');
+
+    let activeDept = 'ALL';
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase().trim();
+        const activeSession = sessionFilter.value;
+        const activeSeat = seatFilter.value;
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const code = (row.dataset.code || '').toLowerCase();
+            const title = (row.dataset.title || '').toLowerCase();
+            const dept = (row.dataset.dept || '').toUpperCase();
+            const session = row.dataset.session || '';
+            const status = row.dataset.status || '';
+            const instructor = (row.dataset.instructor || '').toLowerCase();
+            const room = (row.dataset.room || '').toLowerCase();
+
+            const matchesQuery = !query || code.includes(query) || title.includes(query) || instructor.includes(query) || room.includes(query);
+            const matchesDept = activeDept === 'ALL' || dept === activeDept;
+            const matchesSession = activeSession === 'ALL' || session === activeSession;
+            const matchesSeat = activeSeat === 'ALL' || status === activeSeat;
+
+            if (matchesQuery && matchesDept && matchesSession && matchesSeat) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        countBadge.textContent = `Showing ${visibleCount} sections`;
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    sessionFilter.addEventListener('change', filterTable);
+    seatFilter.addEventListener('change', filterTable);
+
+    deptFilterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            deptFilterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            activeDept = this.dataset.value;
+            filterTable();
+        });
+    });
+
+    // Form handlers for Sync and Upload
+    const syncForm = document.getElementById('syncScheduleForm');
+    syncForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnStartSync');
+        const alertBox = document.getElementById('syncStatusAlert');
+        btn.disabled = true;
+        alertBox.classList.remove('d-none');
+
+        const prefix = window.APP_PREFIX || '';
+        const formData = new FormData(syncForm);
+        fetch(`${prefix}/api/sync-section-schedule`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Portal Sync Error: ' + (data.message || 'Failed'));
+                btn.disabled = false;
+                alertBox.classList.add('d-none');
+            }
+        })
+        .catch(err => {
+            alert('Sync request failed: ' + err);
+            btn.disabled = false;
+            alertBox.classList.add('d-none');
+        });
+    });
+
+    const uploadForm = document.getElementById('uploadScheduleForm');
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnStartUpload');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+        const prefix = window.APP_PREFIX || '';
+        const formData = new FormData(uploadForm);
+        fetch(`${prefix}/api/upload-section-schedule`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Upload Error: ' + (data.message || 'Failed'));
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload me-1"></i> Ingest & Parse Schedule';
+            }
+        })
+        .catch(err => {
+            alert('Upload request failed: ' + err);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-upload me-1"></i> Ingest & Parse Schedule';
+        });
+    });
+});
+</script>
+{% endblock %}

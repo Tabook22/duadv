@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Students - Dhofar University{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Advisees</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadZipModal">
+            <i class="fas fa-file-upload me-1"></i> Upload Transcripts (ZIP)
+        </button>
+        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importHtmlModal">
+            <i class="fas fa-paste me-1"></i> Paste Roster HTML
+        </button>
+        <a href="{{ url_for('main.download_transcripts_zip') }}" class="btn btn-outline-danger">
+            <i class="fas fa-file-archive me-1"></i> Download All (ZIP)
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-sync me-1"></i> Portal Sync
+        </a>
+    </div>
+</div>
+
+<!-- Modal for Uploading Transcripts ZIP -->
+<div class="modal fade" id="uploadZipModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-file-archive me-2"></i>Upload Student Transcripts (ZIP)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">
+                    Upload a <code>.zip</code> file containing official Dhofar University transcript PDFs.
+                    The system will automatically parse student identities, courses, cumulative GPAs, and 
+                    <b>chronological academic standings</b> (Strict Probation, Second Probation, First Probation, Probation Removal, Good Standing).
+                </p>
+                <div class="mb-4">
+                    <label for="zipFileInput" class="form-label fw-bold">Select ZIP File</label>
+                    <input class="form-control" type="file" id="zipFileInput" accept=".zip" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Roster Action:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rosterAction" id="actionMerge" value="merge" checked>
+                        <label class="form-check-label" for="actionMerge">
+                            <strong>Merge with current roster</strong> <span class="text-muted">(adds new students and updates existing ones)</span>
+                        </label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="rosterAction" id="actionReplace" value="replace">
+                        <label class="form-check-label text-danger" for="actionReplace">
+                            <strong>Replace entire roster</strong> <span class="text-muted">(clears existing list and sets only students from this ZIP)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnUploadZip" onclick="submitZipUpload()">
+                    <i class="fas fa-upload me-1"></i> Process & Import Transcripts
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Pasting Advisee Table HTML -->
+<div class="modal fade" id="importHtmlModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-paste text-success me-2"></i>Quick Import Advisee Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">
+                    If you already have your Advisee Student List open in your browser, right-click the table &rarr; <b>Inspect</b> &rarr; copy the <code>&lt;div id="advisee_data_panel"&gt;</code> or <code>&lt;table&gt;</code> element (or whole page source) and paste it below:
+                </p>
+                <textarea class="form-control" id="pastedHtml" rows="8" placeholder="Paste <table> or <div> HTML here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitImportedHtml()">Import Students</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if students %}
+<!-- Quick Status Filter Pills & Group Meet Action -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="text-muted fw-bold small me-1"><i class="fas fa-filter me-1"></i>Filter by Standing:</span>
+        <button class="btn btn-sm btn-dark filter-btn active" onclick="filterByStatus('all', this)">All Advisees ({{ students|length }})</button>
+        <button class="btn btn-sm btn-danger filter-btn" onclick="filterByStatus('strict', this)">
+            <i class="fas fa-exclamation-triangle me-1"></i>Strict Probation ({{ strict_count }})
+        </button>
+        <button class="btn btn-sm btn-warning text-dark filter-btn" onclick="filterByStatus('probation', this)">
+            <i class="fas fa-exclamation-circle me-1"></i>All On Probation ({{ probation_count }})
+        </button>
+        <button class="btn btn-sm btn-info text-dark filter-btn" onclick="filterByStatus('removal', this)">
+            <i class="fas fa-shield-alt me-1"></i>Probation Removal ({{ cleared_count }})
+        </button>
+        <button class="btn btn-sm btn-success filter-btn" onclick="filterByStatus('good', this)">
+            <i class="fas fa-check-circle me-1"></i>Good Standing ({{ good_standing_count }})
+        </button>
+    </div>
+
+    <!-- Bulk Group Meeting Launch Button -->
+    <div id="bulkMeetActionContainer">
+        <button type="button" class="btn btn-sm btn-success shadow-sm fw-semibold" id="btnGroupMeetSelected" onclick="launchGroupMeetingFromTable()" disabled>
+            <i class="fas fa-users me-1"></i> Group Meet (<span id="bulkSelectedCount">0</span> Selected)
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="studentsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40px;">
+                            <input class="form-check-input" type="checkbox" id="selectAllTableCheckbox" onclick="toggleSelectAllTable(this)" title="Select all advisees for group meeting">
+                        </th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Program / Major</th>
+                        <th>Status / Standing</th>
+                        <th>Year</th>
+                        <th title="Cumulative GPA (Graduation Requirement >= 65.0%)">CGPA (Cum.)</th>
+                        <th title="Latest Semester GPA (Academic Probation Metric)">SGPA (Latest)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    {% set st = student.status or 'Normal / Good Standing' %}
+                    {% set row_type = 'strict' if ('Strict' in st or 'Third' in st) else 'removal' if 'Removal' in st else 'good' if ('Good' in st) else 'probation' %}
+                    <tr data-status-type="{{ row_type }}" class="student-table-row">
+                        <td>
+                            <input class="form-check-input student-row-select" type="checkbox" 
+                                   value="{{ student.id }}" 
+                                   data-name="{{ student.name }}"
+                                   onchange="updateTableSelectedCount()">
+                        </td>
+                        <td class="fw-bold text-primary">{{ student.id }}</td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td>
+                            <span class="text-dark small">{{ student.program or 'Computer Science' }}</span>
+                        </td>
+                        <td>
+                            {% if 'Strict' in st or 'Third' in st %}
+                                <span class="badge bg-danger text-white px-2 py-1 shadow-sm fs-7">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ st }}
+                                </span>
+                            {% elif 'Second Probation' in st %}
+                                <span class="badge text-white px-2 py-1 shadow-sm fs-7" style="background-color: #fd7e14;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
+                                </span>
+                            {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
+                                <span class="badge bg-warning text-dark px-2 py-1 shadow-sm fs-7">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
+                                </span>
+                            {% elif 'Removal' in st %}
+                                <span class="badge bg-info text-dark px-2 py-1 shadow-sm fs-7">
+                                    <i class="fas fa-shield-alt me-1"></i>{{ st }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success text-white px-2 py-1 shadow-sm fs-7">
+                                    <i class="fas fa-check-circle me-1"></i>{{ st }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ student.year or 'N/A' }}</span>
+                        </td>
+                        <td>
+                            {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                            {% if cgpa_val %}
+                                <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning' if cgpa_val >= 65.0 else 'danger' }} fs-6">
+                                    {{ "%.2f"|format(cgpa_val) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if student.semester_gpa is not none %}
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                    {{ "%.2f"|format(student.semester_gpa) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                        onclick="startQuickMeet('{{ student.id }}', '{{ student.name }}')"
+                                        title="Start Virtual Advising Meeting">
+                                    <i class="fas fa-video"></i> Meet
+                                </button>
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-user me-1"></i> Profile
+                                </a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
+                                   target="_blank" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-file-pdf me-1"></i> Transcript PDF
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+    <h4>No Students Found</h4>
+    <p class="text-muted">Please sync with the university system to load your advisee list.</p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+        <i class="fas fa-sync"></i> Sync Students
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function submitImportedHtml() {
+    const html = document.getElementById('pastedHtml').value;
+    if (!html.trim()) {
+        alert('Please paste table HTML first.');
+        return;
+    }
+    
+    try {
+        const prefix = window.APP_PREFIX || '';
+        const response = await fetch(`${prefix}/api/import-advisee-html`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({html})
+        });
+        const res = await response.json();
+        if (res.status === 'success') {
+            alert(`Success! Imported ${res.count} advisee students.`);
+            window.location.reload();
+        } else {
+            alert('Import error: ' + res.message);
+        }
+    } catch (err) {
+        alert('Request failed: ' + err.message);
+    }
+}
+
+async function submitZipUpload() {
+    const fileInput = document.getElementById('zipFileInput');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a .zip file containing student transcripts.');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+        alert('The selected file must be a .zip file.');
+        return;
+    }
+    
+    const isReplace = document.getElementById('actionReplace').checked;
+    if (isReplace && !confirm('WARNING: You chose to REPLACE the entire advisee roster. All current students not in this ZIP will be replaced. Do you want to proceed?')) {
+        return;
+    }
+    
+    const btn = document.getElementById('btnUploadZip');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Parsing Transcripts & Standings...';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('replace_roster', isReplace ? 'true' : 'false');
+    
+    try {
+        const prefix = window.APP_PREFIX || '';
+        const response = await fetch(`${prefix}/api/upload-transcripts-zip`, {
+            method: 'POST',
+            body: formData
+        });
+        const res = await response.json();
+        
+        if (res.status === 'success') {
+            alert(res.message + `\n\nBreakdown:\n- Strict Probation: ${res.stats.strict}\n- On Probation: ${res.stats.probation}\n- Cleared Removal: ${res.stats.cleared}\n- Good Standing: ${res.stats.good_standing}`);
+            window.location.reload();
+        } else {
+            alert('Upload error: ' + (res.message || 'Failed to process ZIP.'));
+        }
+    } catch (err) {
+        alert('Request error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-upload me-1"></i> Process & Import Transcripts';
+    }
+}
+
+function filterByStatus(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    
+    const rows = document.querySelectorAll('#studentsTable tbody tr');
+    rows.forEach(row => {
+        const rowType = row.getAttribute('data-status-type');
+        if (type === 'all') {
+            row.style.display = '';
+        } else if (type === 'strict') {
+            row.style.display = rowType === 'strict' ? '' : 'none';
+        } else if (type === 'probation') {
+            row.style.display = (rowType === 'probation' || rowType === 'strict') ? '' : 'none';
+        } else if (type === 'removal') {
+            row.style.display = rowType === 'removal' ? '' : 'none';
+        } else if (type === 'good') {
+            row.style.display = rowType === 'good' ? '' : 'none';
+        }
+    });
+}
+
+function updateTableSelectedCount() {
+    const checkedBoxes = document.querySelectorAll('.student-row-select:checked');
+    const count = checkedBoxes.length;
+    const badge = document.getElementById('bulkSelectedCount');
+    const btn = document.getElementById('btnGroupMeetSelected');
+    if (badge) badge.innerText = count;
+    if (btn) btn.disabled = (count === 0);
+
+    const allBoxes = document.querySelectorAll('.student-row-select');
+    const masterCb = document.getElementById('selectAllTableCheckbox');
+    if (masterCb && allBoxes.length > 0) {
+        masterCb.checked = (checkedBoxes.length === allBoxes.length);
+        masterCb.indeterminate = (checkedBoxes.length > 0 && checkedBoxes.length < allBoxes.length);
+    }
+}
+
+function toggleSelectAllTable(masterCb) {
+    const isChecked = masterCb.checked;
+    const rows = document.querySelectorAll('#studentsTable tbody tr');
+    rows.forEach(row => {
+        // Only select visible rows
+        if (row.style.display !== 'none') {
+            const cb = row.querySelector('.student-row-select');
+            if (cb) cb.checked = isChecked;
+        }
+    });
+    updateTableSelectedCount();
+}
+
+function launchGroupMeetingFromTable() {
+    const checkedBoxes = Array.from(document.querySelectorAll('.student-row-select:checked'));
+    if (checkedBoxes.length === 0) {
+        alert('Please select at least one student.');
+        return;
+    }
+    const studentIds = checkedBoxes.map(cb => cb.value);
+    const names = checkedBoxes.map(cb => cb.getAttribute('data-name')).filter(Boolean);
+    const defaultTitle = studentIds.length === 1 
+        ? `Advising Session - ${names[0] || studentIds[0]}`
+        : `Group Advising Session (${studentIds.length} Students)`;
+
+    const btn = document.getElementById('btnGroupMeetSelected');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Creating Room...';
+    }
+
+    const prefix = window.APP_PREFIX || '';
+    fetch(`${prefix}/api/meetings/create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            student_ids: studentIds,
+            title: defaultTitle,
+            advisor_name: 'Dr. Nasser Tabook'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const studentCount = data.target_students ? data.target_students.length : studentIds.length;
+            const inviteMsg = `Dear Students,\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            navigator.clipboard.writeText(inviteMsg);
+            if (confirm(`Group Virtual Meeting Created for ${studentCount} Students!\n\nSingle meeting invitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`)) {
+                window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
+            }
+        } else {
+            alert('Error creating meeting: ' + data.message);
+        }
+    })
+    .catch(err => alert('Network error: ' + err.message))
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            updateTableSelectedCount();
+        }
+    });
+}
+
+function startQuickMeet(studentId, studentName) {
+    const prefix = window.APP_PREFIX || '';
+    fetch(`${prefix}/api/meetings/create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            student_ids: [studentId],
+            student_id: studentId,
+            student_name: studentName,
+            title: `Advising Session - ${studentName} (${studentId})`,
+            advisor_name: 'Dr. Nasser Tabook'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const inviteMsg = `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            navigator.clipboard.writeText(inviteMsg);
+            if (confirm(`Virtual Meeting Created!\n\nInvitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`)) {
+                window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
+            }
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => alert('Network error: ' + err.message));
+}
+</script>
+{% endblock %}

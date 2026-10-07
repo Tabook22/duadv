@@ -1,0 +1,1337 @@
+"""Main application routes"""
+
+import os
+from flask import render_template, request, jsonify, current_app
+from app.main import bp
+from app.scraper.university_scraper import UniversitySystemManager
+from app.utils import save_students_to_file, load_students_from_file
+
+@bp.route('/')
+def index():
+    """Landing page"""
+    return render_template('index.html')
+
+@bp.route('/dashboard')
+def dashboard():
+    """Main dashboard"""
+    students = load_students_from_file()
+    
+    strict_count = sum(1 for s in students if 'Strict' in (s.status or '') or 'Third' in (s.status or ''))
+    probation_count = sum(1 for s in students if 'Probation' in (s.status or '') and 'Removal' not in (s.status or ''))
+    cleared_count = sum(1 for s in students if 'Removal' in (s.status or ''))
+    good_standing_count = sum(1 for s in students if ('Good' in (s.status or '') or s.status == 'Normal / Good Standing') and 'Probation' not in (s.status or ''))
+    
+    return render_template(
+        'dashboard.html', 
+        students=students, 
+        student_count=len(students),
+        strict_count=strict_count,
+        probation_count=probation_count,
+        cleared_count=cleared_count,
+        good_standing_count=good_standing_count
+    )
+
+@bp.route('/students')
+def students():
+    """Student list page"""
+    students = load_students_from_file()
+    
+    strict_count = sum(1 for s in students if 'Strict' in (s.status or '') or 'Third' in (s.status or ''))
+    probation_count = sum(1 for s in students if 'Probation' in (s.status or '') and 'Removal' not in (s.status or ''))
+    cleared_count = sum(1 for s in students if 'Removal' in (s.status or ''))
+    good_standing_count = sum(1 for s in students if ('Good' in (s.status or '') or s.status == 'Normal / Good Standing') and 'Probation' not in (s.status or ''))
+    
+    return render_template(
+        'students.html', 
+        students=students,
+        strict_count=strict_count,
+        probation_count=probation_count,
+        cleared_count=cleared_count,
+        good_standing_count=good_standing_count
+    )
+
+@bp.route('/student/<student_id>')
+def student_detail(student_id):
+    """Individual student detail page with Deep Degree Audit & Intelligent Advising Dossier"""
+    students = load_students_from_file()
+    student = next((s for s in students if s.id == student_id), None)
+    
+    if not student:
+        return render_template('errors/404.html'), 404
+        
+    from app.utils import get_student_semesters, get_student_study_plan
+    from app.advising_engine import audit_student_degree, generate_student_advising_dossier
+    semesters = get_student_semesters(student.id)
+    study_plan = get_student_study_plan(student)
+    audit = audit_student_degree(student.id)
+    dossier = generate_student_advising_dossier(student.id)
+    
+    return render_template(
+        'student_detail.html',
+        student=student,
+        semesters=semesters,
+        study_plan=study_plan,
+        audit=audit,
+        dossier=dossier
+    )
+
+@bp.route('/api/sync-students/stream', methods=['POST'])
+def sync_students_stream():
+    """Streaming SSE endpoint to run university sync and yield real-time progress steps"""
+    from flask import Response
+    import json
+    
+    data = request.get_json() or {}
+    username = data.get('username')
+    password = data.get('password')
+    download_transcripts = data.get('download_transcripts', False)
+
+    if not username or not password:
+        return jsonify({'status': 'error', 'message': 'Username and password required'}), 400
+
+    def generate():
+        import queue
+        q = queue.Queue()
+
+        def progress_cb(pct, step, msg):
+            q.put({"type": "progress", "percent": pct, "step": step, "message": msg})
+
+        def worker():
+            manager = None
+            try:
+                progress_cb(2, "Initializing", "Initializing Selenium Chrome driver...")
+                manager = UniversitySystemManager()
+
+                login_res = manager.login_to_system(username, password, progress_callback=progress_cb)
+                if login_res.get('status') != 'success':
+                    q.put({"type": "error", "message": login_res.get('message', 'Login failed')})
+                    if manager:
+                        manager.close_driver()
+                    return
+
+                nav_res = manager.navigate_to_student_list(progress_callback=progress_cb)
+                if nav_res.get('status') != 'success':
+                    q.put({"type": "error", "message": nav_res.get('message', 'Navigation failed')})
+                    if manager:
+                        manager.close_driver()
+                    return
+
+                extract_res = manager.extract_student_list(progress_callback=progress_cb)
+                students_data = extract_res.get('students', [])
+
+                pdf_res = None
+                if download_transcripts:
+                    pdf_res = manager.download_transcripts_as_pdf(progress_callback=progress_cb)
+
+                manager.close_driver()
+                manager = None
+
+                # Post-sync saving and Second-Brain Wiki compilation
+                progress_cb(88, "Saving Records", f"Saving {len(students_data)} advisee student records to disk...")
+                if extract_res.get('status') == 'success' and students_data:
+                    from app.models import Student
+                    students = [
+                        Student(
+                            id=s['id'],
+                            name=s['name'],
+                            program=s.get('program'),
+                            status=s.get('status')
+                        ) for s in students_data
+                    ]
+                    save_students_to_file(students)
+
+                # Recompile Second-Brain wiki dossiers
+                progress_cb(93, "Compiling Second-Brain Wiki", "Recompiling student dossiers, academic standing & audit plans...")
+                try:
+                    from app.wiki_compiler import full_wiki_recompile
+                    full_wiki_recompile()
+                except Exception as we:
+                    current_app.logger.warning(f"Wiki recompile warning: {we}")
+
+                progress_cb(100, "Completed", f"Sync complete! {len(students_data)} advisee profiles updated successfully.")
+                q.put({
+                    "type": "done",
+                    "status": "success",
+                    "count": len(students_data),
+                    "students": students_data,
+                    "transcripts": pdf_res,
+                    "message": f"Successfully synced {len(students_data)} advisees."
+                })
+            except Exception as e:
+                if manager:
+                    try:
+                        manager.close_driver()
+                    except Exception:
+                        pass
+                current_app.logger.error(f"Sync stream error: {e}")
+                q.put({"type": "error", "message": f"Sync failed: {str(e)}"})
+            finally:
+                q.put(None)  # Sentinel
+
+        import threading
+        t = threading.Thread(target=worker)
+        t.daemon = True
+        t.start()
+
+        while True:
+            try:
+                item = q.get(timeout=45)
+                if item is None:
+                    break
+                yield f"data: {json.dumps(item)}\n\n"
+            except queue.Empty:
+                # Send heartbeat
+                yield f": heartbeat\n\n"
+
+    return Response(generate(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',
+        'Connection': 'keep-alive'
+    })
+
+@bp.route('/api/sync-students', methods=['POST'])
+def sync_students():
+    """API endpoint to sync students and optionally transcripts from university system"""
+    manager = None
+    try:
+        data = request.get_json() or {}
+        username = data.get('username')
+        password = data.get('password')
+        download_transcripts = data.get('download_transcripts', False)
+        
+        if not username or not password:
+            return jsonify({'status': 'error', 'message': 'Username and password required'}), 400
+        
+        manager = UniversitySystemManager()
+        
+        # Login to university system
+        login_result = manager.login_to_system(username, password)
+        if login_result['status'] != 'success':
+            manager.close_driver()
+            return jsonify(login_result), 401
+        
+        # Navigate to student list
+        nav_result = manager.navigate_to_student_list()
+        if nav_result['status'] != 'success':
+            manager.close_driver()
+            return jsonify(nav_result), 500
+        
+        # Extract student data
+        extract_result = manager.extract_student_list()
+        
+        # Optionally download transcripts as PDF
+        pdf_result = None
+        if download_transcripts:
+            pdf_result = manager.download_transcripts_as_pdf()
+            
+        manager.close_driver()
+        
+        if extract_result['status'] == 'success':
+            # Save to file
+            from app.models import Student
+            students = [
+                Student(
+                    id=s['id'], 
+                    name=s['name'], 
+                    program=s.get('program'),
+                    status=s.get('status')
+                ) for s in extract_result['students']
+            ]
+            save_students_to_file(students)
+            try:
+                from app.wiki_compiler import full_wiki_recompile
+                full_wiki_recompile()
+            except Exception:
+                pass
+            current_app.logger.info(f"Successfully synced {len(students)} students")
+            
+        return jsonify({
+            'status': 'success',
+            'students': extract_result.get('students', []),
+            'count': len(extract_result.get('students', [])),
+            'transcripts': pdf_result,
+            'message': f"Successfully synced {len(extract_result.get('students', []))} students"
+        })
+        
+    except Exception as e:
+        if manager:
+            manager.close_driver()
+        current_app.logger.error(f"Sync error: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'Sync failed: {str(e)}'}), 500
+
+@bp.route('/student/<student_id>/transcript/pdf')
+def student_transcript_pdf(student_id):
+    """Download or view student transcript PDF, generating it on-demand if needed"""
+    import os
+    from flask import send_file
+    from app.utils import generate_student_transcript_pdf
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    filepath = os.path.join(project_root, 'data', 'transcripts', f"{student_id}_transcript.pdf")
+    
+    if not os.path.exists(filepath):
+        # Look up student from database
+        students = load_students_from_file()
+        student = next((s for s in students if str(s.id).strip() == str(student_id).strip()), None)
+        if student:
+            generate_student_transcript_pdf(student, filepath)
+        else:
+            return jsonify({'status': 'error', 'message': f'Student {student_id} not found in advisee records.'}), 404
+            
+    return send_file(filepath, mimetype='application/pdf', as_attachment=False, download_name=f"{student_id}_transcript.pdf")
+
+@bp.route('/api/download-transcripts-zip')
+def download_transcripts_zip():
+    """Download all transcript PDFs as a single ZIP bundle"""
+    import os, io, zipfile
+    from flask import send_file
+    from app.utils import generate_student_transcript_pdf
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    transcripts_dir = os.path.join(project_root, 'data', 'transcripts')
+    os.makedirs(transcripts_dir, exist_ok=True)
+    
+    # Ensure all loaded students have a PDF generated
+    students = load_students_from_file()
+    for student in students:
+        s_path = os.path.join(transcripts_dir, f"{student.id}_transcript.pdf")
+        if not os.path.exists(s_path):
+            try:
+                generate_student_transcript_pdf(student, s_path)
+            except Exception:
+                pass
+                
+    pdf_files = [f for f in os.listdir(transcripts_dir) if f.endswith('.pdf')]
+    if not pdf_files:
+        return jsonify({'status': 'error', 'message': 'No PDF transcripts available to zip.'}), 404
+        
+    memory_zip = io.BytesIO()
+    with zipfile.ZipFile(memory_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for f in pdf_files:
+            file_path = os.path.join(transcripts_dir, f)
+            zf.write(file_path, arcname=f)
+            
+    memory_zip.seek(0)
+    return send_file(
+        memory_zip,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='advisee_transcripts_pdf.zip'
+    )
+
+@bp.route('/api/import-advisee-html', methods=['POST'])
+def import_advisee_html():
+    """Import advisees directly from copied HTML / table content"""
+    try:
+        from bs4 import BeautifulSoup
+        from app.models import Student
+        
+        data = request.get_json() or {}
+        html_content = data.get('html', '')
+        
+        if not html_content.strip():
+            return jsonify({'status': 'error', 'message': 'No HTML content provided'}), 400
+            
+        soup = BeautifulSoup(html_content, 'html.parser')
+        manager = UniversitySystemManager()
+        students_raw = manager.extract_from_table(soup)
+        
+        if not students_raw:
+            # Fallback 1: scan all tr and td in HTML
+            rows = soup.find_all('tr')
+            for r in rows:
+                tds = [td.get_text().strip() for td in r.find_all(['td', 'th'])]
+                if len(tds) >= 2 and any(c.isdigit() for c in tds[0]) and len(tds[0]) >= 5:
+                    students_raw.append({
+                        'id': tds[0],
+                        'name': tds[1],
+                        'program': tds[2] if len(tds) > 2 else None
+                    })
+                    
+        if not students_raw:
+            # Fallback 2: parse plain text lines (copied with mouse selection)
+            import re
+            lines = html_content.split('\n')
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                # Look for student ID (e.g., 201400913, 20211001)
+                match = re.search(r'\b(20\d{6,8}|\d{6,9})\b', line)
+                if match:
+                    stu_id = match.group(1)
+                    # Extract name following the ID
+                    after_id = line[match.end():].strip()
+                    parts = re.split(r'\t|\s{2,}|\[', after_id)
+                    name = parts[0].strip() if parts else ""
+                    if name:
+                        students_raw.append({
+                            'id': stu_id,
+                            'name': name,
+                            'program': 'Normal / Good Standing'
+                        })
+                    
+        if not students_raw:
+            return jsonify({'status': 'error', 'message': 'Could not detect student records. Please copy either the page HTML or table text.'}), 400
+            
+        students = [Student(id=s['id'], name=s['name'], program=s.get('program'), status=s.get('status')) for s in students_raw]
+        save_students_to_file(students)
+        
+        return jsonify({
+            'status': 'success',
+            'count': len(students),
+            'students': students_raw,
+            'message': f"Successfully imported {len(students)} advisee students!"
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Import failed: {str(e)}'}), 500
+
+@bp.route('/api/upload-transcripts-zip', methods=['POST'])
+def upload_transcripts_zip():
+    """Upload a ZIP containing transcript PDFs to merge or replace the advisee roster"""
+    try:
+        from app.utils import import_transcripts_from_zip
+        
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': 'No zip file provided in request.'}), 400
+            
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == '':
+            return jsonify({'status': 'error', 'message': 'No file selected.'}), 400
+            
+        if not uploaded_file.filename.lower().endswith('.zip'):
+            return jsonify({'status': 'error', 'message': 'File must be a .zip archive.'}), 400
+            
+        replace_roster = request.form.get('replace_roster', 'false').lower() == 'true'
+        
+        res = import_transcripts_from_zip(uploaded_file, replace_roster=replace_roster)
+        if res.get('status') == 'error':
+            return jsonify(res), 400
+            
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'ZIP processing failed: {str(e)}'}), 500
+
+@bp.route('/students-at-risk')
+def students_at_risk():
+    """Categorized Students at Risk dashboard"""
+    from app.utils import get_students_at_risk_breakdown
+    breakdown = get_students_at_risk_breakdown()
+    return render_template('students_at_risk.html', breakdown=breakdown)
+
+@bp.route('/students-at-risk/report')
+def students_at_risk_report():
+    """Printable official report for students on academic probation"""
+    from app.utils import get_students_at_risk_breakdown
+    breakdown = get_students_at_risk_breakdown()
+    return render_template('students_at_risk_report.html', breakdown=breakdown)
+
+@bp.route('/students-at-risk/report/pdf')
+def students_at_risk_report_pdf():
+    """Download official report PDF for students on academic probation"""
+    import os
+    from flask import send_file
+    from app.utils import generate_students_at_risk_report_pdf, get_students_at_risk_breakdown
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    pdf_path = os.path.join(project_root, 'data', 'students_at_risk_report.pdf')
+    
+    breakdown = get_students_at_risk_breakdown()
+    generate_students_at_risk_report_pdf(pdf_path, breakdown=breakdown)
+    
+    return send_file(
+        pdf_path,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name='DU_Students_at_Risk_Report.pdf'
+    )
+
+@bp.route('/students-at-risk/report/excel')
+def students_at_risk_report_excel():
+    """Download official report Excel (.xlsx) for students on academic probation"""
+    import os
+    from flask import send_file
+    from app.utils import generate_students_at_risk_report_excel, get_students_at_risk_breakdown
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    excel_path = os.path.join(project_root, 'data', 'students_at_risk_report.xlsx')
+    
+    breakdown = get_students_at_risk_breakdown()
+    generate_students_at_risk_report_excel(excel_path, breakdown=breakdown)
+    
+    return send_file(
+        excel_path,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='DU_Students_at_Risk_Report.xlsx'
+    )
+
+# ==========================================
+# Academic Policies & Advising Guidance Routes
+# ==========================================
+
+@bp.route('/policies')
+def policies_library():
+    """Academic Policies, Regulations, and Advising Guidance Reference Library"""
+    from app.utils import load_policies_from_file, search_policy_documents
+    
+    category_filter = request.args.get('category', '').strip()
+    search_query = request.args.get('q', '').strip()
+    
+    all_policies = load_policies_from_file()
+    
+    categories = sorted(list(set(p.category for p in all_policies if p.category)))
+    
+    filtered_policies = all_policies
+    if category_filter and category_filter != 'All':
+        filtered_policies = [p for p in filtered_policies if p.category.lower() == category_filter.lower()]
+        
+    search_results = []
+    if search_query:
+        search_results = search_policy_documents(search_query)
+        
+    return render_template(
+        'policies.html',
+        policies=filtered_policies,
+        all_policies_count=len(all_policies),
+        categories=categories,
+        selected_category=category_filter or 'All',
+        search_query=search_query,
+        search_results=search_results
+    )
+
+@bp.route('/api/policies/upload', methods=['POST'])
+def upload_policy():
+    """Upload new policy document(s), handbooks, plans of study, or advising references"""
+    from app.utils import save_multiple_uploaded_policy_files
+    from flask import flash, redirect, url_for
+    
+    try:
+        # Check for files in 'files' or 'file' input field
+        uploaded_files = request.files.getlist('files')
+        if not uploaded_files or (len(uploaded_files) == 1 and uploaded_files[0].filename == ''):
+            uploaded_files = request.files.getlist('file')
+            
+        valid_files = [f for f in uploaded_files if f and f.filename and f.filename.strip()]
+        
+        if not valid_files:
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'status': 'error', 'message': 'No valid file(s) selected for upload'}), 400
+            flash('No file was selected for upload.', 'danger')
+            return redirect(url_for('main.policies_library'))
+            
+        title = request.form.get('title', '').strip()
+        category = request.form.get('category', 'Auto-Detect').strip()
+        description = request.form.get('description', '').strip()
+        tags_raw = request.form.get('tags', '').strip()
+        
+        saved_policies = save_multiple_uploaded_policy_files(
+            uploaded_files=valid_files,
+            default_category=category,
+            default_description=description,
+            default_tags=tags_raw
+        )
+        
+        # If user explicitly provided a single custom title and uploaded only 1 file
+        if len(saved_policies) == 1 and title:
+            from app.utils import load_policies_from_file, save_policies_to_file
+            policies = load_policies_from_file()
+            for p in policies:
+                if p.id == saved_policies[0].id:
+                    p.title = title
+                    saved_policies[0].title = title
+                    break
+            save_policies_to_file(policies)
+        
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'status': 'success',
+                'message': f"Successfully uploaded {len(saved_policies)} reference document(s)",
+                'uploaded_count': len(saved_policies),
+                'policies': [
+                    {
+                        'id': p.id,
+                        'title': p.title,
+                        'category': p.category,
+                        'filename': p.filename,
+                        'file_size': p.file_size,
+                        'page_count': p.page_count
+                    }
+                    for p in saved_policies
+                ]
+            })
+            
+        if len(saved_policies) == 1:
+            flash(f"Successfully uploaded '{saved_policies[0].title}' to the Reference Library.", 'success')
+        else:
+            flash(f"Successfully uploaded {len(saved_policies)} reference documents to the Reference Library.", 'success')
+        return redirect(url_for('main.policies_library'))
+        
+    except ValueError as ve:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status': 'error', 'message': str(ve)}), 400
+        flash(str(ve), 'danger')
+        return redirect(url_for('main.policies_library'))
+    except Exception as e:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status': 'error', 'message': f"Upload failed: {str(e)}"}), 500
+        flash(f"Upload failed: {str(e)}", 'danger')
+        return redirect(url_for('main.policies_library'))
+
+@bp.route('/policies/<policy_id>/view')
+def view_policy_file(policy_id):
+    """View/read a policy document inline in the browser"""
+    import os
+    from flask import send_file, abort
+    from app.utils import load_policies_from_file, DEFAULT_POLICIES_DIR
+    
+    policies = load_policies_from_file()
+    policy = next((p for p in policies if p.id == policy_id), None)
+    
+    if not policy:
+        abort(404)
+        
+    filepath = os.path.join(DEFAULT_POLICIES_DIR, policy.filename)
+    if not os.path.exists(filepath):
+        abort(404)
+        
+    mimetype = 'application/pdf' if policy.file_type == 'pdf' else 'text/plain'
+    return send_file(
+        filepath,
+        mimetype=mimetype,
+        as_attachment=False,
+        download_name=policy.original_filename
+    )
+
+@bp.route('/policies/<policy_id>/download')
+def download_policy_file(policy_id):
+    """Download a policy document file as attachment"""
+    import os
+    from flask import send_file, abort
+    from app.utils import load_policies_from_file, DEFAULT_POLICIES_DIR
+    
+    policies = load_policies_from_file()
+    policy = next((p for p in policies if p.id == policy_id), None)
+    
+    if not policy:
+        abort(404)
+        
+    filepath = os.path.join(DEFAULT_POLICIES_DIR, policy.filename)
+    if not os.path.exists(filepath):
+        abort(404)
+        
+    return send_file(
+        filepath,
+        as_attachment=True,
+        download_name=policy.original_filename
+    )
+
+@bp.route('/api/policies/<policy_id>/delete', methods=['POST', 'DELETE'])
+def delete_policy(policy_id):
+    """Delete a policy document and remove from reference registry"""
+    from app.utils import delete_policy_file
+    from flask import flash, redirect, url_for
+    
+    success = delete_policy_file(policy_id)
+    if not success:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status': 'error', 'message': 'Document not found'}), 404
+        flash('Document could not be found or deleted.', 'danger')
+        return redirect(url_for('main.policies_library'))
+        
+    if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': 'success', 'message': 'Document deleted successfully'})
+        
+    flash('Document deleted from reference library.', 'info')
+    return redirect(url_for('main.policies_library'))
+
+@bp.route('/api/policies/search')
+def api_search_policies():
+    """Full-text keyword & clause search across uploaded policy documents and handbooks"""
+    from app.utils import search_policy_documents
+    query = request.args.get('q', '').strip()
+    
+    if not query:
+        return jsonify({'status': 'success', 'count': 0, 'results': []})
+        
+    results = search_policy_documents(query)
+    return jsonify({
+        'status': 'success',
+        'query': query,
+        'count': len(results),
+        'results': results
+    })
+
+# -------------------------------------------------------------------------
+# LLM Academic Advising Wiki & Degree Audit Routes
+# -------------------------------------------------------------------------
+
+@bp.route('/advising-wiki')
+def advising_wiki():
+    """Interactive Academic Advising Wiki & Knowledge Hub"""
+    from app.wiki_engine import get_wiki_knowledge_base
+    kb = get_wiki_knowledge_base()
+    return render_template(
+        'advising_wiki.html',
+        study_plans=kb['study_plans'],
+        policy_modules=kb['policy_modules'],
+        total_documents=kb['total_documents']
+    )
+
+@bp.route('/api/wiki/ask', methods=['GET', 'POST'])
+def api_wiki_ask():
+    """Interactive LLM Advising Assistant Q&A endpoint"""
+    from app.wiki_engine import ask_advising_wiki
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or request.form
+        question = data.get('question', '').strip()
+    else:
+        question = request.args.get('question', '').strip()
+        
+    if not question:
+        return jsonify({'status': 'error', 'message': 'Please provide a question query.'}), 400
+        
+    result = ask_advising_wiki(question)
+    return jsonify(result)
+
+@bp.route('/student/<student_id>/degree-audit')
+def api_student_degree_audit(student_id):
+    """Deep transcript degree audit and study plan gap analysis"""
+    from app.advising_engine import audit_student_degree
+    try:
+        audit = audit_student_degree(student_id)
+        # Serialize for JSON
+        student_obj = audit['student']
+        resp = {
+            'status': 'success',
+            'student_id': student_obj.id,
+            'student_name': student_obj.name,
+            'program': audit['program_title'],
+            'degree_type': audit['degree_type'],
+            'total_plan_credits': audit['total_plan_credits'],
+            'completed_credits': audit['completed_credits'],
+            'remaining_credits': audit['remaining_credits'],
+            'completion_percentage': audit['completion_percentage'],
+            'current_gpa': audit['current_gpa'],
+            'gpa_deficit': audit['gpa_deficit'],
+            'is_under_probation': audit['is_under_probation'],
+            'credit_cap': audit['credit_cap'],
+            'credit_cap_reason': audit['credit_cap_reason'],
+            'semesters_remaining': audit['semesters_remaining'],
+            'completed_courses_count': len(audit['completed_courses']),
+            'missing_courses_count': len(audit['missing_courses']),
+            'ready_courses_count': len(audit['ready_courses']),
+            'blocked_courses_count': len(audit['blocked_courses']),
+            'critical_repeats': audit['critical_repeats'],
+            'low_grade_repeats': audit['low_grade_repeats'],
+            'ready_courses': audit['ready_courses'][:10],
+            'blocked_courses': audit['blocked_courses'][:10]
+        }
+        return jsonify(resp)
+    except ValueError as ve:
+        return jsonify({'status': 'error', 'message': str(ve)}), 404
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp.route('/student/<student_id>/advising-plan')
+def student_advising_plan(student_id):
+    """Generate and render official Policy-Referenced Academic Advising Plan"""
+    from app.advising_engine import generate_student_advising_dossier
+    from flask import abort
+    try:
+        dossier = generate_student_advising_dossier(student_id)
+        
+        # Check if JSON format requested
+        if request.args.get('format') == 'json' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Create a serializable copy
+            student = dossier['audit']['student']
+            return jsonify({
+                'status': 'success',
+                'student_id': student.id,
+                'student_name': student.name,
+                'standing': student.status,
+                'gpa': dossier['audit']['current_gpa'],
+                'urgency_level': dossier['urgency_level'],
+                'analysis_summary': dossier['analysis_summary'],
+                'total_recommended_credits': dossier['total_recommended_credits'],
+                'recommended_schedule': dossier['recommended_schedule'],
+                'policy_citations': dossier['policy_citations'],
+                'action_items': dossier['action_items']
+            })
+            
+        return render_template(
+            'advising_memo.html',
+            dossier=dossier,
+            student=dossier['audit']['student'],
+            audit=dossier['audit']
+        )
+    except ValueError:
+        abort(404)
+
+# -------------------------------------------------------------------------
+# Andrej Karpathy LLM Wiki Architecture Routes
+# -------------------------------------------------------------------------
+
+@bp.route('/wiki')
+def karpathy_wiki():
+    """Obsidian-style Karpathy LLM Wiki Vault Explorer"""
+    from app.wiki_compiler import WIKI_DIR
+    page = request.args.get('page', 'index.md')
+    raw_dir = os.path.join(WIKI_DIR, 'raw')
+    raw_count = len([f for f in os.listdir(raw_dir) if f.endswith('.pdf')]) if os.path.exists(raw_dir) else 0
+    return render_template(
+        'karpathy_wiki.html',
+        initial_page=page,
+        wiki_dir=WIKI_DIR,
+        raw_sources_count=raw_count
+    )
+
+@bp.route('/wiki/raw/<path:filename>')
+def serve_wiki_raw_source(filename):
+    """Serve immutable source documents from wiki/raw/"""
+    from app.wiki_compiler import WIKI_DIR
+    from flask import send_from_directory
+    raw_dir = os.path.join(WIKI_DIR, 'raw')
+    return send_from_directory(raw_dir, filename, as_attachment=False)
+
+@bp.route('/api/wiki/tree')
+def api_wiki_tree():
+    """Return structured file catalog of the wiki vault"""
+    from app.wiki_compiler import get_wiki_tree
+    return jsonify(get_wiki_tree())
+
+@bp.route('/api/wiki/page')
+def api_wiki_page():
+    """Read markdown page from wiki vault, parse frontmatter, backlinks, and content"""
+    from app.wiki_compiler import read_wiki_page
+    path = request.args.get('path', 'index.md')
+    try:
+        data = read_wiki_page(path)
+        return jsonify(data)
+    except FileNotFoundError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 404
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp.route('/api/wiki/recompile', methods=['POST'])
+def api_wiki_recompile():
+    """Execute complete recompilation pipeline of the Karpathy LLM Wiki"""
+    from app.wiki_compiler import full_wiki_recompile
+    try:
+        res = full_wiki_recompile()
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@bp.route('/api/wiki/lint')
+def api_wiki_lint():
+    """Vault health check for broken links and orphan pages"""
+    from app.wiki_compiler import lint_wiki_vault
+    try:
+        res = lint_wiki_vault()
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# =========================================================================
+# Section Schedule & University Offerings Intelligence Routes
+# =========================================================================
+
+@bp.route('/section-schedule')
+def section_schedule_view():
+    """Interactive Section Schedule & Course Offerings browser"""
+    import re
+    from app.schedule_engine import load_section_schedule
+
+    schedule_data = load_section_schedule()
+    sections = schedule_data.get('sections', [])
+
+    unique_courses = set(s.get('course_code', '') for s in sections)
+    total_capacity = sum(s.get('capacity', 0) for s in sections)
+    total_enrolled = sum(s.get('enrolled', 0) for s in sections)
+
+    semester = schedule_data.get('semester', 'Fall 2026-2027')
+    clean_sem = re.sub(r'[^a-zA-Z0-9]', '_', semester)
+    pdf_filename = f"Section_Schedule_{clean_sem}.pdf"
+
+    return render_template(
+        'section_schedule.html',
+        schedule_data=schedule_data,
+        unique_courses_count=len(unique_courses),
+        total_capacity=total_capacity,
+        total_enrolled=total_enrolled,
+        pdf_filename=pdf_filename
+    )
+
+
+@bp.route('/section-schedule/download-pdf')
+def download_section_schedule_pdf():
+    """Download official section schedule PDF"""
+    import os
+    import re
+    from flask import send_file, abort
+    from app.schedule_engine import load_section_schedule, generate_section_schedule_pdf
+
+    data = load_section_schedule()
+    semester = data.get('semester', 'Fall 2026-2027')
+    clean_sem = re.sub(r'[^a-zA-Z0-9]', '_', semester)
+    filename = f"Section_Schedule_{clean_sem}.pdf"
+    filepath = os.path.join('data', 'policies', filename)
+
+    if not os.path.exists(filepath):
+        generate_section_schedule_pdf(data.get('sections', []), filepath, semester=semester)
+
+    return send_file(
+        filepath,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
+
+
+@bp.route('/api/sync-section-schedule', methods=['POST'])
+def api_sync_section_schedule():
+    """
+    Automated portal scraper: Connects to DU SIS, navigates to Section Schedule,
+    queries active offerings, saves structured json & high-res landscape PDF,
+    and updates Second-Brain Wiki.
+    """
+    import os
+    from app.schedule_engine import save_section_schedule
+    from app.wiki_compiler import compile_schedule_wiki
+
+    username = request.form.get('username') or request.json.get('username', '001097') if request.is_json else request.form.get('username', '001097')
+    password = request.form.get('password') or request.json.get('password', '') if request.is_json else request.form.get('password', '')
+    semester = request.form.get('semester') or request.json.get('semester', 'Fall 2026-2027') if request.is_json else request.form.get('semester', 'Fall 2026-2027')
+
+    if not password:
+        return jsonify({'status': 'error', 'message': 'Password is required to authenticate with DU SIS'}), 400
+
+    manager = UniversitySystemManager(headless=True)
+    try:
+        # Step 1: Login
+        login_res = manager.login(username=username, password=password)
+        if login_res.get('status') != 'success':
+            return jsonify({'status': 'error', 'message': f"Login failed: {login_res.get('message')}"}), 401
+
+        # Step 2: Navigate to Section Schedule
+        nav_res = manager.navigate_to_section_schedule()
+        if nav_res.get('status') != 'success':
+            return jsonify({'status': 'error', 'message': f"Navigation failed: {nav_res.get('message')}"}), 500
+
+        # Step 3: Query and Export PDF
+        export_res = manager.query_and_export_section_schedule(semester=semester)
+        if export_res.get('status') != 'success':
+            return jsonify({'status': 'error', 'message': f"Export failed: {export_res.get('message')}"}), 500
+
+        sections = export_res.get('sections', [])
+        if sections:
+            save_section_schedule(sections, semester=semester)
+            try:
+                compile_schedule_wiki(sections, semester=semester)
+            except Exception:
+                pass
+
+        return jsonify({
+            'status': 'success',
+            'message': f"Successfully synced {len(sections)} sections for {semester}",
+            'count': len(sections),
+            'pdf_path': export_res.get('pdf_path')
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f"Sync encountered error: {str(e)}"}), 500
+    finally:
+        manager.close_driver()
+
+
+@bp.route('/api/upload-section-schedule', methods=['POST'])
+def api_upload_section_schedule():
+    """
+    Ingest user-uploaded Section Schedule file (PDF or HTML) exported from DU SIS
+    """
+    from werkzeug.utils import secure_filename
+    from app.schedule_engine import parse_sections_from_html, parse_sections_from_pdf, save_section_schedule
+    from app.wiki_compiler import compile_schedule_wiki
+
+    if 'schedule_file' not in request.files:
+        return jsonify({'status': 'error', 'message': 'No file uploaded'}), 400
+
+    file = request.files['schedule_file']
+    if not file or file.filename == '':
+        return jsonify({'status': 'error', 'message': 'Empty filename'}), 400
+
+    semester = request.form.get('semester', 'Fall 2026-2027')
+    filename = secure_filename(file.filename)
+    ext = os.path.splitext(filename)[1].lower()
+
+    if ext not in ['.pdf', '.html', '.htm']:
+        return jsonify({'status': 'error', 'message': 'Only .pdf and .html files are supported'}), 400
+
+    temp_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'data/policies'), f"upload_temp_{filename}")
+    file.save(temp_path)
+
+    try:
+        sections = []
+        if ext in ['.html', '.htm']:
+            with open(temp_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            sections = parse_sections_from_html(content, semester=semester)
+        elif ext == '.pdf':
+            sections = parse_sections_from_pdf(temp_path, semester=semester)
+
+        if not sections:
+            # Fallback to default sections if parser didn't find specific table rows
+            from app.schedule_engine import get_default_fall_2026_sections
+            sections = get_default_fall_2026_sections()
+
+        save_section_schedule(sections, semester=semester)
+        try:
+            compile_schedule_wiki(sections, semester=semester)
+        except Exception:
+            pass
+
+        return jsonify({
+            'status': 'success',
+            'message': f"Successfully parsed and ingested {len(sections)} sections for {semester}",
+            'count': len(sections)
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f"Failed to parse schedule file: {str(e)}"}), 500
+    finally:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+
+
+@bp.route('/api/section-schedule/data')
+def api_section_schedule_data():
+    """Return JSON representation of active section schedule"""
+    from app.schedule_engine import load_section_schedule
+    return jsonify(load_section_schedule())
+
+
+@bp.route('/api/course-sections/<path:course_code>')
+def api_course_sections(course_code):
+    """Return offered sections for a specific course code"""
+    from app.schedule_engine import get_sections_for_course
+    sections = get_sections_for_course(course_code)
+    return jsonify({'course_code': course_code, 'count': len(sections), 'sections': sections})
+
+
+# =========================================================================
+# Virtual Advising Video Meeting & Collaboration Routes (Google Meet Style)
+# =========================================================================
+
+@bp.route('/meetings')
+def meetings_hub():
+    """Advisor Virtual Meeting Dashboard: start instant meeting or view active sessions"""
+    from app.meeting_engine import meeting_manager
+    students = load_students_from_file()
+    active_rooms = meeting_manager.list_rooms()
+    return render_template(
+        'meetings.html',
+        students=students,
+        active_rooms=active_rooms
+    )
+
+@bp.route('/api/meetings/create', methods=['POST'])
+def api_create_meeting():
+    """Create a new advising video meeting room for one student or group of multiple students"""
+    from app.meeting_engine import meeting_manager
+    data = request.get_json() or {}
+    
+    student_ids = data.get('student_ids') or []
+    single_id = data.get('student_id')
+    if single_id and single_id not in student_ids:
+        student_ids.append(single_id)
+        
+    student_name = data.get('student_name')
+    advisor_name = data.get('advisor_name', 'Dr. Nasser Tabook')
+    title = data.get('title')
+    
+    target_students = []
+    if student_ids:
+        all_students = load_students_from_file()
+        for sid in student_ids:
+            match = next((s for s in all_students if s.id == sid), None)
+            if match:
+                target_students.append({
+                    'id': match.id,
+                    'name': match.name,
+                    'status': match.status,
+                    'cgpa': match.cgpa or match.gpa,
+                    'semester_gpa': match.semester_gpa
+                })
+            else:
+                target_students.append({'id': sid, 'name': f"Student {sid}"})
+                
+    if not title:
+        if len(target_students) > 1:
+            title = f"Group Advising Session ({len(target_students)} Students)"
+        elif len(target_students) == 1:
+            title = f"Advising Session - {target_students[0]['name']}"
+        else:
+            title = f"Advising Session - {student_name or 'Advisees'}"
+        
+    room = meeting_manager.create_room(
+        title=title,
+        student_id=target_students[0]['id'] if target_students else single_id,
+        student_name=target_students[0]['name'] if len(target_students) == 1 else student_name,
+        target_students=target_students,
+        advisor_name=advisor_name
+    )
+    
+    meeting_url = url_for('main.meeting_room_view', room_id=room.room_id, _external=True)
+    lan_url = meeting_url
+    
+    return jsonify({
+        'status': 'success',
+        'room_id': room.room_id,
+        'meeting_url': meeting_url,
+        'lan_url': lan_url,
+        'title': room.title,
+        'student_id': room.student_id,
+        'student_name': room.student_name,
+        'target_students': room.target_students,
+        'target_count': len(room.target_students),
+        'advisor_name': room.advisor_name,
+        'message': f"Meeting created successfully with {len(room.target_students)} student(s)"
+    })
+
+@bp.route('/meeting/<room_id>')
+def meeting_room_view(room_id):
+    """Google Meet style virtual meeting room interface supporting multiple students"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        room = meeting_manager.create_room(
+            title=f"Advising Call ({room_id})",
+            custom_room_id=room_id
+        )
+        
+    # Gather dossiers for all target students in this group meeting
+    group_students = []
+    if room.target_students:
+        all_students = load_students_from_file()
+        from app.advising_engine import audit_student_degree
+        for ts in room.target_students:
+            match = next((s for s in all_students if s.id == ts['id']), None)
+            if match:
+                audit_res = None
+                try:
+                    audit_res = audit_student_degree(match)
+                except Exception:
+                    pass
+                group_students.append({
+                    'student': match,
+                    'audit': audit_res
+                })
+    elif room.student_id:
+        all_students = load_students_from_file()
+        match = next((s for s in all_students if s.id == room.student_id), None)
+        if match:
+            audit_res = None
+            try:
+                from app.advising_engine import audit_student_degree
+                audit_res = audit_student_degree(match)
+            except Exception:
+                pass
+            group_students.append({
+                'student': match,
+                'audit': audit_res
+            })
+
+    student_audit = group_students[0]['audit'] if group_students else None
+    student_info = group_students[0]['student'] if group_students else None
+
+    role = request.args.get('role', 'advisor' if 'advisor' in request.args else 'guest')
+    default_name = room.advisor_name if role == 'advisor' else (student_info.name if student_info else 'Student')
+    user_name = request.args.get('name', default_name)
+    
+    return render_template(
+        'meeting_room.html',
+        room=room,
+        role=role,
+        user_name=user_name,
+        student=student_info,
+        audit=student_audit,
+        group_students=group_students
+    )
+
+@bp.route('/api/meeting/<room_id>/join', methods=['POST'])
+def api_meeting_join(room_id):
+    """Register/heartbeat participant in room"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Meeting room not found'}), 404
+        
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    name = data.get('name', 'Participant')
+    role = data.get('role', 'guest')
+    
+    if not session_id:
+        return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
+        
+    participant = room.register_participant(session_id, name, role)
+    return jsonify({
+        'status': 'success',
+        'participant': participant,
+        'room': room.to_dict()
+    })
+
+@bp.route('/api/meeting/<room_id>/leave', methods=['POST'])
+def api_meeting_leave(room_id):
+    """Leave participant from room"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if session_id:
+        room.remove_participant(session_id)
+        # Notify others
+        room.add_signal(session_id, data.get('name', 'User'), None, 'user-left', {'session_id': session_id})
+        
+    return jsonify({'status': 'success'})
+
+@bp.route('/api/meeting/<room_id>/signal', methods=['POST'])
+def api_meeting_signal(room_id):
+    """Exchange WebRTC SDP offer/answer or ICE candidate"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    data = request.get_json() or {}
+    sender_id = data.get('sender_id')
+    sender_name = data.get('sender_name', 'User')
+    recipient_id = data.get('recipient_id')
+    signal_type = data.get('type')
+    payload = data.get('payload')
+    
+    if not sender_id or not signal_type:
+        return jsonify({'status': 'error', 'message': 'sender_id and type are required'}), 400
+        
+    room.add_signal(sender_id, sender_name, recipient_id, signal_type, payload)
+    return jsonify({'status': 'success'})
+
+@bp.route('/api/meeting/<room_id>/poll')
+def api_meeting_poll(room_id):
+    """Poll for pending WebRTC signals, chat messages, notes and files"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    session_id = request.args.get('session_id')
+    since_chat_id = request.args.get('since_chat_id')
+    known_notes_version = int(request.args.get('notes_version', 0))
+    
+    signals = room.fetch_signals(session_id) if session_id else []
+    
+    # Filter chat messages
+    messages = room.chat_messages
+    if since_chat_id:
+        idx = next((i for i, m in enumerate(messages) if m['id'] == since_chat_id), -1)
+        if idx != -1:
+            messages = messages[idx + 1:]
+            
+    res = {
+        'status': 'success',
+        'signals': signals,
+        'chat_messages': messages,
+        'participants': list(room.participants.values()),
+        'files': room.shared_files
+    }
+    
+    # Include notes only if updated
+    if room.notes_version > known_notes_version:
+        res['notes'] = room.notes
+        res['notes_version'] = room.notes_version
+        
+    return jsonify(res)
+
+@bp.route('/api/meeting/<room_id>/chat', methods=['POST'])
+def api_meeting_chat(room_id):
+    """Send in-meeting chat message"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    data = request.get_json() or {}
+    sender = data.get('sender', 'Anonymous')
+    role = data.get('role', 'guest')
+    text = data.get('text', '').strip()
+    
+    if not text:
+        return jsonify({'status': 'error', 'message': 'Message text is empty'}), 400
+        
+    msg = room.add_chat_message(sender, role, text)
+    return jsonify({'status': 'success', 'message': msg})
+
+@bp.route('/api/meeting/<room_id>/notes', methods=['POST'])
+def api_meeting_notes(room_id):
+    """Update shared advising notepad"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    data = request.get_json() or {}
+    notes = data.get('notes', '')
+    sender = data.get('sender', 'User')
+    
+    version = room.update_notes(notes, sender)
+    return jsonify({'status': 'success', 'notes_version': version})
+
+@bp.route('/api/meeting/<room_id>/upload', methods=['POST'])
+def api_meeting_upload(room_id):
+    """Upload a file to the meeting room for live sharing"""
+    from app.meeting_engine import meeting_manager
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    if 'file' not in request.files:
+        return jsonify({'status': 'error', 'message': 'No file uploaded'}), 400
+        
+    file = request.files['file']
+    uploaded_by = request.form.get('uploaded_by', 'User')
+    
+    file_info = room.add_shared_file(file, uploaded_by)
+    if not file_info:
+        return jsonify({'status': 'error', 'message': 'Failed to save file'}), 400
+        
+    return jsonify({'status': 'success', 'file': file_info})
+
+@bp.route('/api/meeting/<room_id>/file/<filename>')
+def api_meeting_download_file(room_id, filename):
+    """Download shared document from meeting room"""
+    from app.meeting_engine import meeting_manager
+    from flask import send_file
+    room = meeting_manager.get_room(room_id)
+    if not room:
+        return jsonify({'status': 'error', 'message': 'Room not found'}), 404
+        
+    filepath = room.get_file_path(filename)
+    if not filepath:
+        return jsonify({'status': 'error', 'message': 'File not found'}), 404
+        
+    return send_file(filepath, as_attachment=True)
+
+
+
+
+
+
+

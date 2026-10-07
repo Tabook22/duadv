@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Dhofar University Academic Advising LLM Wiki & Knowledge Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header Hero Banner -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> Dhofar University</span>
+                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> LLM Advising Wiki</span>
+                <span class="badge bg-success px-2 py-1">Department of Computer Science</span>
+            </div>
+            <h2 class="fw-bold mb-1" style="color: #1e3a8a;">
+                <i class="fas fa-atlas me-2"></i>Academic Advising Wiki &amp; Intelligence Hub
+            </h2>
+            <p class="text-muted mb-0">
+                Official synthesized reference manual: Degree Curricula, Course Sequences, Prerequisite Trees, and University Regulations.
+            </p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-primary">
+                <i class="fas fa-book-open me-1"></i> Policy Documents Vault
+            </a>
+            <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i> Students at Risk (18)
+            </a>
+        </div>
+    </div>
+
+    <!-- Interactive Advisor AI Q&A Assistant -->
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+        <div class="card-body p-4 text-white">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark px-2 py-1 fw-bold"><i class="fas fa-robot me-1"></i> Advisor AI Assistant</span>
+                        <small class="text-white-50">Natural Language Policy &amp; Curriculum Inquiries</small>
+                    </div>
+                    <h4 class="fw-bold mb-2">Ask the Advising Wiki</h4>
+                    <p class="text-white-50 small mb-3">
+                        Ask any question regarding student probation thresholds, repeating D/F grades, credit load caps, or Diploma-to-Bachelor bridge requirements. Cites exact DU articles.
+                    </p>
+                    <form id="wikiAskForm" class="d-flex gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0"><i class="fas fa-comment-dots text-primary"></i></span>
+                            <input type="text" id="wikiQuestionInput" class="form-control border-0" placeholder="e.g. What are the rules for students on Second Strict Probation? What courses can replace a D grade?..." required>
+                        </div>
+                        <button type="submit" id="wikiSubmitBtn" class="btn btn-warning fw-bold text-dark px-4">
+                            <i class="fas fa-paper-plane me-1"></i> Ask AI
+                        </button>
+                    </form>
+
+                    <!-- Quick Suggestions -->
+                    <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                        <small class="text-white-50 me-2">Quick queries:</small>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the credit limit for a student on probation?">Probation Credit Cap</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the rule for repeating courses with D or F grades?">Repeating D/F Grades</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What are the bridge requirements from Diploma to Bachelor?">Diploma to Bachelor Bridge</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the withdrawal W and WF policy?">Withdrawal W vs WF</button>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 text-center mt-3 mt-lg-0 border-start border-white border-opacity-10 ps-lg-4">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="bg-white bg-opacity-10 p-3 rounded">
+                                <div class="fs-3 fw-bold text-warning">{{ study_plans|length }}</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Degree Roadmaps</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-white bg-opacity-10 p-3 rounded">
+                                <div class="fs-3 fw-bold text-info">{{ policy_modules|length }}</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Bylaw Modules</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Response Box -->
+            <div id="aiResponseContainer" class="mt-4 pt-3 border-top border-white border-opacity-10 d-none">
+                <div class="p-3 rounded bg-white text-dark shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-check-circle text-success fs-5"></i>
+                            <strong class="text-primary" id="aiResponseEngine">Advising Intelligence Synthesis</strong>
+                        </div>
+                        <button type="button" id="closeAiResponseBtn" class="btn-close btn-sm" aria-label="Close"></button>
+                    </div>
+                    <div id="aiResponseText" class="small mb-2 text-secondary" style="line-height: 1.6; font-size: 13px;">
+                        <!-- Injected dynamically -->
+                    </div>
+                    <div id="aiResponseCitations" class="pt-2 border-top small text-muted">
+                        <!-- Citations -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wiki Navigation Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="wikiTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="tab-regulations" data-bs-toggle="pill" data-bs-target="#content-regulations" type="button" role="tab">
+                <i class="fas fa-gavel me-1 text-danger"></i> Academic Regulations &amp; Bylaws
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="tab-plans" data-bs-toggle="pill" data-bs-target="#content-plans" type="button" role="tab">
+                <i class="fas fa-graduation-cap me-1 text-primary"></i> Degree Plans of Study
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="tab-bridge" data-bs-toggle="pill" data-bs-target="#content-bridge" type="button" role="tab">
+                <i class="fas fa-route me-1 text-success"></i> Diploma-to-Bachelor Articulation
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="wikiTabContent">
+        <!-- TAB 1: ACADEMIC REGULATIONS & BYLAWS -->
+        <div class="tab-pane fade show active" id="content-regulations" role="tabpanel">
+            <div class="row g-4 mb-5">
+                {% for mod in policy_modules %}
+                <div class="col-lg-6">
+                    <div class="card h-100 shadow-sm border border-top-0" style="border-top: 4px solid var(--bs-{{ mod.badge_color }}) !important;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-{{ mod.badge_color }} px-2 py-1 mb-1">
+                                        {{ mod.article }}
+                                    </span>
+                                    <h5 class="fw-bold text-dark mb-1">{{ mod.title }}</h5>
+                                    <small class="text-muted"><i class="fas fa-file-alt me-1"></i>{{ mod.source_doc }}</small>
+                                </div>
+                                <div class="p-2 rounded bg-light text-{{ mod.badge_color }}">
+                                    <i class="fas {{ mod.icon }} fa-2x"></i>
+                                </div>
+                            </div>
+                            <p class="text-secondary small mb-3">{{ mod.summary }}</p>
+
+                            <!-- Sub-rules -->
+                            <div class="list-group list-group-flush border rounded mb-3 flex-grow-1">
+                                {% for r in mod.rules %}
+                                <div class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="fw-bold text-primary mb-0 fs-6">{{ r.title }}</h6>
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 10px;">{{ r.citation }}</span>
+                                    </div>
+                                    <p class="text-dark small mb-0" style="line-height: 1.5;">{{ r.clause }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="small text-muted"><i class="fas fa-shield-alt text-success me-1"></i>Official DU Policy</span>
+                                <a href="{{ url_for('main.policies_library', q=mod.title) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-search me-1"></i> Search in Documents
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- TAB 2: DEGREE PLANS OF STUDY -->
+        <div class="tab-pane fade" id="content-plans" role="tabpanel">
+            <div class="row g-4 mb-5">
+                {% for p in study_plans %}
+                <div class="col-12">
+                    <div class="card shadow-sm border">
+                        <div class="card-header bg-light py-3 d-flex flex-wrap justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-graduation-cap text-primary fs-4"></i>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0">{{ p.program_title }}</h5>
+                                    <small class="text-muted">{{ p.degree_type }} &bull; {{ p.total_credits }} Total Credit Hours &bull; {{ p.standard_semesters }} Semesters</small>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary fs-6">{{ p.curriculum|length }} Required Courses</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped align-middle mb-0">
+                                    <thead class="table-light small text-muted">
+                                        <tr>
+                                            <th style="width: 12%;">Code</th>
+                                            <th>Course Title</th>
+                                            <th style="width: 8%; text-align: center;">Credits</th>
+                                            <th style="width: 20%;">Category</th>
+                                            <th style="width: 15%;">Recommended Term</th>
+                                            <th style="width: 20%;">Prerequisites</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for c in p.curriculum %}
+                                        <tr>
+                                            <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
+                                            <td class="fw-semibold text-dark">{{ c.name }}</td>
+                                            <td class="text-center">{{ c.credits }}</td>
+                                            <td><span class="badge bg-light text-dark border">{{ c.category }}</span></td>
+                                            <td><span class="badge bg-secondary-subtle text-secondary">{{ c.term_recommended }}</span></td>
+                                            <td>
+                                                {% if c.prerequisites %}
+                                                    {% for pr in c.prerequisites %}
+                                                    <span class="badge bg-warning text-dark border me-1 font-monospace">{{ pr }}</span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-muted small">None</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- TAB 3: DIPLOMA-TO-BACHELOR ARTICULATION -->
+        <div class="tab-pane fade" id="content-bridge" role="tabpanel">
+            <div class="card shadow-sm border mb-5">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="fas fa-route me-2"></i>Dhofar University Diploma-to-Bachelor Articulation Bridge</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 align-items-center mb-4">
+                        <div class="col-lg-4 text-center">
+                            <div class="p-4 bg-light rounded border">
+                                <span class="badge bg-success mb-2 px-3 py-1">Minimum Qualifying Standard</span>
+                                <h2 class="fw-bold text-success display-6 mb-1">CGPA &ge; 75.0%</h2>
+                                <p class="text-muted small mb-0">Graduation Cumulative GPA from Diploma in Computer Science</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <h5 class="fw-bold text-dark mb-2">Articulation &amp; Course Transfer Bylaws</h5>
+                            <p class="text-secondary small mb-3">
+                                Under official Dhofar University academic regulations, high-performing Diploma graduates have direct pathways to transition into any Department of Computer Science Bachelor of Science degree.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-shield-alt me-1"></i> B.Sc. Cybersecurity</div>
+                                        <p class="small text-muted mb-0">Direct transfer of up to 60 credit hours; students advance directly to Year 3 core subjects.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-brain me-1"></i> B.Sc. Data Science</div>
+                                        <p class="small text-muted mb-0">Full articulation for programming and math courses; enter directly into Machine Learning sequence.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 border rounded bg-white h-100 shadow-sm">
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-laptop-code me-1"></i> B.Sc. Computer Science</div>
+                                        <p class="small text-muted mb-0">Standard software &amp; systems pathway; complete upper-division requirements in ~4 semesters.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var wikiForm = document.getElementById('wikiAskForm');
+    var questionInput = document.getElementById('wikiQuestionInput');
+    var aiContainer = document.getElementById('aiResponseContainer');
+    var aiText = document.getElementById('aiResponseText');
+    var aiCitations = document.getElementById('aiResponseCitations');
+    var aiEngine = document.getElementById('aiResponseEngine');
+    var submitBtn = document.getElementById('wikiSubmitBtn');
+    var closeBtn = document.getElementById('closeAiResponseBtn');
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            aiContainer.classList.add('d-none');
+        });
+    }
+
+    document.querySelectorAll('.quick-ask').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            questionInput.value = btn.getAttribute('data-q');
+            wikiForm.dispatchEvent(new Event('submit'));
+        });
+    });
+
+    if (wikiForm) {
+        wikiForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var q = questionInput.value.trim();
+            if (!q) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Searching...';
+
+            fetch('{{ url_for("main.api_wiki_ask") }}?question=' + encodeURIComponent(q))
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Ask AI';
+
+                    if (data.status === 'success') {
+                        aiContainer.classList.remove('d-none');
+                        aiEngine.innerText = data.engine || 'Dhofar University Advising Intelligence Engine';
+                        
+                        // Render formatted markdown
+                        var formatted = data.answer
+                            .replace(/### (.*?)\n/g, '<h6 class="fw-bold text-primary mt-2 mb-1">$1</h6>')
+                            .replace(/\*\* (.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\* (.*?)\n/g, '<li class="mb-1">$1</li>');
+                        
+                        aiText.innerHTML = '<ul class="ps-3 mb-0">' + formatted + '</ul>';
+
+                        if (data.citations && data.citations.length > 0) {
+                            aiCitations.innerHTML = '<i class="fas fa-book-reader text-warning me-1"></i> <strong>Cited Bylaws:</strong> ' + data.citations.join(' &bull; ');
+                        } else {
+                            aiCitations.innerHTML = '';
+                        }
+                    } else {
+                        alert(data.message || 'Error processing request.');
+                    }
+                })
+                .catch(function(err) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Ask AI';
+                    alert('Error reaching AI assistant: ' + err);
+                });
+        });
+    }
+});
+</script>
+{% endblock %}

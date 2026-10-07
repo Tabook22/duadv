@@ -1,0 +1,734 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Advising Wiki (Second Brain) - Dhofar University{% endblock %}
+
+{% block styles %}
+<style>
+    .wiki-container {
+        display: flex;
+        height: calc(100vh - 140px);
+        min-height: 750px;
+        background-color: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Left Sidebar */
+    .wiki-sidebar {
+        width: 320px;
+        min-width: 280px;
+        max-width: 360px;
+        background-color: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .wiki-sidebar-header {
+        padding: 0.85rem 1rem;
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .wiki-file-tree {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .wiki-tree-category {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        margin-top: 0.85rem;
+        margin-bottom: 0.35rem;
+        padding-left: 0.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+    
+    .wiki-file-item {
+        display: flex;
+        align-items: center;
+        padding: 0.38rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.83rem;
+        color: #334155;
+        text-decoration: none;
+        transition: all 0.15s ease-in-out;
+        cursor: pointer;
+        margin-bottom: 2px;
+    }
+    
+    .wiki-file-item:hover {
+        background-color: #e2e8f0;
+        color: #0f172a;
+    }
+    
+    .wiki-file-item.active {
+        background-color: #1e3a8a;
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    .wiki-file-item i {
+        width: 18px;
+        margin-right: 6px;
+        opacity: 0.85;
+    }
+    
+    /* Main Content Pane */
+    .wiki-main-pane {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background-color: #ffffff;
+        overflow: hidden;
+    }
+    
+    .wiki-toolbar {
+        padding: 0.75rem 1.5rem;
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .wiki-breadcrumbs {
+        font-size: 0.85rem;
+        color: #475569;
+        font-family: monospace;
+    }
+    
+    .wiki-content-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 2rem 2.5rem;
+    }
+    
+    /* Right Backlinks / Metadata Drawer */
+    .wiki-drawer {
+        width: 290px;
+        min-width: 260px;
+        background-color: #f8fafc;
+        border-left: 1px solid #e2e8f0;
+        padding: 1.15rem;
+        overflow-y: auto;
+        font-size: 0.85rem;
+    }
+    
+    /* Obsidian Markdown & Wikilink Styling */
+    .markdown-rendered h1 {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .markdown-rendered h2 {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-top: 1.75rem;
+        margin-bottom: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 0.35rem;
+    }
+    
+    .markdown-rendered h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #334155;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .markdown-rendered p {
+        line-height: 1.7;
+        color: #334155;
+        margin-bottom: 1rem;
+    }
+    
+    .markdown-rendered table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.25rem 0;
+        font-size: 0.88rem;
+    }
+    
+    .markdown-rendered th {
+        background-color: #f1f5f9;
+        color: #1e293b;
+        font-weight: 600;
+        text-align: left;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid #cbd5e1;
+    }
+    
+    .markdown-rendered td {
+        padding: 0.6rem 0.85rem;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+    }
+    
+    .markdown-rendered tr:nth-child(even) td {
+        background-color: #f8fafc;
+    }
+    
+    /* Authentic Obsidian Wikilink Pill */
+    .wikilink {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        padding: 0.12rem 0.45rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 600;
+        font-family: inherit;
+        transition: all 0.15s ease-in-out;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    
+    .wikilink::before {
+        content: "[[";
+        opacity: 0.4;
+        font-size: 0.72rem;
+        font-family: monospace;
+    }
+    
+    .wikilink::after {
+        content: "]]";
+        opacity: 0.4;
+        font-size: 0.72rem;
+        font-family: monospace;
+    }
+    
+    .wikilink:hover {
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        border-color: #93c5fd;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    /* Frontmatter Card */
+    .frontmatter-card {
+        background-color: #f8fafc;
+        border: 1px dashed #94a3b8;
+        border-radius: 8px;
+        padding: 0.85rem 1.15rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.82rem;
+    }
+    
+    .frontmatter-badge {
+        font-size: 0.75rem;
+        font-family: monospace;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 mb-4">
+    <!-- Top Header Banner -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> Dhofar University</span>
+                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> Andrej Karpathy LLM Wiki Vault</span>
+                <span class="badge bg-success px-2 py-1"><i class="fas fa-cube me-1"></i> Obsidian-Compatible</span>
+            </div>
+            <h3 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-project-diagram me-2 text-primary"></i>Academic Advising Wiki (Second Brain)
+            </h3>
+            <p class="text-muted small mb-0">
+                Persistent, compounding markdown knowledge vault with bi-directional <code>[[wikilinks]]</code>, curriculum graphs, and student advising dossiers.
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+            <button id="btnRecompile" class="btn btn-primary btn-sm shadow-sm" title="Re-ingest all regulations, study plans, and transcripts">
+                <i class="fas fa-sync-alt me-1"></i> <span id="recompileBtnText">Recompile / Sync Vault</span>
+            </button>
+            <button id="btnLint" class="btn btn-outline-secondary btn-sm shadow-sm" title="Run health check on links and pages">
+                <i class="fas fa-stethoscope me-1"></i> Vault Health
+            </button>
+            <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger btn-sm shadow-sm">
+                <i class="fas fa-exclamation-triangle me-1"></i> Students at Risk
+            </a>
+            <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-dark btn-sm shadow-sm">
+                <i class="fas fa-folder-open me-1"></i> Policy PDFs
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Obsidian Explorer Container -->
+    <div class="wiki-container">
+        <!-- 1. Left Sidebar: Vault File Explorer -->
+        <div class="wiki-sidebar">
+            <div class="wiki-sidebar-header">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="wikiSearchInput" class="form-control border-start-0" placeholder="Filter vault notes...">
+                </div>
+            </div>
+            
+            <div class="wiki-file-tree" id="wikiFileTreeContainer">
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <div class="small">Loading Wiki Vault...</div>
+                </div>
+            </div>
+            
+            <div class="p-2 border-top bg-light small text-muted d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-folder me-1"></i> <code id="vaultPageCount">--</code> files</span>
+                <a href="#" id="reloadTreeBtn" class="text-decoration-none text-secondary"><i class="fas fa-redo-alt"></i></a>
+            </div>
+        </div>
+
+        <!-- 2. Center Pane: Markdown Reader & Inspector -->
+        <div class="wiki-main-pane">
+            <div class="wiki-toolbar">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-file-alt text-primary"></i>
+                    <span class="wiki-breadcrumbs" id="wikiBreadcrumbs">wiki / index.md</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="wikiLastModified" class="badge bg-light text-muted border small">--</span>
+                    <button id="toggleRawBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Toggle between Rendered HTML and Raw Markdown">
+                        <i class="fas fa-code me-1"></i> Raw
+                    </button>
+                    <button id="copyMdBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Copy Raw Markdown">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Body -->
+            <div class="wiki-content-body" id="wikiContentScrollArea">
+                <!-- Frontmatter Badge Metadata Box -->
+                <div id="frontmatterContainer" class="frontmatter-card d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="text-secondary"><i class="fas fa-tag me-1"></i> YAML Frontmatter Metadata</strong>
+                        <span id="fmTypeBadge" class="badge bg-primary frontmatter-badge">type</span>
+                    </div>
+                    <div id="frontmatterFields" class="d-flex flex-wrap gap-2 mt-2">
+                        <!-- Injected badges -->
+                    </div>
+                </div>
+
+                <!-- Rendered Markdown Content -->
+                <div id="renderedMarkdownContent" class="markdown-rendered">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border text-primary mb-2" role="status"></div>
+                        <div>Loading document from vault...</div>
+                    </div>
+                </div>
+
+                <!-- Raw Markdown Content (Hidden by default) -->
+                <div id="rawMarkdownContainer" class="d-none">
+                    <pre><code id="rawMarkdownCode" class="language-markdown p-3 d-block bg-light border rounded" style="white-space: pre-wrap; font-size: 0.85rem;"></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Right Drawer: Backlinks & Entity Context -->
+        <div class="wiki-drawer">
+            <div class="fw-bold text-dark mb-2 pb-1 border-bottom d-flex align-items-center justify-content-between">
+                <span><i class="fas fa-link text-primary me-1"></i> Inbound Backlinks</span>
+                <span id="backlinksBadge" class="badge bg-secondary rounded-pill">0</span>
+            </div>
+            <p class="text-muted small mb-2" style="font-size: 11px;">
+                Pages in vault referencing this note via <code>[[wikilink]]</code>:
+            </p>
+            <div id="backlinksContainer" class="mb-4">
+                <em class="text-muted small">No inbound backlinks.</em>
+            </div>
+
+            <div class="fw-bold text-dark mb-2 pb-1 border-bottom">
+                <i class="fas fa-info-circle text-info me-1"></i> Second Brain Context
+            </div>
+            <div id="entityActionsContainer" class="small">
+                <div class="alert alert-light border p-2 mb-2 text-muted" style="font-size: 11px;">
+                    Select any note or click any <code>[[wikilink]]</code> to navigate the graph.
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-2 border-top">
+                <small class="text-muted d-block mb-1 font-monospace" style="font-size: 10px;">VAULT LOCATION:</small>
+                <code class="d-block p-1 bg-white border rounded text-truncate text-muted" style="font-size: 10px;" title="{{ wiki_dir }}">
+                    {{ wiki_dir }}
+                </code>
+                <small class="text-muted mt-1 d-block" style="font-size: 10px;">
+                    Directly compatible with <strong>Obsidian</strong> desktop app!
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Include Marked.js for real-time client Markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+    let currentPath = "{{ initial_page or 'index.md' }}";
+    let rawMode = false;
+    let vaultTree = [];
+    let currentRawMarkdown = "";
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadVaultTree();
+        loadPage(currentPath);
+
+        // Search filter in tree
+        document.getElementById('wikiSearchInput').addEventListener('input', function(e) {
+            filterTree(e.target.value.toLowerCase());
+        });
+
+        // Recompile button
+        document.getElementById('btnRecompile').addEventListener('click', handleRecompile);
+
+        // Lint button
+        document.getElementById('btnLint').addEventListener('click', handleLint);
+
+        // Reload tree button
+        document.getElementById('reloadTreeBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            loadVaultTree();
+        });
+
+        // Toggle raw
+        document.getElementById('toggleRawBtn').addEventListener('click', function() {
+            rawMode = !rawMode;
+            document.getElementById('renderedMarkdownContent').classList.toggle('d-none', rawMode);
+            document.getElementById('rawMarkdownContainer').classList.toggle('d-none', !rawMode);
+            this.innerHTML = rawMode ? '<i class="fas fa-eye me-1"></i> Preview' : '<i class="fas fa-code me-1"></i> Raw';
+        });
+
+        // Copy MD
+        document.getElementById('copyMdBtn').addEventListener('click', function() {
+            if (currentRawMarkdown) {
+                navigator.clipboard.writeText(currentRawMarkdown).then(() => {
+                    alert('Markdown copied to clipboard!');
+                });
+            }
+        });
+    });
+
+    // Fetch and render sidebar tree
+    function loadVaultTree() {
+        const prefix = window.APP_PREFIX || '';
+        fetch(`${prefix}/api/wiki/tree`)
+            .then(res => res.json())
+            .then(data => {
+                vaultTree = data.tree || [];
+                renderTree(vaultTree);
+            })
+            .catch(err => {
+                console.error("Tree load error:", err);
+                document.getElementById('wikiFileTreeContainer').innerHTML = 
+                    '<div class="text-danger p-2 small">Error loading tree.</div>';
+            });
+    }
+
+    function renderTree(tree) {
+        const container = document.getElementById('wikiFileTreeContainer');
+        let html = '';
+        let totalFiles = 0;
+
+        const catIcons = {
+            'root': 'fa-home text-secondary',
+            'concepts': 'fa-book text-warning',
+            'programs': 'fa-graduation-cap text-primary',
+            'students': 'fa-user-graduate text-success',
+            'sources': 'fa-file-pdf text-danger',
+            'synthesis': 'fa-chart-pie text-info',
+            'courses': 'fa-laptop-code text-secondary'
+        };
+
+        tree.forEach(cat => {
+            totalFiles += (cat.items ? cat.items.length : 0);
+            const icon = catIcons[cat.id] || 'fa-folder';
+            html += `
+                <div class="wiki-tree-section mb-2" data-cat="${cat.id}">
+                    <div class="wiki-tree-category" onclick="toggleCategory('${cat.id}')">
+                        <span><i class="fas ${icon} me-1"></i> ${cat.name}</span>
+                        <span class="badge bg-light text-secondary border">${cat.items.length}</span>
+                    </div>
+                    <div class="wiki-tree-items" id="cat-items-${cat.id}">
+            `;
+            cat.items.forEach(item => {
+                const isActive = item.rel_path === currentPath ? 'active' : '';
+                html += `
+                    <div class="wiki-file-item ${isActive}" data-path="${item.rel_path}" onclick="loadPage('${item.rel_path}')">
+                        <i class="far fa-file-alt"></i>
+                        <span class="text-truncate">${item.title}</span>
+                    </div>
+                `;
+            });
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('vaultPageCount').textContent = totalFiles;
+    }
+
+    function toggleCategory(catId) {
+        const el = document.getElementById(`cat-items-${catId}`);
+        if (el) {
+            el.classList.toggle('d-none');
+        }
+    }
+
+    function filterTree(query) {
+        const items = document.querySelectorAll('.wiki-file-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            const match = text.includes(query);
+            item.style.display = match ? 'flex' : 'none';
+        });
+    }
+
+    // Load a specific markdown page
+    function loadPage(relPath) {
+        currentPath = relPath;
+        document.getElementById('wikiBreadcrumbs').textContent = `wiki / ${relPath}`;
+        
+        // Update tree active item
+        document.querySelectorAll('.wiki-file-item').forEach(el => {
+            el.classList.toggle('active', el.getAttribute('data-path') === relPath);
+        });
+
+        // Scroll to top of viewer
+        document.getElementById('wikiContentScrollArea').scrollTop = 0;
+
+        const prefix = window.APP_PREFIX || '';
+        fetch(`${prefix}/api/wiki/page?path=${encodeURIComponent(relPath)}`)
+            .then(res => {
+                if (!res.ok) throw new Error("File not found");
+                return res.json();
+            })
+            .then(data => {
+                currentRawMarkdown = data.content_markdown;
+                document.getElementById('wikiLastModified').textContent = `Modified: ${data.last_modified}`;
+                document.getElementById('rawMarkdownCode').textContent = data.content_markdown;
+
+                // Handle Frontmatter
+                renderFrontmatter(data.frontmatter);
+
+                // Render Markdown with wikilink parser
+                renderMarkdown(data.content_markdown);
+
+                // Render Backlinks
+                renderBacklinks(data.backlinks);
+
+                // Render contextual actions
+                renderContextActions(data);
+
+                // Update browser URL query param without reload
+                const url = new URL(window.location);
+                url.searchParams.set('page', relPath);
+                window.history.pushState({}, '', url);
+            })
+            .catch(err => {
+                document.getElementById('renderedMarkdownContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Page Not Found</h5>
+                        <p>Could not resolve wiki page: <code>${relPath}</code></p>
+                    </div>
+                `;
+            });
+    }
+
+    function renderFrontmatter(fm) {
+        const container = document.getElementById('frontmatterContainer');
+        const fields = document.getElementById('frontmatterFields');
+        if (!fm || Object.keys(fm).length === 0) {
+            container.classList.add('d-none');
+            return;
+        }
+
+        container.classList.remove('d-none');
+        document.getElementById('fmTypeBadge').textContent = fm.type || 'document';
+
+        let html = '';
+        for (const [k, v] of Object.entries(fm)) {
+            if (k === 'type') continue;
+            let badgeClass = 'bg-light text-dark border';
+            if (k === 'standing' && (v.includes('Probation') || v.includes('Strict'))) {
+                badgeClass = 'bg-danger text-white';
+            } else if (k === 'gpa') {
+                badgeClass = 'bg-warning text-dark fw-bold';
+            } else if (k === 'urgency' && v === 'CRITICAL') {
+                badgeClass = 'bg-danger text-white fw-bold';
+            }
+            html += `<span class="badge ${badgeClass} frontmatter-badge"><strong class="text-muted">${k}:</strong> ${v}</span>`;
+        }
+        fields.innerHTML = html;
+    }
+
+    function renderMarkdown(md) {
+        // Pre-process Obsidian [[Wikilinks]] into HTML anchors
+        // Matches [[Target]] or [[Target|Display Label]]
+        const processedMd = md.replace(/\[\[([a-zA-Z0-9_\s\-]+)(?:\|([^\]]+))?\]\]/g, (match, target, label) => {
+            const display = label || target.replace(/_/g, ' ');
+            const cleanTarget = target.trim();
+            return `<a href="javascript:void(0)" class="wikilink" onclick="resolveAndLoadWikilink('${cleanTarget}')">${display}</a>`;
+        });
+
+        // Parse with marked.js
+        const html = marked.parse(processedMd);
+        document.getElementById('renderedMarkdownContent').innerHTML = html;
+    }
+
+    function resolveAndLoadWikilink(target) {
+        const clean = target.replace(/\.md$/, '');
+        let foundPath = null;
+        for (const cat of vaultTree) {
+            for (const item of cat.items) {
+                const base = item.filename.replace(/\.md$/, '');
+                if (base.toLowerCase() === clean.toLowerCase() || 
+                    base.toLowerCase() === clean.replace(/ /g, '_').toLowerCase()) {
+                    foundPath = item.rel_path;
+                    break;
+                }
+            }
+            if (foundPath) break;
+        }
+
+        if (foundPath) {
+            loadPage(foundPath);
+        } else {
+            loadPage(`${clean}.md`);
+        }
+    }
+
+    function renderBacklinks(backlinks) {
+        const container = document.getElementById('backlinksContainer');
+        const badge = document.getElementById('backlinksBadge');
+        badge.textContent = backlinks ? backlinks.length : 0;
+
+        if (!backlinks || backlinks.length === 0) {
+            container.innerHTML = '<em class="text-muted small">No inbound backlinks found.</em>';
+            return;
+        }
+
+        let html = '<div class="list-group list-group-flush">';
+        backlinks.forEach(bl => {
+            html += `
+                <a href="javascript:void(0)" class="list-group-item list-group-item-action py-1 px-2 small border-0 rounded mb-1 bg-white shadow-sm" onclick="loadPage('${bl.rel_path}')">
+                    <i class="fas fa-chevron-right text-primary me-1" style="font-size: 10px;"></i>
+                    <span class="text-dark fw-medium">${bl.title}</span>
+                </a>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function renderContextActions(data) {
+        const container = document.getElementById('entityActionsContainer');
+        const fm = data.frontmatter || {};
+        const prefix = window.APP_PREFIX || '';
+
+        if (fm.type === 'student_dossier' && fm.student_id) {
+            container.innerHTML = `
+                <div class="card border-primary bg-primary bg-opacity-10 p-2 mb-2">
+                    <strong class="text-primary mb-1 d-block"><i class="fas fa-user-graduate me-1"></i> Student Action Hub</strong>
+                    <div class="d-grid gap-1 mt-1">
+                        <a href="${prefix}/student/${fm.student_id}/advising-plan" target="_blank" class="btn btn-warning btn-sm fw-bold text-dark">
+                            <i class="fas fa-print me-1"></i> Official Advising Memo
+                        </a>
+                        <a href="${prefix}/student/${fm.student_id}/transcript/pdf" target="_blank" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-file-pdf me-1"></i> View Transcript PDF
+                        </a>
+                        <a href="${prefix}/student/${fm.student_id}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-user me-1"></i> Student Profile
+                        </a>
+                    </div>
+                </div>
+            `;
+        } else if (fm.type === 'source_summary' && fm.source_file) {
+            container.innerHTML = `
+                <div class="card border-secondary bg-light p-2 mb-2">
+                    <strong class="text-dark mb-1 d-block"><i class="fas fa-file-pdf me-1 text-danger"></i> Raw Source File</strong>
+                    <div class="small text-muted mb-2">${fm.source_file}</div>
+                    <a href="${prefix}/wiki/raw/${encodeURIComponent(fm.source_file)}" target="_blank" class="btn btn-outline-dark btn-sm">
+                        <i class="fas fa-external-link-alt me-1"></i> Open Raw Document
+                    </a>
+                </div>
+            `;
+        } else if (fm.type === 'concept') {
+            container.innerHTML = `
+                <div class="card border-warning bg-warning bg-opacity-10 p-2 mb-2">
+                    <strong class="text-dark mb-1 d-block"><i class="fas fa-balance-scale me-1 text-warning"></i> DU Bylaw Reference</strong>
+                    <p class="small text-muted mb-0">Official academic regulation. Applies across all undergraduate programs at Dhofar University.</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="alert alert-light border p-2 mb-2 text-muted" style="font-size: 11px;">
+                    Markdown document in Obsidian vault. Interlinked with <code>${vaultTree.length}</code> topic domains.
+                </div>
+            `;
+        }
+    }
+
+    function handleRecompile() {
+        const btn = document.getElementById('btnRecompile');
+        const text = document.getElementById('recompileBtnText');
+        btn.disabled = true;
+        text.textContent = 'Compiling Vault...';
+
+        const prefix = window.APP_PREFIX || '';
+        fetch(`${prefix}/api/wiki/recompile`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                alert(`Wiki Recompiled Successfully!\n- ${data.student_dossiers_compiled} Student Dossiers Updated\n- Core concepts, curricula, and synthesis regenerated.`);
+                loadVaultTree();
+                loadPage(currentPath);
+            })
+            .catch(err => {
+                alert('Error recompiling wiki vault.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                text.textContent = 'Recompile / Sync Vault';
+            });
+    }
+
+    function handleLint() {
+        const prefix = window.APP_PREFIX || '';
+        fetch(`${prefix}/api/wiki/lint`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'healthy') {
+                    alert(`Vault Health: EXCELLENT!\n- Total Pages: ${data.total_pages}\n- Broken Links: 0\nAll [[wikilinks]] resolve correctly!`);
+                } else {
+                    alert(`Vault Health Warnings:\n- Total Pages: ${data.total_pages}\n- Broken Links Found: ${data.broken_links_count}\nFirst missing targets: ` + 
+                          data.broken_links.map(b => `${b.target} (in ${b.source})`).join(', '));
+                }
+            })
+            .catch(err => alert('Error checking vault health.'));
+    }
+</script>
+{% endblock %}

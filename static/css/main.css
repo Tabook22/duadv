@@ -1,0 +1,65 @@
+/* Dhofar University Student Management System Styles */
+
+:root {
+    --du-primary: #1e3a8a;
+    --du-secondary: #374151;
+    --du-success: #059669;
+    --du-warning: #d97706;
+    --du-danger: #dc2626;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8fafc;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, var(--du-primary) 0%, var(--du-secondary) 100%);
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.table th {
+    background-color: #f8fafc;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.loading-spinner {
+    display: none;
+}
+
+.loading-spinner.show {
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 2px;
+        margin-right: 0;
+    }
+}

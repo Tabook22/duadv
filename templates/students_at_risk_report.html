@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Advising Report - Students at Risk | Dhofar University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --du-navy: #1e3a8a;
+            --du-gold: #d97706;
+            --du-dark: #0f172a;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-size: 13px;
+        }
+
+        .report-page {
+            max-width: 960px;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 40px 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .header-box {
+            border-bottom: 2px solid #1e3a8a;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .univ-logo-badge {
+            width: 60px;
+            height: 60px;
+            background: #1e3a8a;
+            color: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25);
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-lbl {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .section-header {
+            padding: 8px 14px;
+            border-radius: 6px;
+            margin-top: 30px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sec-strict {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 5px solid #dc2626;
+        }
+
+        .sec-second {
+            background: #ffedd5;
+            color: #9a3412;
+            border-left: 5px solid #ea580c;
+        }
+
+        .sec-first {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 5px solid #d97706;
+        }
+
+        .sec-warning {
+            background: #f1f5f9;
+            color: #334155;
+            border-left: 5px solid #64748b;
+        }
+
+        .table-custom {
+            margin-bottom: 0;
+            font-size: 12px;
+        }
+
+        .table-custom th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            white-space: nowrap;
+        }
+
+        .table-custom td {
+            padding: 8px 10px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .badge-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .status-strict { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .status-second { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+        .status-first  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .status-warning { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+
+        .signature-box {
+            margin-top: 50px;
+            padding-top: 25px;
+            border-top: 1px dashed #cbd5e1;
+        }
+
+        .sign-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 6px;
+        }
+
+        .no-print-bar {
+            max-width: 960px;
+            margin: 20px auto 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 11px !important;
+            }
+            .no-print-bar {
+                display: none !important;
+            }
+            .report-page {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 15px 20px !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            .table-custom th {
+                background-color: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .sec-strict, .sec-second, .sec-first, .sec-warning {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .badge-status {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .signature-box {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Action Bar (Hidden on Print) -->
+    <div class="no-print-bar px-3">
+        <div>
+            <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="fas fa-arrow-left me-1"></i> Back to Students at Risk
+            </a>
+            <a href="{{ url_for('main.students') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-users me-1"></i> All Advisees
+            </a>
+        </div>
+        <div>
+            <button onclick="window.print()" class="btn btn-primary btn-sm me-2">
+                <i class="fas fa-print me-1"></i> Print Official Report
+            </button>
+            <a href="{{ url_for('main.students_at_risk_report_excel') }}" class="btn btn-success btn-sm me-2">
+                <i class="fas fa-file-excel me-1"></i> Download Excel (.xlsx)
+            </a>
+            <a href="{{ url_for('main.students_at_risk_report_pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fas fa-file-pdf me-1"></i> Download PDF
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Official Report Page Document -->
+    <div class="report-page">
+        <!-- University Header -->
+        <div class="header-box">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="univ-logo-badge">DU</div>
+                    <div>
+                        <h4 class="mb-0 fw-bold" style="color: #1e3a8a; letter-spacing: 0.5px;">DHOFAR UNIVERSITY</h4>
+                        <div class="text-secondary fw-semibold" style="font-size: 13px;">College of Arts and Applied Sciences &bull; Department of Computer Science</div>
+                        <div class="text-muted" style="font-size: 12px;">Office of Academic Advising &amp; Student Registration Support</div>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-danger text-uppercase px-3 py-2 fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">
+                        CONFIDENTIAL &bull; ACADEMIC PROBATION
+                    </div>
+                    <div class="text-muted mt-2" style="font-size: 11px;">
+                        Generated: <strong class="text-dark">{{ current_time or 'Spring 2026' }}</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4 pt-3 border-top g-3">
+                <div class="col-md-4">
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Academic Advisor</small>
+                    <strong class="text-dark fs-6">Nasser Tabook</strong>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Report Type</small>
+                    <strong class="text-dark">Official Students at Risk Roster</strong>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Academic Standing Policy</small>
+                    <strong class="text-danger">GPA &lt; 65.0% Criteria</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Overview -->
+        <div class="row g-2 mb-4">
+            <div class="col">
+                <div class="stat-card">
+                    <div class="stat-val text-primary">{{ breakdown.total_advisees }}</div>
+                    <div class="stat-lbl">Total Advisees</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card" style="border-color: #fca5a5; background: #fff5f5;">
+                    <div class="stat-val text-danger">{{ breakdown.total_at_risk }}</div>
+                    <div class="stat-lbl text-danger">Total At-Risk</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card" style="border-color: #fca5a5; background: #fee2e2;">
+                    <div class="stat-val text-danger">{{ breakdown.counts.strict }}</div>
+                    <div class="stat-lbl text-danger">Strict Probation</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card" style="border-color: #fdba74; background: #fff7ed;">
+                    <div class="stat-val text-warning" style="color: #ea580c !important;">{{ breakdown.counts.second }}</div>
+                    <div class="stat-lbl" style="color: #c2410c;">Second Probation</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card" style="border-color: #fcd34d; background: #fefce8;">
+                    <div class="stat-val text-warning" style="color: #ca8a04 !important;">{{ breakdown.counts.first }}</div>
+                    <div class="stat-lbl" style="color: #a16207;">First Probation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category 1: Strict Probation -->
+        <div class="section-header sec-strict">
+            <div>
+                <i class="fas fa-radiation me-2"></i> Category 1: Strict Probation (Second / Third Strict)
+                <span class="badge bg-danger ms-2">{{ breakdown.counts.strict }} Advisees</span>
+            </div>
+            <small class="text-danger fw-normal">Highest Risk &bull; Max 12 CH &bull; Mandatory Bi-weekly Advising</small>
+        </div>
+        {% if breakdown.strict_probation %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 105px;">Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program</th>
+                        <th class="text-center" style="width: 70px;">GPA</th>
+                        <th class="text-center" style="width: 65px;">Credits</th>
+                        <th>Current Standing</th>
+                        <th>Advisory Intervention Plan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.strict_probation %}
+                    <tr>
+                        <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
+                        <td class="fw-bold">{{ student.name }}</td>
+                        <td>{{ student.program or 'Computer Science' }}</td>
+                        <td class="text-center fw-bold text-danger">
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                        </td>
+                        <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
+                        <td>
+                            <span class="badge-status status-strict">{{ student.status }}</span>
+                        </td>
+                        <td>
+                            <small class="text-danger fw-semibold">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Limit to 9-12 credits. Repeat F/D grade courses immediately.
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on Strict Probation.</div>
+        {% endif %}
+
+        <!-- Category 2: Second Probation -->
+        <div class="section-header sec-second">
+            <div>
+                <i class="fas fa-exclamation-triangle me-2"></i> Category 2: Second Academic Probation
+                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.second }} Advisees</span>
+            </div>
+            <small class="text-warning-emphasis fw-normal">Critical Stage &bull; Max 12 CH &bull; Academic Warning Notice</small>
+        </div>
+        {% if breakdown.second_probation %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 105px;">Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program</th>
+                        <th class="text-center" style="width: 70px;">GPA</th>
+                        <th class="text-center" style="width: 65px;">Credits</th>
+                        <th>Current Standing</th>
+                        <th>Advisory Intervention Plan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.second_probation %}
+                    <tr>
+                        <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
+                        <td class="fw-bold">{{ student.name }}</td>
+                        <td>{{ student.program or 'Computer Science' }}</td>
+                        <td class="text-center fw-bold text-warning-emphasis">
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                        </td>
+                        <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
+                        <td>
+                            <span class="badge-status status-second">{{ student.status }}</span>
+                        </td>
+                        <td>
+                            <small class="text-warning-emphasis fw-semibold">
+                                <i class="fas fa-arrow-up me-1"></i> Retake low-grade courses to achieve &ge;65% semester GPA.
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on Second Probation.</div>
+        {% endif %}
+
+        <!-- Category 3: First Probation -->
+        <div class="section-header sec-first">
+            <div>
+                <i class="fas fa-info-circle me-2"></i> Category 3: First Academic Probation
+                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.first }} Advisees</span>
+            </div>
+            <small class="text-warning-emphasis fw-normal">Early Intervention &bull; Max 12-14 CH &bull; Academic Counseling</small>
+        </div>
+        {% if breakdown.first_probation %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 105px;">Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program</th>
+                        <th class="text-center" style="width: 70px;">GPA</th>
+                        <th class="text-center" style="width: 65px;">Credits</th>
+                        <th>Current Standing</th>
+                        <th>Advisory Intervention Plan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.first_probation %}
+                    <tr>
+                        <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
+                        <td class="fw-bold">{{ student.name }}</td>
+                        <td>{{ student.program or 'Computer Science' }}</td>
+                        <td class="text-center fw-bold" style="color: #b45309;">
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                        </td>
+                        <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
+                        <td>
+                            <span class="badge-status status-first">{{ student.status }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                Course load counseling. Pair difficult major courses with general electives.
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on First Probation.</div>
+        {% endif %}
+
+        <!-- Category 4: Pre-probation Low GPA Warning (if any) -->
+        {% if breakdown.low_gpa_warning %}
+        <div class="section-header sec-warning">
+            <div>
+                <i class="fas fa-bell me-2"></i> Category 4: Pre-Probation GPA Warning (Cumulative GPA &lt; 65%)
+                <span class="badge bg-secondary ms-2">{{ breakdown.counts.warning }} Advisees</span>
+            </div>
+            <small class="text-muted fw-normal">Monitoring Stage</small>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-custom align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 105px;">Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program</th>
+                        <th class="text-center" style="width: 70px;">GPA</th>
+                        <th class="text-center" style="width: 65px;">Credits</th>
+                        <th>Current Standing</th>
+                        <th>Advisory Intervention Plan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.low_gpa_warning %}
+                    <tr>
+                        <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
+                        <td class="fw-bold">{{ student.name }}</td>
+                        <td>{{ student.program or 'Computer Science' }}</td>
+                        <td class="text-center fw-bold text-danger">
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                        </td>
+                        <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
+                        <td>
+                            <span class="badge-status status-warning">{{ student.status }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">Monitored for potential probation risk next term.</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Policy Notes -->
+        <div class="mt-4 p-3 bg-light rounded border" style="font-size: 11px; color: #64748b;">
+            <strong class="text-dark"><i class="fas fa-shield-alt me-1"></i> Dhofar University Academic Regulation Summary:</strong>
+            Under DU undergraduate academic regulations, any student whose cumulative GPA falls below <strong>65.0%</strong> is placed on Academic Probation.
+            Students on First Probation must achieve a semester GPA &ge; 65.0% to avoid progression to Second Probation. Failure to raise cumulative GPA after repeated probations leads to Strict Probation and potential dismissal. Students on probation may register for a maximum of <strong>12 credit hours</strong> unless granted special approval by the Dean.
+        </div>
+
+        <!-- Official Signatures Block -->
+        <div class="signature-box mt-4">
+            <div class="p-2 px-3 fw-bold rounded-top" style="background-color: #e2e8f0; color: #1e293b; font-size: 11px; letter-spacing: 0.5px;">
+                OFFICIAL VERIFICATION &amp; SIGNATURES
+            </div>
+            <div class="p-3 border border-top-0 rounded-bottom bg-white" style="max-width: 450px;">
+                <div class="fw-bold text-dark fs-6 mb-2">Academic Advisor: Dr. Nasser Tabook</div>
+                <div class="text-dark d-flex align-items-center">
+                    <span class="fw-normal me-2">Signature:</span>
+                    <span style="border-bottom: 1.5px solid #000; flex-grow: 1; height: 16px; display: inline-block;"></span>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+</body>
+</html>

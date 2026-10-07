@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Academic Advising Plan - {{ student.name }} ({{ student.id }}) - Dhofar University</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            padding-bottom: 40px;
+        }
+        .memo-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 40px;
+        }
+        .memo-header {
+            border-bottom: 3px solid #1e3a8a;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .uni-title {
+            color: #1e3a8a;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .dept-title {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .report-title {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 17px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+        .info-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .section-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e3a8a;
+            border-left: 4px solid #1e3a8a;
+            padding-left: 10px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .table-custom th {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 10px;
+        }
+        .table-custom td {
+            font-size: 12px;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+        .action-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            margin-bottom: 15px;
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .action-bar, .no-print {
+                display: none !important;
+            }
+            .memo-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container action-bar no-print">
+        <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border">
+            <div>
+                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Student Profile
+                </a>
+                <a href="{{ url_for('main.advising_wiki') }}" class="btn btn-sm btn-outline-primary ms-2">
+                    <i class="fas fa-atlas me-1"></i> Advising Wiki
+                </a>
+            </div>
+            <div>
+                <button onclick="window.print()" class="btn btn-sm btn-primary px-3 shadow-sm">
+                    <i class="fas fa-print me-1"></i> Print / Save as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="memo-container">
+        <!-- Official Dhofar University Header -->
+        <div class="memo-header text-center">
+            <div class="uni-title">DHOFAR UNIVERSITY</div>
+            <div class="dept-title">College of Arts and Applied Sciences &bull; Department of Computer Science</div>
+            <div class="dept-title">Academic Advising Unit &bull; Academic Year 2025/2026</div>
+            <div class="report-title">Official Academic Advising Action Plan &amp; Degree Audit</div>
+        </div>
+
+        <!-- Student & Roster Metadata -->
+        <div class="info-box">
+            <div class="row g-2">
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">Student ID:</small>
+                    <strong class="text-primary font-monospace">{{ student.id }}</strong>
+                </div>
+                <div class="col-sm-6 col-md-5">
+                    <small class="text-muted d-block">Full Name:</small>
+                    <strong class="text-dark">{{ student.name }}</strong>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <small class="text-muted d-block">Degree Program:</small>
+                    <strong class="text-dark">{{ audit.program_title }}</strong>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">Current Standing:</small>
+                    <span class="badge bg-{{ 'danger' if 'Strict' in (student.status or '') else 'warning text-dark' if 'Probation' in (student.status or '') else 'success' }}">
+                        {{ student.status or 'Normal / Good Standing' }}
+                    </span>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">Cumulative GPA (CGPA):</small>
+                    <strong class="text-{{ 'danger' if audit.current_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(audit.current_gpa) }}%</strong>
+                    <span class="badge bg-light text-dark border small ms-1">&ge;65% Grad</span>
+                    {% if audit.gpa_deficit > 0 %}
+                    <small class="text-danger d-block">(-{{ audit.gpa_deficit }} to 65%)</small>
+                    {% endif %}
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">Latest Semester GPA (SGPA):</small>
+                    {% if audit.semester_gpa is not none %}
+                        <strong class="text-{{ 'danger' if audit.semester_gpa < 65.0 else 'warning text-dark' if audit.semester_gpa < 75.0 else 'success' }}">
+                            {{ "%.2f"|format(audit.semester_gpa) }}%
+                        </strong>
+                        <span class="badge bg-light text-dark border small ms-1">Probation Metric</span>
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">Earned Credits:</small>
+                    <strong>{{ audit.completed_credits }} / {{ audit.total_plan_credits }} hrs</strong>
+                </div>
+            </div>
+            <div class="row g-2 mt-1 pt-2 border-top">
+                <div class="col-sm-6 col-md-6">
+                    <small class="text-muted">Academic Advisor: </small>
+                    <strong>{{ student.advisor or 'Dr. Nasser Tabook' }} (Faculty ID: 001097)</strong>
+                </div>
+                <div class="col-sm-6 col-md-6 text-md-end">
+                    <small class="text-muted">Regulatory Benchmark: </small>
+                    <span class="badge bg-light text-dark border">CGPA &ge; 65.0% Good Standing / Graduation</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. Executive Situation Diagnosis -->
+        <div class="section-header">1. Executive Situation Diagnosis &amp; Academic Status</div>
+        <div class="p-3 bg-light rounded border mb-3 small" style="line-height: 1.6;">
+            {% for para in dossier.analysis_summary %}
+            <p class="mb-2">{{ para|replace('**', '<strong>')|replace('**', '</strong>')|safe }}</p>
+            {% endfor %}
+            <div class="mt-2 pt-2 border-top text-muted">
+                <strong>Degree Plan Pace:</strong> {{ audit.completed_credits }} completed out of {{ audit.total_plan_credits }} credit hours ({{ audit.completion_percentage }}%). Remaining to complete: {{ audit.remaining_credits }} hours (~{{ audit.semesters_remaining }} semester(s)).
+            </div>
+        </div>
+
+        <!-- 2. Semester-by-Semester Progression Trajectory & Root-Cause Breakdown -->
+        <div class="section-header d-flex justify-content-between align-items-center">
+            <span>2. Semester-by-Semester Academic Trajectory &amp; Root-Cause Analysis</span>
+            <span class="badge bg-{{ dossier.progression.trend_badge }}">{{ dossier.progression.overall_trend }}</span>
+        </div>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-sm small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 20%;">Term</th>
+                        <th style="width: 12%; text-align: center;">Term GPA (Δ)</th>
+                        <th style="width: 12%; text-align: center;">Cum. GPA (Δ)</th>
+                        <th style="width: 16%;">Standing &amp; Load</th>
+                        <th style="width: 40%;">Root-Cause Performance Analysis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in dossier.progression.terms %}
+                    <tr>
+                        <td class="fw-bold text-dark">
+                            {{ t.term }}
+                            {% if t.status == 'IMPROVED' %}
+                                <span class="badge bg-success ms-1">Improved</span>
+                            {% elif t.status == 'DECLINED' %}
+                                <span class="badge bg-danger ms-1">Declined</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if t.semester_gpa is not none and t.semester_gpa > 0 %}
+                                <strong>{{ "%.2f"|format(t.semester_gpa) }}%</strong>
+                                {% if t.delta_semester_gpa is not none %}
+                                    <div class="text-{{ 'success' if t.delta_semester_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
+                                        {{ '+' if t.delta_semester_gpa > 0 else '' }}{{ t.delta_semester_gpa }}%
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if t.cumulative_gpa is not none and t.cumulative_gpa > 0 %}
+                                <strong class="text-{{ 'danger' if t.cumulative_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(t.cumulative_gpa) }}%</strong>
+                                {% if t.delta_cumulative_gpa is not none %}
+                                    <div class="text-{{ 'success' if t.delta_cumulative_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
+                                        {{ '+' if t.delta_cumulative_gpa > 0 else '' }}{{ t.delta_cumulative_gpa }}%
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'danger' if 'Strict' in t.standing else 'warning text-dark' if 'Probation' in t.standing else 'success' }}">
+                                {{ t.standing }}
+                            </span>
+                            <div class="text-muted" style="font-size: 10px;">{{ t.total_credits }} hrs ({{ t.passed_count }}/{{ t.courses_count }} passed)</div>
+                        </td>
+                        <td class="text-secondary" style="line-height: 1.4;">
+                            {{ t.root_cause_explanation }}
+                            {% if t.repeated_courses %}
+                            <div class="mt-1 font-monospace text-primary" style="font-size: 10px;">
+                                Repeated: {{ t.repeated_courses|map(attribute='code')|join(', ') }} (Article 18)
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. GPA Recovery Blueprint (What the student should do to increase GPA) -->
+        <div class="section-header">3. What the Student Must Do to Increase GPA (DU Article 18 Recovery Path)</div>
+        <div class="p-3 bg-light rounded border mb-3 small">
+            <p class="mb-2">
+                Under Dhofar University Article 18, repeating courses previously failed (< 60% or F) replaces the lower grade in the student's cumulative GPA calculation. The table below simulates the mathematical leverage of retaking these courses:
+            </p>
+            {% if dossier.recovery_plan.repeat_items %}
+            <table class="table table-sm table-bordered bg-white mb-2">
+                <thead class="table-light">
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Credits</th>
+                        <th>Old Grade</th>
+                        <th class="text-success text-center">Gain if 75% achieved</th>
+                        <th class="text-primary text-center">Gain if 80% achieved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in dossier.recovery_plan.repeat_items %}
+                    <tr>
+                        <td class="fw-bold font-monospace">{{ r.code }} - {{ r.name }}</td>
+                        <td>{{ r.credits }} hrs</td>
+                        <td><span class="badge bg-danger">{{ r.old_grade }}</span></td>
+                        <td class="text-success fw-bold text-center">+{{ r.projected_gain_75 }}% to CGPA</td>
+                        <td class="text-primary fw-bold text-center">+{{ r.projected_gain_80 }}% to CGPA</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="p-2 rounded bg-white border small text-dark mb-2">
+                <strong>Projected Outcome:</strong> Achieving 75% in repeated courses will inject an estimated <strong>+{{ dossier.recovery_plan.total_potential_gain }}%</strong> into the student's cumulative GPA, raising it to approximately <strong>{{ dossier.recovery_plan.projected_cgpa_at_75 }}%</strong> 
+                {% if dossier.recovery_plan.recovers_good_standing %}
+                <span class="badge bg-success ms-1">Recovers Good Standing (>= 65.0%)</span>
+                {% else %}
+                <span class="badge bg-warning text-dark ms-1">Key Step to Exiting Probation</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            <ul class="mb-0 ps-3">
+                {% for act in dossier.recovery_plan.action_steps %}
+                <li>{{ act }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 4. Academic Advisor Consultation Protocol & Counseling Script -->
+        <div class="section-header d-flex justify-content-between align-items-center">
+            <span>4. Academic Advisor Consultation Protocol &amp; Dialogue Script</span>
+            <span class="badge bg-{{ dossier.consultation_guide.urgency_badge }}">{{ dossier.consultation_guide.urgency }}</span>
+        </div>
+        <div class="p-3 bg-light rounded border mb-3 small">
+            <div class="alert alert-warning py-1 px-2 mb-2 small">
+                <strong>Mandatory Advising Window:</strong> {{ dossier.consultation_guide.schedule_window }} &bull; 
+                <strong>Required Meeting Frequency:</strong> {{ dossier.consultation_guide.frequency }}
+            </div>
+            <h6 class="fw-bold text-primary small mb-2"><i class="fas fa-user-tie me-1"></i> What Dr. Nasser Tabook (Advisor) Should Say to the Student:</h6>
+            {% for sp in dossier.consultation_guide.advisor_script %}
+            <div class="p-2 rounded bg-white border mb-2">
+                <strong class="text-dark d-block mb-1">{{ sp.phase }} ({{ sp.speaker }}):</strong>
+                <div class="text-secondary fst-italic" style="line-height: 1.45;">
+                    "{{ sp.dialogue|replace('**', '<strong>')|replace('**', '</strong>')|safe }}"
+                </div>
+            </div>
+            {% endfor %}
+
+            <h6 class="fw-bold text-dark small mt-3 mb-1"><i class="fas fa-clipboard-check text-info me-1"></i> What the Student Must Prepare and Ask Dr. Nasser:</h6>
+            <ul class="mb-0 text-secondary ps-3">
+                {% for stp in dossier.consultation_guide.student_talking_points %}
+                <li>{{ stp }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 5. Recommended Next-Semester Schedule -->
+        <div class="section-header d-flex justify-content-between align-items-center">
+            <span>2. Recommended Next-Semester Course Schedule</span>
+            <span class="badge bg-primary">Cap: {{ audit.credit_cap }} Credit Hours Max</span>
+        </div>
+        <p class="text-muted small mb-2">
+            Strictly tailored to Dhofar University course load regulations. Course repeat priorities are placed first to eliminate prerequisite locks and recover cumulative GPA.
+        </p>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Course Code</th>
+                        <th style="width: 22%;">Course Title</th>
+                        <th style="width: 8%; text-align: center;">Credits</th>
+                        <th style="width: 28%;">Offered Section &amp; Schedule</th>
+                        <th style="width: 30%;">Advising Priority &amp; Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in dossier.recommended_schedule %}
+                    <tr>
+                        <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
+                        <td class="fw-semibold text-dark">{{ c.name }}</td>
+                        <td class="text-center fw-bold">{{ c.credits }}</td>
+                        <td>
+                            {% if c.is_offered %}
+                                <div>
+                                    <span class="badge bg-primary text-white">Sec {{ c.primary_section.section }}</span>
+                                    <span class="badge bg-light text-dark border">{{ c.primary_section.room }}</span>
+                                    <span class="badge {{ 'bg-success' if c.seat_status == 'Open' else 'bg-danger' }}">{{ c.seat_status }}</span>
+                                </div>
+                                <div class="small fw-semibold text-dark mt-1" style="font-size: 0.76rem;">
+                                    {{ c.primary_section.days }} &bull; {{ c.primary_section.time }}
+                                </div>
+                                <div class="small text-muted" style="font-size: 0.72rem;">
+                                    {{ c.primary_section.instructor }}
+                                </div>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Not Offered Current Term</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <span class="badge bg-{{ 'danger' if 'Mandatory' in c.priority else 'success' if 'Core' in c.priority else 'warning text-dark' }}">
+                                    {{ c.priority }}
+                                </span>
+                            </div>
+                            <div class="small text-secondary">{{ c.reason }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="table-light">
+                        <td colspan="2" class="text-end fw-bold">Total Recommended Semester Course Load:</td>
+                        <td class="text-center fw-bold text-primary fs-6">{{ dossier.total_recommended_credits }} hrs</td>
+                        <td colspan="2" class="small text-muted">
+                            {{ audit.credit_cap_reason }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. Prerequisite Readiness & Blocked Courses -->
+        {% if audit.blocked_courses %}
+        <div class="section-header">6. Prerequisite Roadblocks (Locked Downstream Courses)</div>
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered small mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 15%;">Locked Course</th>
+                        <th>Course Title</th>
+                        <th style="width: 25%;">Required Prerequisite(s)</th>
+                        <th>Unmet Prerequisite Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in audit.blocked_courses[:6] %}
+                    <tr>
+                        <td class="fw-bold text-danger font-monospace">{{ b.code }}</td>
+                        <td>{{ b.name }}</td>
+                        <td>{{ b.prerequisites|join(', ') }}</td>
+                        <td class="text-danger fw-semibold"><i class="fas fa-lock me-1"></i>Missing: {{ b.unmet_prerequisites|join(', ') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- 4. Policy Citations & Bylaw Links -->
+        <div class="section-header">7. University Academic Policies &amp; Bylaws Applied</div>
+        <div class="list-group list-group-flush border rounded mb-3 small">
+            {% for pol in dossier.policy_citations %}
+            <div class="list-group-item p-2 px-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-dark"><i class="fas fa-book-reader text-primary me-1"></i>{{ pol.bylaw }}</strong>
+                    <span class="badge bg-light text-secondary border">{{ pol.source_doc }} (Page {{ pol.page }})</span>
+                </div>
+                <div class="text-secondary small">{{ pol.summary }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 5. Student Recovery Agreement & Action Items -->
+        <div class="section-header">5. Action Items &amp; Advising Agreement</div>
+        <ul class="small mb-4 text-dark ps-3">
+            {% for act in dossier.action_items %}
+            <li class="mb-1">{{ act }}</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Official Signatures Block -->
+        <div class="row pt-4 mt-4 border-top text-center" style="font-size: 11px;">
+            <div class="col-4">
+                <div class="mb-5 text-muted">Academic Advisor</div>
+                <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
+                    Dr. Nasser Tabook
+                    <div class="text-muted small fw-normal">Department of Computer Science</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="mb-5 text-muted">Student Signature of Agreement</div>
+                <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
+                    {{ student.name }}
+                    <div class="text-muted small fw-normal">Date: _____ / _____ / 2026</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="mb-5 text-muted">Department Chairperson</div>
+                <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
+                    Chairperson, Dept. of Computer Science
+                    <div class="text-muted small fw-normal">College of Arts and Applied Sciences</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

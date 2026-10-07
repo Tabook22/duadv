@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Dhofar University Student Management{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5">
+    <h1 class="display-4 mb-4">Student Management System</h1>
+    <p class="lead mb-4">Manage your advisee transcripts and study plans efficiently</p>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">University System Login</h5>
+                    <form id="syncForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label text-start d-block">Username / Advisor ID</label>
+                            <input type="text" class="form-control" id="username" placeholder="e.g. 001097" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label text-start d-block">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div class="mb-3 form-check text-start">
+                            <input type="checkbox" class="form-check-input" id="downloadTranscripts" checked>
+                            <label class="form-check-label text-muted" for="downloadTranscripts">
+                                <i class="fas fa-file-pdf text-danger me-1"></i> Also download student transcripts as PDF
+                            </label>
+                        </div>
+                        <button type="submit" id="syncSubmitBtn" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="fas fa-sync-alt me-2"></i> Sync Students & Transcripts
+                        </button>
+                    </form>
+
+                    <!-- Real-Time Synchronization Progress Card -->
+                    <div id="syncProgressContainer" class="mt-4 text-start" style="display: none;">
+                        <div class="card border border-primary-subtle bg-light shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div id="syncSpinner" class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                        <span id="syncStepBadge" class="badge bg-primary text-uppercase me-2">Initializing</span>
+                                        <strong id="syncStepTitle" class="text-dark small">Connecting to SIS...</strong>
+                                    </div>
+                                    <span id="syncPercentText" class="badge bg-dark fw-bold">0%</span>
+                                </div>
+
+                                <div class="progress mb-2" style="height: 12px; background-color: #e9ecef; border-radius: 6px; overflow: hidden;">
+                                    <div id="syncProgressBar" 
+                                         class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                         role="progressbar" 
+                                         style="width: 0%; transition: width 0.4s ease;" 
+                                         aria-valuenow="0" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small id="syncStatusDetail" class="text-secondary text-truncate" style="max-width: 85%;">
+                                        Preparing headless automation pipeline...
+                                    </small>
+                                    <button class="btn btn-link btn-sm p-0 text-decoration-none text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#syncLogsCollapse" aria-expanded="false" title="Toggle detailed activity log">
+                                        <i class="fas fa-terminal me-1"></i> Logs
+                                    </button>
+                                </div>
+
+                                <!-- Collapsible Detailed Live Activity Log -->
+                                <div class="collapse show mt-3" id="syncLogsCollapse">
+                                    <div class="bg-white border rounded p-2" style="max-height: 160px; overflow-y: auto; font-family: monospace; font-size: 0.75rem;">
+                                        <ul id="syncLogsList" class="list-unstyled mb-0 text-secondary">
+                                            <li class="text-muted"><i class="fas fa-chevron-right me-1 text-primary"></i> Ready to connect</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5>Manage Students</h5>
+                <p>View and manage your advisee list</p>
+                <a href="{{ url_for('main.students') }}" class="btn btn-outline-primary">View Students</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <h5>Academic Progress</h5>
+                <p>Track student academic progress</p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">View Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                <h5>Download Transcripts</h5>
+                <p>Download all advisee PDFs in a ZIP</p>
+                <a href="{{ url_for('main.download_transcripts_zip') }}" class="btn btn-outline-danger">Download ZIP</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('syncForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const download_transcripts = document.getElementById('downloadTranscripts').checked;
+    const submitBtn = document.getElementById('syncSubmitBtn');
+    
+    const progressContainer = document.getElementById('syncProgressContainer');
+    const progressBar = document.getElementById('syncProgressBar');
+    const percentText = document.getElementById('syncPercentText');
+    const stepBadge = document.getElementById('syncStepBadge');
+    const stepTitle = document.getElementById('syncStepTitle');
+    const statusDetail = document.getElementById('syncStatusDetail');
+    const spinner = document.getElementById('syncSpinner');
+    const logsList = document.getElementById('syncLogsList');
+    
+    // Reset & display progress UI
+    progressContainer.style.display = 'block';
+    logsList.innerHTML = '';
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Synchronizing in Progress...';
+    
+    function appendLog(iconClass, text, isError = false) {
+        const li = document.createElement('li');
+        li.className = isError ? 'text-danger fw-semibold my-1' : 'text-dark my-1';
+        const timeStr = new Date().toLocaleTimeString();
+        li.innerHTML = `<span class="text-muted me-1">[${timeStr}]</span> <i class="${iconClass} me-1"></i> ${text}`;
+        logsList.appendChild(li);
+        const logBox = logsList.parentElement;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+    
+    function updateProgress(pct, step, msg) {
+        const clampedPct = Math.min(Math.max(pct, 0), 100);
+        progressBar.style.width = clampedPct + '%';
+        progressBar.setAttribute('aria-valuenow', clampedPct);
+        percentText.innerText = clampedPct + '%';
+        
+        if (step) {
+            stepBadge.innerText = step;
+            stepTitle.innerText = step;
+        }
+        if (msg) {
+            statusDetail.innerText = msg;
+            appendLog('fas fa-info-circle text-primary', msg);
+        }
+    }
+    
+    appendLog('fas fa-play text-primary', `Initiated advisee synchronization for advisor ID ${username}`);
+    updateProgress(3, 'Connecting', 'Initiating live connection to Dhofar University SIS...');
+    
+    try {
+        const prefix = window.APP_PREFIX || '';
+        const response = await fetch(`${prefix}/api/sync-students/stream`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password, download_transcripts})
+        });
+        
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || `Server responded with status ${response.status}`);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let completed = false;
+        
+        while (true) {
+            const {value, done} = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, {stream: true});
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // keep last incomplete line in buffer
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith(':')) continue; // Heartbeats or empty lines
+                
+                if (trimmed.startsWith('data: ')) {
+                    const jsonStr = trimmed.substring(6);
+                    try {
+                        const eventData = JSON.parse(jsonStr);
+                        
+                        if (eventData.type === 'progress') {
+                            updateProgress(eventData.percent, eventData.step, eventData.message);
+                        } else if (eventData.type === 'error') {
+                            throw new Error(eventData.message);
+                        } else if (eventData.type === 'done') {
+                            completed = true;
+                            updateProgress(100, 'Completed', eventData.message);
+                            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                            progressBar.classList.remove('bg-primary');
+                            progressBar.classList.add('bg-success');
+                            stepBadge.className = 'badge bg-success text-uppercase me-2';
+                            spinner.className = 'fas fa-check-circle text-success me-2';
+                            
+                            appendLog('fas fa-check-double text-success', `Success: ${eventData.count} advisee profiles updated.`);
+                            
+                            setTimeout(() => {
+                                alert(`Synchronization Successful!\n${eventData.count} advisee students synchronized.`);
+                                window.location.href = `${prefix}/students`;
+                            }, 800);
+                        }
+                    } catch (pe) {
+                        if (pe.message && !pe.message.includes('JSON.parse')) {
+                            throw pe;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (!completed) {
+            appendLog('fas fa-info-circle text-secondary', 'Stream closed normally.');
+        }
+    } catch (error) {
+        progressBar.classList.remove('bg-primary');
+        progressBar.classList.add('bg-danger');
+        stepBadge.className = 'badge bg-danger text-uppercase me-2';
+        stepBadge.innerText = 'Failed';
+        spinner.className = 'fas fa-exclamation-triangle text-danger me-2';
+        statusDetail.innerText = error.message;
+        appendLog('fas fa-times-circle text-danger', `Error: ${error.message}`, true);
+        alert('Synchronization Error: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Sync Students & Transcripts';
+    }
+});
+</script>
+{% endblock %}

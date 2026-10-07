@@ -1,0 +1,1095 @@
+{% extends "base.html" %}
+
+{% block title %}Student Details - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div>
+        <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-secondary mb-2">
+            <i class="fas fa-arrow-left me-1"></i> Back to Advisees
+        </a>
+        <h2 class="fw-bold mb-1" style="color: #1e3a8a;">{{ student.name }}</h2>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fs-6 font-monospace">ID: {{ student.id }}</span>
+            <span class="badge bg-secondary fs-6">{{ audit.program_title }}</span>
+            <span class="badge bg-light text-dark border">{{ audit.degree_type }} ({{ audit.total_plan_credits }} Credits)</span>
+        </div>
+    </div>
+        <button type="button" class="btn btn-success fw-bold text-white shadow-sm" onclick="startStudentMeeting('{{ student.id }}', '{{ student.name }}')">
+            <i class="fas fa-video me-1"></i> Meet with Student
+        </button>
+        <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-warning fw-bold text-dark shadow-sm">
+            <i class="fas fa-print me-1"></i> Official Advising Action Plan
+        </a>
+        <a href="{{ url_for('main.karpathy_wiki', page='students/' ~ student.id ~ '_' ~ student.name|replace(' ', '_')|replace('/', '_')|replace('-', '_') ~ '.md') }}" class="btn btn-outline-primary shadow-sm">
+            <i class="fas fa-brain me-1"></i> 🧠 Advising Wiki Dossier
+        </a>
+        <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
+            <i class="fas fa-file-pdf me-1"></i> View Transcript PDF
+        </a>
+    </div>
+</div>
+
+{% set st = student.status or 'Normal / Good Standing' %}
+{% if 'Strict' in st or 'Third' in st %}
+    <div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+        <div class="flex-grow-1">
+            <h5 class="alert-heading mb-1 text-danger fw-bold">Critical Academic Alert: {{ st }}</h5>
+            <div>This student is on <strong>{{ st }}</strong>. Cumulative GPA: <strong>{{ "%.2f"|format(audit.current_gpa) }}%</strong> (Deficit: {{ audit.gpa_deficit }} points below 65.0%). Course load strictly capped at <strong>12 credit hours</strong> under DU Article 14 &amp; 22.</div>
+            <div class="mt-2 d-flex gap-2">
+                <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-sm btn-danger fw-semibold">
+                    <i class="fas fa-clipboard-list me-1"></i> Generate Recovery Schedule
+                </a>
+                <a href="{{ url_for('main.advising_wiki') }}" class="btn btn-sm btn-outline-dark">
+                    <i class="fas fa-book-reader me-1"></i> Consult DU Strict Probation Bylaws
+                </a>
+            </div>
+        </div>
+    </div>
+{% elif 'Probation' in st and 'Removal' not in st %}
+    <div class="alert alert-warning d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle fa-2x me-3 text-warning"></i>
+        <div class="flex-grow-1">
+            <h5 class="alert-heading mb-1 fw-bold">Academic Warning: {{ st }}</h5>
+            <div>This student is under academic probation. Cumulative GPA is <strong>{{ "%.2f"|format(audit.current_gpa) }}%</strong>. Course load restricted to maximum <strong>12 credit hours</strong>. Prioritize repeating failed / low-grade courses.</div>
+            <div class="mt-2">
+                <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-sm btn-warning text-dark fw-semibold">
+                    <i class="fas fa-clipboard-list me-1"></i> View Recommended 12-Credit Plan
+                </a>
+            </div>
+        </div>
+    </div>
+{% elif 'Removal' in st %}
+    <div class="alert alert-info d-flex align-items-center mb-4 shadow-sm" role="alert">
+        <i class="fas fa-shield-alt fa-2x me-3 text-info"></i>
+        <div>
+            <h5 class="alert-heading mb-1 fw-bold text-dark">Academic Standing: {{ st }}</h5>
+            <div>This student has successfully elevated their cumulative GPA above 65.0% and cleared probation status. Normal credit load restored.</div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Mandatory Repeat Deficiencies Alert -->
+{% if audit.critical_repeats %}
+<div class="alert alert-danger mb-4 shadow-sm border-2 border-danger">
+    <div class="d-flex align-items-center mb-2">
+        <i class="fas fa-redo-alt text-danger fs-5 me-2"></i>
+        <h6 class="fw-bold mb-0 text-danger">Mandatory Course Repeats Required (Dhofar University Bylaws Article 18)</h6>
+    </div>
+    <p class="small mb-2 text-dark">
+        The student has <strong>{{ audit.critical_repeats|length }} unresolved course attempt(s)</strong> that were not passed. These courses block downstream prerequisites and weigh down the cumulative GPA. Under university regulations, repeating these courses replaces previous failing scores in the CGPA calculation:
+    </p>
+    <div class="table-responsive bg-white rounded border">
+        <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light small text-muted">
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Title</th>
+                    <th>Credits</th>
+                    <th>Attempted Term</th>
+                    <th>Recorded Grade</th>
+                    <th>Advising Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cr in audit.critical_repeats %}
+                <tr>
+                    <td class="fw-bold text-danger font-monospace">{{ cr.code }}</td>
+                    <td class="fw-semibold">{{ cr.name }}</td>
+                    <td>{{ cr.credits }} hrs</td>
+                    <td>{{ cr.last_term }}</td>
+                    <td><span class="badge bg-danger px-2">{{ cr.last_grade }}</span></td>
+                    <td class="small text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>Mandatory Repeat for Upcoming Term</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Student Profile Information Cards -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm border">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-user-graduate me-2"></i>Academic Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="text-muted" style="width: 40%;">Student ID:</th>
+                            <td class="fw-bold text-primary font-monospace">{{ student.id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Full Name:</th>
+                            <td>{{ student.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Status / Standing:</th>
+                            <td>
+                                {% if 'Strict' in st or 'Third' in st %}
+                                    <span class="badge bg-danger text-white px-2 py-1 fs-6">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>{{ st }}
+                                    </span>
+                                {% elif 'Second Probation' in st %}
+                                    <span class="badge text-white px-2 py-1 fs-6" style="background-color: #fd7e14;">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
+                                    </span>
+                                {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
+                                    <span class="badge bg-warning text-dark px-2 py-1 fs-6">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
+                                    </span>
+                                {% elif 'Removal' in st %}
+                                    <span class="badge bg-info text-dark px-2 py-1 fs-6">
+                                        <i class="fas fa-shield-alt me-1"></i>{{ st }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success text-white px-2 py-1 fs-6">
+                                        <i class="fas fa-check-circle me-1"></i>{{ st }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Program / Major:</th>
+                            <td class="fw-bold">{{ audit.program_title }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Earned Credits:</th>
+                            <td><strong>{{ audit.completed_credits }}</strong> / {{ audit.total_plan_credits }} hrs</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Academic Year:</th>
+                            <td>{{ student.year or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Cumulative GPA (CGPA):</th>
+                            <td>
+                                {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                                {% if cgpa_val %}
+                                    <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning text-dark' if cgpa_val >= 65.0 else 'danger' }} fs-6">
+                                        {{ "%.2f"|format(cgpa_val) }}%
+                                    </span>
+                                    <span class="badge bg-light text-dark border ms-1">Graduation Req: &ge; 65.0%</span>
+                                    {% if audit.gpa_deficit > 0 %}
+                                    <small class="text-danger ms-1 fw-bold">(-{{ audit.gpa_deficit }} to 65%)</small>
+                                    {% else %}
+                                    <small class="text-success ms-1 fw-semibold">(Meets Graduation Threshold)</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Latest Semester GPA (SGPA):</th>
+                            <td>
+                                {% if student.semester_gpa is not none %}
+                                    <span class="badge bg-{{ 'success' if student.semester_gpa >= 75.0 else 'warning text-dark' if student.semester_gpa >= 65.0 else 'danger' }} fs-6">
+                                        {{ "%.2f"|format(student.semester_gpa) }}%
+                                    </span>
+                                    <span class="badge bg-light text-dark border ms-1">Probation Metric (Art. 14)</span>
+                                    {% if cgpa_val %}
+                                        {% set sem_diff = (student.semester_gpa - cgpa_val)|round(2) %}
+                                        {% if sem_diff > 0 %}
+                                            <span class="badge bg-success-subtle text-success border border-success ms-1">
+                                                <i class="fas fa-arrow-up me-1"></i>+{{ sem_diff }}% vs CGPA (Recovery)
+                                            </span>
+                                        {% elif sem_diff < 0 %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger ms-1">
+                                                <i class="fas fa-arrow-down me-1"></i>{{ sem_diff }}% vs CGPA
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary ms-1">= CGPA</span>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">N/A (No graded term recorded)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Advisor:</th>
+                            <td>{{ student.advisor or 'Dr. Nasser Tabook' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm border">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-address-card me-2"></i>Contact & System Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="text-muted" style="width: 40%;">Email:</th>
+                            <td>
+                                {% if student.email %}
+                                    <a href="mailto:{{ student.email }}">{{ student.email }}</a>
+                                {% else %}
+                                    <span class="text-muted">{{ student.id }}@du.edu.om</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Phone:</th>
+                            <td>{{ student.phone or 'Not Provided' }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Semester Credit Cap:</th>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if audit.credit_cap == 12 else 'primary' }} fs-6">
+                                    {{ audit.credit_cap }} Credit Hours Max
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Credit Cap Rule:</th>
+                            <td class="small text-muted">{{ audit.credit_cap_reason }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="text-muted">Pace to Graduate:</th>
+                            <td>~{{ audit.semesters_remaining }} semester(s) remaining</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- INTELLIGENT ACADEMIC ADVISING DOSSIER & NEXT-SEMESTER ACTION PLAN -->
+<!-- ========================================================================= -->
+<div class="card mb-4 shadow-sm border-0" style="border-left: 5px solid #1e3a8a !important;">
+    <div class="card-header bg-dark text-white d-flex flex-wrap justify-content-between align-items-center py-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-brain text-warning fs-4"></i>
+            <div>
+                <h5 class="card-title mb-0 fw-bold">Intelligent Advising Action Plan &amp; Recommended Schedule</h5>
+                <small class="text-white-50">Evidence-based recommendation derived from transcript audit and DU Academic Regulations</small>
+            </div>
+        </div>
+        <div class="mt-2 mt-md-0">
+            <span class="badge bg-{{ 'danger' if dossier.urgency_level == 'CRITICAL' else 'warning text-dark' if dossier.urgency_level == 'HIGH' else 'info text-dark' }} px-3 py-2 fs-6">
+                Priority: {{ dossier.urgency_level }}
+            </span>
+            <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-warning btn-sm fw-bold text-dark ms-2">
+                <i class="fas fa-print me-1"></i> Print Official Memo
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <!-- 1. Diagnosis Summary -->
+        <div class="p-3 bg-light rounded border mb-4">
+            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-stethoscope me-1"></i> Academic Diagnosis &amp; Situation Assessment</h6>
+            {% for para in dossier.analysis_summary %}
+            <p class="small mb-2 text-dark" style="line-height: 1.6;">{{ para|replace('**', '<strong>')|replace('**', '</strong>')|safe }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- 2. Visual Semester-by-Semester Progress Trajectory Graph & KPI Strip -->
+        <div class="card border mb-4 shadow-sm">
+            <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-chart-line text-primary"></i>
+                    <strong class="text-dark">Semester-by-Semester GPA Trajectory &amp; Academic Progress</strong>
+                </div>
+                <div class="d-flex align-items-center gap-2 mt-1 mt-md-0">
+                    <span class="badge bg-{{ dossier.progression.trend_badge }} px-2 py-1">
+                        <i class="fas fa-tachometer-alt me-1"></i>{{ dossier.progression.overall_trend }}
+                    </span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size: 11px;">
+                        Benchmark: 65.0% Good Standing
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-3">
+                <!-- KPI Stat Strip -->
+                <div class="row g-2 text-center mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block" style="font-size: 11px;">CURRENT CGPA</small>
+                            <span class="fw-bold fs-6 text-{{ 'danger' if audit.current_gpa < 65.0 else 'success' }}">
+                                {{ "%.2f"|format(audit.current_gpa) }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block" style="font-size: 11px;">PEAK CUMULATIVE GPA</small>
+                            <span class="fw-bold fs-6 text-primary">
+                                {{ dossier.progression.highest_gpa }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block" style="font-size: 11px;">LOWEST RECORDED GPA</small>
+                            <span class="fw-bold fs-6 text-danger">
+                                {{ dossier.progression.lowest_gpa }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded bg-light">
+                            <small class="text-muted d-block" style="font-size: 11px;">LATEST TERM DELTA (Δ)</small>
+                            {% set l_rec = dossier.progression.latest_record %}
+                            {% if l_rec and l_rec.delta_cumulative_gpa is not none %}
+                                <span class="fw-bold fs-6 text-{{ 'success' if l_rec.delta_cumulative_gpa >= 0 else 'danger' }}">
+                                    {{ '+' if l_rec.delta_cumulative_gpa > 0 else '' }}{{ l_rec.delta_cumulative_gpa }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted fs-6">Baseline</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Canvas -->
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="semesterProgressionChart"></canvas>
+                </div>
+                <div class="d-flex justify-content-center gap-3 mt-2 small text-muted">
+                    <span><span style="display:inline-block;width:12px;height:12px;background-color:#2563eb;border-radius:2px;margin-right:4px;"></span>Term GPA</span>
+                    <span><span style="display:inline-block;width:12px;height:12px;background-color:#7c3aed;border-radius:2px;margin-right:4px;"></span>Cumulative GPA</span>
+                    <span><span style="display:inline-block;width:12px;height:2px;background-color:#dc2626;vertical-align:middle;margin-right:4px;"></span>Good Standing Threshold (65.0%)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Semester-by-Semester Root-Cause Breakdown -->
+        <div class="card border mb-4 shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-history text-secondary"></i>
+                    <strong class="text-dark">Semester-by-Semester Trajectory &amp; Root-Cause Performance Breakdown</strong>
+                </div>
+                <small class="text-muted">Detailed analysis of why GPA improved or declined</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0 align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 18%;">Academic Term</th>
+                                <th style="width: 15%; text-align: center;">Term GPA (Δ)</th>
+                                <th style="width: 15%; text-align: center;">Cum. GPA (Δ)</th>
+                                <th style="width: 18%;">Standing &amp; Load</th>
+                                <th style="width: 34%;">Root-Cause Performance Analysis &amp; Outcome</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in dossier.progression.terms %}
+                            <tr>
+                                <td class="fw-bold text-dark">
+                                    {{ t.term }}
+                                    {% if t.status == 'IMPROVED' %}
+                                        <span class="badge bg-success ms-1"><i class="fas fa-arrow-up"></i> Improved</span>
+                                    {% elif t.status == 'DECLINED' %}
+                                        <span class="badge bg-danger ms-1"><i class="fas fa-arrow-down"></i> Declined</span>
+                                    {% elif t.status == 'INITIAL' %}
+                                        <span class="badge bg-secondary ms-1">Baseline</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border ms-1">Stable</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if t.semester_gpa is not none and t.semester_gpa > 0 %}
+                                        <strong class="text-primary">{{ "%.2f"|format(t.semester_gpa) }}%</strong>
+                                        {% if t.delta_semester_gpa is not none %}
+                                            <div class="text-{{ 'success' if t.delta_semester_gpa >= 0 else 'danger' }}" style="font-size: 11px;">
+                                                {{ '+' if t.delta_semester_gpa > 0 else '' }}{{ t.delta_semester_gpa }}%
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if t.cumulative_gpa is not none and t.cumulative_gpa > 0 %}
+                                        <strong class="text-{{ 'danger' if t.cumulative_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(t.cumulative_gpa) }}%</strong>
+                                        {% if t.delta_cumulative_gpa is not none %}
+                                            <div class="text-{{ 'success' if t.delta_cumulative_gpa >= 0 else 'danger' }}" style="font-size: 11px;">
+                                                {{ '+' if t.delta_cumulative_gpa > 0 else '' }}{{ t.delta_cumulative_gpa }}%
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'danger' if 'Strict' in t.standing else 'warning text-dark' if 'Probation' in t.standing else 'success' }} mb-1 d-inline-block">
+                                        {{ t.standing }}
+                                    </span>
+                                    <div class="text-muted" style="font-size: 11px;">{{ t.total_credits }} hrs ({{ t.passed_count }}/{{ t.courses_count }} passed)</div>
+                                </td>
+                                <td>
+                                    <div class="text-secondary" style="line-height: 1.45;">
+                                        {{ t.root_cause_explanation }}
+                                    </div>
+                                    {% if t.repeated_courses %}
+                                    <div class="mt-1">
+                                        <span class="badge bg-info text-dark" style="font-size: 10px;">
+                                            <i class="fas fa-redo me-1"></i> Repeated: {{ t.repeated_courses|map(attribute='code')|join(', ') }} (Article 18)
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Strategic GPA Recovery Blueprint (What the student should do to increase GPA) -->
+        <div class="card border mb-4 shadow-sm" style="border-left: 4px solid #10b981 !important;">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-calculator text-success fs-5"></i>
+                    <div>
+                        <strong class="text-dark">What the Student Must Do to Increase GPA (DU Article 18 Recovery Blueprint)</strong>
+                        <div class="small text-muted">Leverage the Highest Grade Replacement rule to mathematically lift cumulative GPA</div>
+                    </div>
+                </div>
+                <span class="badge bg-success px-2 py-1">Target: &gt;= 65.0% Good Standing</span>
+            </div>
+            <div class="card-body p-3">
+                <div class="row g-3">
+                    <div class="col-lg-7">
+                        <h6 class="fw-bold text-dark small mb-2"><i class="fas fa-sync-alt text-primary me-1"></i> Course Repeat Grade Replacement Simulation:</h6>
+                        <p class="small text-muted mb-2">
+                            Under Dhofar University Article 18, repeating a course with a grade of F or D replaces the previous score in the cumulative GPA calculation. This creates a powerful <strong>multiplier effect</strong>:
+                        </p>
+                        {% if dossier.recovery_plan.repeat_items %}
+                        <div class="table-responsive border rounded mb-2">
+                            <table class="table table-sm table-striped mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Course Code</th>
+                                        <th>Credits</th>
+                                        <th>Old Score</th>
+                                        <th class="text-success text-center">Gain if 75% achieved</th>
+                                        <th class="text-primary text-center">Gain if 80% achieved</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in dossier.recovery_plan.repeat_items %}
+                                    <tr>
+                                        <td class="fw-bold font-monospace">{{ r.code }}</td>
+                                        <td>{{ r.credits }} hrs</td>
+                                        <td><span class="badge bg-danger">{{ r.old_grade }}</span></td>
+                                        <td class="text-success fw-bold text-center">+{{ r.projected_gain_75 }}% to CGPA</td>
+                                        <td class="text-primary fw-bold text-center">+{{ r.projected_gain_80 }}% to CGPA</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-2 rounded bg-success bg-opacity-10 border border-success border-opacity-25 small text-dark mb-2">
+                            <strong><i class="fas fa-check-circle text-success me-1"></i> Projected Outcome:</strong> 
+                            Achieving a 75% target in these courses will inject an estimated <strong>+{{ dossier.recovery_plan.total_potential_gain }}%</strong> into the student's cumulative GPA, raising it to approximately <strong>{{ dossier.recovery_plan.projected_cgpa_at_75 }}%</strong> 
+                            {% if dossier.recovery_plan.recovers_good_standing %}
+                            <span class="badge bg-success ms-1">Recovers Good Standing! (&gt;= 65.0%)</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark ms-1">Significant step toward 65.0% Good Standing</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info py-2 small mb-0">
+                            No critical course failures on record. Maintain consistent semester average above 70.0% across all curriculum requirements.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-lg-5">
+                        <h6 class="fw-bold text-dark small mb-2"><i class="fas fa-tasks text-success me-1"></i> Mandatory Action Checklist for Student:</h6>
+                        <ul class="list-group list-group-flush border rounded small">
+                            {% for act in dossier.recovery_plan.action_steps %}
+                            <li class="list-group-item py-2 d-flex align-items-start gap-2">
+                                <i class="fas fa-check-square text-success mt-1"></i>
+                                <span>{{ act }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Advisor Consultation Protocol & Counseling Script (Should he consult & what to say) -->
+        <div class="card border mb-4 shadow-sm" style="border-left: 4px solid #f59e0b !important;">
+            <div class="card-header bg-light d-flex flex-wrap justify-content-between align-items-center py-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-comments text-warning fs-5"></i>
+                    <div>
+                        <strong class="text-dark">Academic Advisor Consultation Protocol &amp; Counseling Script</strong>
+                        <div class="small text-muted">Mandatory consultation directives and exact structured dialogue for advising sessions</div>
+                    </div>
+                </div>
+                <span class="badge bg-{{ dossier.consultation_guide.urgency_badge }} px-2 py-1">
+                    {{ dossier.consultation_guide.urgency }}
+                </span>
+            </div>
+            <div class="card-body p-3">
+                <!-- Consultation Urgency Banner -->
+                <div class="alert alert-warning d-flex align-items-center justify-content-between p-2 px-3 mb-3" role="alert">
+                    <div class="d-flex align-items-center gap-2 small">
+                        <i class="fas fa-exclamation-triangle fs-5 text-warning"></i>
+                        <div>
+                            <strong>Consultation Required:</strong> The student must meet with Academic Advisor <strong>{{ student.advisor or 'Dr. Nasser Tabook' }}</strong> during: 
+                            <u>{{ dossier.consultation_guide.schedule_window }}</u>.
+                            <div class="text-muted" style="font-size: 11px;">Mandatory Frequency: {{ dossier.consultation_guide.frequency }}</div>
+                        </div>
+                    </div>
+                    <a href="mailto:{{ student.email }}?subject=Mandatory%20Academic%20Advising%20Appointment%20-%20Dhofar%20University" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-envelope me-1"></i> Summon Student
+                    </a>
+                </div>
+
+                <!-- Structured Dialogue: What the Advisor Should Say -->
+                <h6 class="fw-bold text-dark small mb-2">
+                    <i class="fas fa-user-tie text-primary me-1"></i> What Dr. Nasser Tabook (Advisor) Should Say to the Student:
+                </h6>
+                <div class="row g-2 mb-3">
+                    {% for sp in dossier.consultation_guide.advisor_script %}
+                    <div class="col-12">
+                        <div class="p-2 px-3 rounded border bg-light" style="border-left: 3px solid #1e3a8a !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="text-primary small">{{ sp.phase }}</strong>
+                                <span class="badge bg-secondary" style="font-size: 10px;">{{ sp.speaker }}</span>
+                            </div>
+                            <div class="small text-dark fst-italic" style="line-height: 1.5;">
+                                "{{ sp.dialogue|replace('**', '<strong>')|replace('**', '</strong>')|safe }}"
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- What the Student Should Ask & Bring to Advisor -->
+                <div class="p-2 px-3 bg-white border rounded">
+                    <h6 class="fw-bold text-dark small mb-1">
+                        <i class="fas fa-question-circle text-info me-1"></i> What the Student Must Prepare and Ask Dr. Nasser:
+                    </h6>
+                    <ul class="mb-0 small text-secondary ps-3">
+                        {% for stp in dossier.consultation_guide.student_talking_points %}
+                        <li class="mb-1">{{ stp }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Recommended Schedule Table -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-dark mb-0">
+                <i class="fas fa-calendar-alt text-primary me-1"></i> Recommended Next-Semester Schedule (Cap: {{ audit.credit_cap }} CH Max)
+            </h6>
+            <span class="badge bg-primary fs-6">{{ dossier.total_recommended_credits }} Credit Hours Total</span>
+        </div>
+        <p class="text-muted small mb-3">
+            Prioritizes repeating deficient prerequisite courses first (DU Article 18), followed by eligible core curriculum requirements.
+        </p>
+        <div class="table-responsive border rounded mb-4">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-light small text-muted">
+                    <tr>
+                        <th style="width: 12%;">Course Code</th>
+                        <th style="width: 22%;">Course Title</th>
+                        <th style="width: 7%; text-align: center;">Credits</th>
+                        <th style="width: 28%;">Offered Section &amp; Timetable</th>
+                        <th style="width: 31%;">Advising Priority &amp; Rationale</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in dossier.recommended_schedule %}
+                    <tr>
+                        <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
+                        <td class="fw-semibold text-dark">
+                            {{ c.name }}
+                        </td>
+                        <td class="text-center fw-bold">{{ c.credits }} hrs</td>
+                        <td>
+                            {% if c.is_offered %}
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="badge bg-primary text-white">Sec {{ c.primary_section.section }}</span>
+                                        <span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt text-danger me-1"></i>{{ c.primary_section.room }}</span>
+                                        <span class="badge {{ 'bg-success' if c.seat_status == 'Open' else 'bg-danger' }}">
+                                            {{ c.seat_status }} ({{ c.seats_available }} seats)
+                                        </span>
+                                    </div>
+                                    <small class="text-dark fw-semibold" style="font-size: 0.78rem;">
+                                        <i class="far fa-calendar-alt text-primary me-1"></i>{{ c.primary_section.days }} &bull; <i class="far fa-clock text-secondary me-1"></i>{{ c.primary_section.time }}
+                                    </small>
+                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="fas fa-user-tie text-secondary me-1"></i>{{ c.primary_section.instructor }}
+                                    </small>
+                                </div>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Not Offered in Fall 2026-2027
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <span class="badge bg-{{ 'danger' if 'Mandatory' in c.priority else 'success' if 'Core' in c.priority else 'warning text-dark' }}">
+                                    {{ c.priority }}
+                                </span>
+                            </div>
+                            <div class="small text-secondary" style="line-height: 1.35;">{{ c.reason }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="table-light">
+                        <td colspan="2" class="text-end fw-bold">Total Semester Registration Load:</td>
+                        <td class="text-center fw-bold text-primary">{{ dossier.total_recommended_credits }} hrs</td>
+                        <td colspan="2" class="small text-muted">{{ audit.credit_cap_reason }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Prerequisite Gap Roadblocks -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-light h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-success mb-0"><i class="fas fa-check-circle me-1"></i> Ready to Register ({{ audit.ready_courses|length }})</h6>
+                        <span class="badge bg-success">Prerequisites Satisfied</span>
+                    </div>
+                    <div class="list-group list-group-flush small" style="max-height: 180px; overflow-y: auto;">
+                        {% for rc in audit.ready_courses[:5] %}
+                        <div class="list-group-item px-0 py-1 bg-transparent d-flex justify-content-between">
+                            <span class="fw-bold text-primary font-monospace">{{ rc.code }} - {{ rc.name }}</span>
+                            <span class="text-muted">{{ rc.credits }} hrs</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded bg-light h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-danger mb-0"><i class="fas fa-lock me-1"></i> Locked Courses ({{ audit.blocked_courses|length }})</h6>
+                        <span class="badge bg-danger">Prerequisites Missing</span>
+                    </div>
+                    <div class="list-group list-group-flush small" style="max-height: 180px; overflow-y: auto;">
+                        {% for bc in audit.blocked_courses[:5] %}
+                        <div class="list-group-item px-0 py-1 bg-transparent">
+                            <div class="fw-bold text-dark font-monospace">{{ bc.code }} - {{ bc.name }}</div>
+                            <small class="text-danger">Missing: {{ bc.unmet_prerequisites|join(', ') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applied Bylaw Citations -->
+        <div class="pt-2 border-top">
+            <small class="text-muted fw-bold d-block mb-2 text-uppercase"><i class="fas fa-book-reader text-warning me-1"></i> Official Dhofar University Policy Citations Applied:</small>
+            <div class="d-flex flex-wrap gap-2">
+                {% for pol in dossier.policy_citations %}
+                <span class="badge bg-light text-dark border p-2 text-start fw-normal" style="font-size: 11px;">
+                    <strong class="text-primary">{{ pol.bylaw }}</strong> ({{ pol.source_doc }})<br>
+                    <span class="text-muted">{{ pol.summary }}</span>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Plan of Study & Credit Hours Progress Card -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-graduation-cap me-2 text-warning"></i>Degree Study Plan Progress: {{ audit.program_title }}
+        </h5>
+        <div>
+            <span class="badge bg-light text-dark fs-6">
+                {{ audit.degree_type }} ({{ audit.total_plan_credits }} Total Credits)
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- 3 Stat Highlight Blocks -->
+        <div class="row text-center g-3 mb-4">
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted small text-uppercase fw-bold">Total Plan Required</span>
+                    <h3 class="mb-0 fw-bold text-dark mt-1">{{ audit.total_plan_credits }} <span class="fs-6 text-muted">hrs</span></h3>
+                    <small class="text-muted">{{ audit.program_title }}</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted small text-uppercase fw-bold">Completed / Earned</span>
+                    <h3 class="mb-0 fw-bold text-success mt-1">{{ audit.completed_credits }} <span class="fs-6 text-muted">hrs</span></h3>
+                    <small class="text-success fw-semibold">{{ audit.completion_percentage }}% of degree completed</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <span class="text-muted small text-uppercase fw-bold">Remaining to Graduate</span>
+                    <h3 class="mb-0 fw-bold text-danger mt-1">{{ audit.remaining_credits }} <span class="fs-6 text-muted">hrs</span></h3>
+                    <small class="text-muted">~{{ audit.semesters_remaining }} semester(s) remaining</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-semibold text-muted">Degree Completion Progress</span>
+                <span class="fw-bold text-primary">{{ audit.completed_credits }} / {{ audit.total_plan_credits }} hrs ({{ audit.completion_percentage }}%)</span>
+            </div>
+            <div class="progress" style="height: 22px; border-radius: 8px;">
+                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated fw-bold" 
+                     role="progressbar" 
+                     style="width: {{ audit.completion_percentage }}%;" 
+                     aria-valuenow="{{ audit.completion_percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    {{ audit.completion_percentage }}%
+                </div>
+            </div>
+        </div>
+
+        <!-- Study Plan Courses Checklist -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0 text-secondary">
+                <i class="fas fa-list-check me-1"></i>Curriculum Requirements Checklist
+            </h6>
+            <div class="btn-group btn-group-sm" role="group" id="planFilterGroup">
+                <button type="button" class="btn btn-outline-secondary active" onclick="filterPlanCourses('all')">All Plan Courses ({{ audit.completed_courses|length + audit.missing_courses|length }})</button>
+                <button type="button" class="btn btn-outline-success" onclick="filterPlanCourses('Completed')">✅ Completed ({{ audit.completed_courses|length }})</button>
+                <button type="button" class="btn btn-outline-danger" onclick="filterPlanCourses('Remaining')">⏳ Remaining ({{ audit.missing_courses|length }})</button>
+            </div>
+        </div>
+
+        <div class="table-responsive border rounded">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-light small text-muted">
+                    <tr>
+                        <th style="width: 14%;">Course Code</th>
+                        <th>Course Title</th>
+                        <th style="width: 20%;">Requirement Category</th>
+                        <th style="width: 8%; text-align: center;">Credits</th>
+                        <th style="width: 28%;">Degree Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in audit.completed_courses %}
+                    <tr class="plan-course-row" data-status="Completed">
+                        <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
+                        <td>{{ c.name }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ c.category }}</span></td>
+                        <td class="text-center fw-semibold">{{ c.credits }}</td>
+                        <td>
+                            <span class="badge bg-success me-1"><i class="fas fa-check-circle me-1"></i>Completed</span>
+                            {% if c.grade %}
+                                <span class="badge bg-light text-dark border">Grade: <strong>{{ c.grade }}</strong></span>
+                            {% endif %}
+                            {% if c.term_taken %}
+                                <small class="text-muted d-block mt-1">{{ c.term_taken }}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% for c in audit.missing_courses %}
+                    <tr class="plan-course-row" data-status="Remaining">
+                        <td class="fw-bold text-secondary font-monospace">{{ c.code }}</td>
+                        <td class="text-muted">{{ c.name }}</td>
+                        <td><span class="badge bg-light text-secondary border">{{ c.category }}</span></td>
+                        <td class="text-center">{{ c.credits }}</td>
+                        <td>
+                            {% if c.is_ready_to_register %}
+                                <span class="badge bg-primary text-white"><i class="fas fa-arrow-circle-right me-1"></i>Ready to Register</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Locked</span>
+                                <small class="text-danger d-block mt-1">Prereq: {{ c.unmet_prerequisites|join(', ') }}</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Historical Semesters & Course Performance -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-history me-2 text-warning"></i>Historical Semesters &amp; Transcript Performance
+        </h5>
+        <div>
+            <div class="btn-group btn-group-sm" role="group" id="semesterFilterGroup">
+                <button type="button" class="btn btn-outline-light active" onclick="filterSemesters('all')">All Terms ({{ semesters|length }})</button>
+                <button type="button" class="btn btn-outline-light" onclick="filterSemesters('Fall')">🍂 Fall</button>
+                <button type="button" class="btn btn-outline-light" onclick="filterSemesters('Spring')">🌸 Spring</button>
+                <button type="button" class="btn btn-outline-light" onclick="filterSemesters('Summer')">☀️ Summer</button>
+                <button type="button" class="btn btn-outline-light" onclick="filterSemesters('Foundation')">📘 Foundation</button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body bg-light">
+        {% if semesters %}
+            <div class="row g-4" id="semestersContainer">
+                {% for sem in semesters %}
+                <div class="col-12 semester-item" data-season="{{ sem.season }}">
+                    <div class="card border shadow-sm">
+                        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center py-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-{{ 'primary' if sem.season == 'Fall' else 'success' if sem.season == 'Spring' else 'warning text-dark' if sem.season == 'Summer' else 'secondary' }} fs-6">
+                                    {{ sem.season }}
+                                </span>
+                                <h6 class="mb-0 fw-bold">{{ sem.term }}</h6>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                {% if sem.semester_gpa is not none and sem.semester_gpa > 0 %}
+                                    <span class="badge bg-light text-dark border">
+                                        Term GPA: <strong class="text-primary">{{ "%.2f"|format(sem.semester_gpa) }}%</strong>
+                                    </span>
+                                {% endif %}
+                                {% if sem.cumulative_gpa is not none and sem.cumulative_gpa > 0 %}
+                                    <span class="badge bg-light text-dark border">
+                                        Cum. GPA: <strong class="text-success">{{ "%.2f"|format(sem.cumulative_gpa) }}%</strong>
+                                    </span>
+                                {% endif %}
+                                <span class="badge bg-{{ 'success' if 'Good' in sem.standing or 'Removal' in sem.standing else 'danger' if 'Probation' in sem.standing else 'secondary' }} border">
+                                    {{ sem.standing }}
+                                </span>
+                                <span class="badge bg-secondary">
+                                    {{ sem.courses|length }} Course{{ 's' if sem.courses|length != 1 else '' }} ({{ sem.total_credits }} Cr)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if sem.courses %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped mb-0 align-middle">
+                                        <thead class="table-light small text-muted">
+                                            <tr>
+                                                <th style="width: 15%;">Course Code</th>
+                                                <th>Course Title</th>
+                                                <th style="width: 12%; text-align: center;">Credits</th>
+                                                <th style="width: 15%; text-align: center;">Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for c in sem.courses %}
+                                            <tr>
+                                                <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
+                                                <td>{{ c.name }}</td>
+                                                <td class="text-center">{{ c.credits }}</td>
+                                                <td class="text-center">
+                                                    {% set g = c.grade|string %}
+                                                    {% if '6' in g or '7' in g or '8' in g or '9' in g %}
+                                                        <span class="badge bg-success px-3 py-1 fs-6">{{ g }}</span>
+                                                    {% elif '5' in g or '4' in g or 'F' in g or 'WA' in g %}
+                                                        <span class="badge bg-danger px-3 py-1 fs-6">{{ g }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-dark border px-2 py-1">{{ g }}</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="p-3 text-muted fst-italic">No course records listed for this term.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                <p>No semester transcript records parsed yet. Click <b>View Transcript PDF</b> to see the raw document.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Render Chart.js for Semester Progression Trajectory
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('semesterProgressionChart');
+    if (ctx) {
+        const chartData = {{ dossier.progression.chart_data|tojson }};
+        const labels = chartData.labels || [];
+        const termGpas = chartData.term_gpas || [];
+        const cumGpas = chartData.cum_gpas || [];
+        const benchmark = chartData.benchmark || 65.0;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Semester Term GPA (%)',
+                        data: termGpas,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#2563eb',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.25,
+                        fill: false
+                    },
+                    {
+                        label: 'Cumulative GPA (%)',
+                        data: cumGpas,
+                        borderColor: '#7c3aed',
+                        backgroundColor: 'rgba(124, 58, 237, 0.15)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#7c3aed',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.25,
+                        fill: true
+                    },
+                    {
+                        label: 'Good Standing Threshold (65.0%)',
+                        data: labels.map(() => benchmark),
+                        borderColor: '#dc2626',
+                        borderWidth: 2,
+                        borderDash: [6, 4],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        min: 30,
+                        max: 100,
+                        ticks: {
+                            callback: function(val) { return val + '%'; }
+                        },
+                        grid: {
+                            color: '#e2e8f0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ' + ctx.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
+<script>
+function filterSemesters(season) {
+    const btnGroup = document.getElementById('semesterFilterGroup');
+    if (btnGroup) {
+        const buttons = btnGroup.getElementsByTagName('button');
+        for (let btn of buttons) {
+            btn.classList.remove('active');
+        }
+        event.target.classList.add('active');
+    }
+
+    const items = document.querySelectorAll('.semester-item');
+    items.forEach(item => {
+        if (season === 'all' || item.getAttribute('data-season') === season) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function filterPlanCourses(status) {
+    const btnGroup = document.getElementById('planFilterGroup');
+    if (btnGroup) {
+        const buttons = btnGroup.getElementsByTagName('button');
+        for (let btn of buttons) {
+            btn.classList.remove('active');
+        }
+        event.target.classList.add('active');
+    }
+
+    const rows = document.querySelectorAll('.plan-course-row');
+    rows.forEach(row => {
+        if (status === 'all' || row.getAttribute('data-status') === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+function startStudentMeeting(studentId, studentName) {
+    const prefix = window.APP_PREFIX || '';
+    fetch(`${prefix}/api/meetings/create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            student_id: studentId,
+            student_name: studentName,
+            title: `Advising Session - ${studentName} (${studentId})`,
+            advisor_name: 'Dr. Nasser Tabook'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const inviteMsg = `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            navigator.clipboard.writeText(inviteMsg);
+            if (confirm(`Virtual Meeting Created!\n\nInvitation copied to your clipboard.\n\nWould you like to enter the room now?`)) {
+                window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
+            }
+        } else {
+            alert('Error creating meeting: ' + data.message);
+        }
+    })
+    .catch(err => alert('Network error: ' + err.message));
+}
+</script>
+{% endblock %}

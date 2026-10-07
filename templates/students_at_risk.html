@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Students at Risk - Academic Probation Management{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1 text-danger fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Students at Risk</h2>
+        <p class="text-muted mb-0">Advisees requiring academic advising intervention due to probation status or GPA &lt; 65%</p>
+    </div>
+    <div class="d-flex gap-2 mt-2 mt-md-0">
+        <a href="{{ url_for('main.policies_library', q='probation') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-book-open me-1"></i> DU Probation Policies
+        </a>
+        <a href="{{ url_for('main.students_at_risk_report') }}" target="_blank" class="btn btn-outline-primary">
+            <i class="fas fa-print me-1"></i> View / Print Report
+        </a>
+        <a href="{{ url_for('main.students_at_risk_report_excel') }}" class="btn btn-success">
+            <i class="fas fa-file-excel me-1"></i> Download Excel (.xlsx)
+        </a>
+        <a href="{{ url_for('main.students_at_risk_report_pdf') }}" class="btn btn-danger">
+            <i class="fas fa-file-pdf me-1"></i> Download Report PDF
+        </a>
+    </div>
+
+
+</div>
+
+<!-- Summary Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-danger shadow-sm h-100 border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Strict Probation</h6>
+                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.strict }}</h2>
+                        <small class="text-white-50">Critical dismissal warning</small>
+                    </div>
+                    <div>
+                        <i class="fas fa-skull-crossbones fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a href="#section-strict" class="text-white text-decoration-none small">Scroll to list &darr;</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white shadow-sm h-100 border-0" style="background-color: #fd7e14;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Second Probation</h6>
+                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.second }}</h2>
+                        <small class="text-white-50">Consecutive warning term</small>
+                    </div>
+                    <div>
+                        <i class="fas fa-exclamation-circle fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a href="#section-second" class="text-white text-decoration-none small">Scroll to list &darr;</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-dark bg-warning shadow-sm h-100 border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">First Probation</h6>
+                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.first }}</h2>
+                        <small class="text-muted">Initial probation advising</small>
+                    </div>
+                    <div>
+                        <i class="fas fa-exclamation fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <a href="#section-first" class="text-dark fw-semibold text-decoration-none small">Scroll to list &darr;</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-dark shadow-sm h-100 border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-white-50">Total At-Risk</h6>
+                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.total }}</h2>
+                        <small class="text-white-50">of {{ breakdown.total_advisees }} total advisees</small>
+                    </div>
+                    <div>
+                        <i class="fas fa-user-shield fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <span class="text-white-50 small">{{ ((breakdown.counts.total / breakdown.total_advisees) * 100)|round(1) if breakdown.total_advisees > 0 else 0 }}% of student roster</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category 1: Strict Probation -->
+<div class="card border-danger shadow-sm mb-4" id="section-strict">
+    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>Stage 1: Strict Probation (Critical Risk)
+        </h5>
+        <span class="badge bg-white text-danger fw-bold fs-6">{{ breakdown.counts.strict }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="alert alert-danger mb-0 border-0 rounded-0 py-2 px-3 small">
+            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Students in this group are at immediate risk of academic dismissal. Mandatory maximum credit limit is 12 credit hours. Priority must be given to repeating failed and low-grade courses.
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program / Major</th>
+                        <th>Current Standing</th>
+                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
+                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
+                        <th>Earned Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.strict_probation %}
+                    <tr>
+                        <td class="fw-bold text-danger">{{ student.id }}</td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td>
+                            <span class="badge bg-danger text-white px-2 py-1 shadow-sm">
+                                <i class="fas fa-exclamation-triangle me-1"></i>{{ student.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.semester_gpa is not none %}
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                    {{ "%.2f"|format(student.semester_gpa) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                </a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
+                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-3 text-muted">No students currently in Strict Probation.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Category 2: Second Probation -->
+<div class="card shadow-sm mb-4 border-warning" id="section-second">
+    <div class="card-header text-white d-flex justify-content-between align-items-center py-3" style="background-color: #fd7e14;">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-circle me-2"></i>Stage 2: Second Probation (High Risk)
+        </h5>
+        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.second }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="alert mb-0 border-0 rounded-0 py-2 px-3 small" style="background-color: #fff3cd; color: #664d03;">
+            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Student has spent 2 consecutive terms on probation. If GPA does not rise above 65.0, they will advance to Strict Probation. Course load restricted to 12-15 credit hours.
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program / Major</th>
+                        <th>Current Standing</th>
+                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
+                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
+                        <th>Earned Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.second_probation %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ student.id }}</td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td>
+                            <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: #fd7e14;">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ student.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.semester_gpa is not none %}
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                    {{ "%.2f"|format(student.semester_gpa) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                </a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
+                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-3 text-muted">No students currently in Second Probation.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Category 3: First Probation -->
+<div class="card shadow-sm mb-4 border-warning" id="section-first">
+    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation me-2"></i>Stage 3: First Probation (Moderate Risk)
+        </h5>
+        <span class="badge bg-dark text-white fw-bold fs-6">{{ breakdown.counts.first }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="alert alert-warning mb-0 border-0 rounded-0 py-2 px-3 small">
+            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Student entered probation due to semester/cumulative GPA falling below 65.0. Immediate advising review needed to repeat failed subjects before probation elevates.
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program / Major</th>
+                        <th>Current Standing</th>
+                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
+                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
+                        <th>Earned Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.first_probation %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ student.id }}</td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td>
+                            <span class="badge bg-warning text-dark px-2 py-1 shadow-sm">
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ student.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.semester_gpa is not none %}
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                    {{ "%.2f"|format(student.semester_gpa) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                </a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
+                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-3 text-muted">No students currently in First Probation.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Category 4: Pre-Probation Warning (GPA < 65%) -->
+{% if breakdown.low_gpa_warning %}
+<div class="card shadow-sm mb-4 border-secondary">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0">
+            <i class="fas fa-bell me-2"></i>Pre-Probation Warning: GPA &lt; 65% (Borderline Students)
+        </h5>
+        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.warning }} Students</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Program / Major</th>
+                        <th>Current Standing</th>
+                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
+                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
+                        <th>Earned Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in breakdown.low_gpa_warning %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ student.id }}</td>
+                        <td class="fw-semibold">{{ student.name }}</td>
+                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td><span class="badge bg-secondary">{{ student.status }}</span></td>
+                        <td>
+                            {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                            <span class="badge bg-warning text-dark fs-6">
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.semester_gpa is not none %}
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                    {{ "%.2f"|format(student.semester_gpa) }}%
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">Profile</a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">PDF</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
