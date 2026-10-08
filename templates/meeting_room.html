@@ -389,6 +389,31 @@
             margin: 0 auto 16px;
         }
 
+        /* Audio Unlock Banner for Mobile Autoplay Restrictions */
+        .audio-unlock-banner {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1a73e8, #1557b0);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            z-index: 1050;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            animation: bounce 1.2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -6px); }
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -510,6 +535,12 @@
 </div>
 
 
+<!-- Floating Audio Unlock Notification for Mobile Devices -->
+<div id="audioUnlockBanner" class="audio-unlock-banner" onclick="unlockAudio()">
+    <i class="fas fa-volume-up fa-lg"></i>
+    <span><strong>Tap here to enable audio</strong> (sound is muted by device)</span>
+</div>
+
 <!-- ========================================================================= -->
 <!-- In-Call Main Stage & Dock                                                 -->
 <!-- ========================================================================= -->
@@ -557,7 +588,7 @@
         <div class="video-grid" id="videoGrid">
             <!-- Local Participant Card -->
             <div class="video-card" id="localCard">
-                <video id="localVideo" autoplay playsinline muted class="mirrored"></video>
+                <video id="localVideo" autoplay playsinline webkit-playsinline="true" muted class="mirrored"></video>
                 <div class="avatar-placeholder" id="localAvatar" style="display: none;">
                     {{ user_name[:2].upper() }}
                 </div>
@@ -570,7 +601,7 @@
 
             <!-- Remote Participant Card -->
             <div class="video-card" id="remoteCard">
-                <video id="remoteVideo" autoplay playsinline></video>
+                <video id="remoteVideo" autoplay playsinline webkit-playsinline="true"></video>
                 <div class="avatar-placeholder" id="remoteAvatar">
                     <i class="fas fa-user"></i>
                 </div>
@@ -994,13 +1025,10 @@ function cancelKnockRequest() {
     document.getElementById('lobbyFormArea').style.display = 'block';
 }
 
-function finishLobbyAndEnterCall() {
-    if (lobbyStream) {
-        lobbyStream.getTracks().forEach(t => t.stop());
-    }
+async function finishLobbyAndEnterCall() {
     document.getElementById('waitingRoomOverlay').style.display = 'none';
     isAdmitted = true;
-    initMainCall();
+    await initMainCall();
 }
 
 // =========================================================================
@@ -1009,23 +1037,60 @@ function finishLobbyAndEnterCall() {
 async function initMainCall() {
     startDurationCountdown();
 
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: { echoCancellation: true, noiseSuppression: true }
-        });
-        document.getElementById('localVideo').srcObject = localStream;
+    // 1. Try reusing existing lobby preview stream if it has active tracks
+    let acquiredStream = null;
+    if (lobbyStream && lobbyStream.active && lobbyStream.getTracks().length > 0) {
+        acquiredStream = lobbyStream;
+    } else {
+        // Fallback or direct admission: Request media with mobile-friendly constraints
+        const constraintOptions = [
+            // Standard / Mobile User Cam
+            { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: { echoCancellation: true, noiseSuppression: true } },
+            // Generic video + audio
+            { video: true, audio: true },
+            // Audio only fallback
+            { audio: true }
+        ];
+
+        for (const constraints of constraintOptions) {
+            try {
+                acquiredStream = await navigator.mediaDevices.getUserMedia(constraints);
+                if (acquiredStream) break;
+            } catch (err) {
+                console.warn("Retrying media constraints due to:", err.name, err.message);
+            }
+        }
+    }
+
+    if (acquiredStream) {
+        localStream = acquiredStream;
+        const localVid = document.getElementById('localVideo');
+        localVid.srcObject = localStream;
+        localVid.play().catch(e => console.warn("Local video play deferred:", e));
+
+        const hasVideo = localStream.getVideoTracks().some(t => t.enabled);
+        if (hasVideo) {
+            localVid.style.display = 'block';
+            document.getElementById('localAvatar').style.display = 'none';
+            document.getElementById('btnCam').classList.remove('btn-active-red');
+            isVideoStopped = false;
+        } else {
+            localVid.style.display = 'none';
+            document.getElementById('localAvatar').style.display = 'flex';
+            document.getElementById('btnCam').classList.add('btn-active-red');
+            isVideoStopped = true;
+        }
+
+        // Voice activity visualizer for local microphone
         setupVoiceActivityDetection(localStream, 'localCard');
-    } catch (err) {
-        console.warn("Camera/Mic not accessible directly:", err);
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            setupVoiceActivityDetection(localStream, 'localCard');
-        } catch (e2) {}
+    } else {
+        // No media accessible: display avatar
         document.getElementById('localAvatar').style.display = 'flex';
         document.getElementById('localVideo').style.display = 'none';
         document.getElementById('btnCam').classList.add('btn-active-red');
+        document.getElementById('btnMic').classList.add('btn-active-red');
         isVideoStopped = true;
+        isAudioMuted = true;
     }
 
     await joinRoom();
@@ -1128,26 +1193,51 @@ function createPeerConnection() {
 
     peerConnection.ontrack = (event) => {
         const remoteVideo = document.getElementById('remoteVideo');
+        let remoteStream = null;
+
         if (event.streams && event.streams[0]) {
-            remoteVideo.srcObject = event.streams[0];
-            setupVoiceActivityDetection(event.streams[0], 'remoteCard');
+            remoteStream = event.streams[0];
         } else {
-            let stream = remoteVideo.srcObject;
-            if (!stream || !(stream instanceof MediaStream)) {
-                stream = new MediaStream();
-                remoteVideo.srcObject = stream;
+            if (!remoteVideo.srcObject || !(remoteVideo.srcObject instanceof MediaStream)) {
+                remoteVideo.srcObject = new MediaStream();
             }
-            stream.addTrack(event.track);
-            setupVoiceActivityDetection(stream, 'remoteCard');
+            remoteVideo.srcObject.addTrack(event.track);
+            remoteStream = remoteVideo.srcObject;
         }
+
+        if (remoteVideo.srcObject !== remoteStream) {
+            remoteVideo.srcObject = remoteStream;
+        }
+
+        // Hide avatar and display remote video element
         document.getElementById('remoteAvatar').style.display = 'none';
         remoteVideo.style.display = 'block';
-        remoteVideo.play().catch(() => {});
+
+        // Play attempt with mobile autoplay policy handling
+        remoteVideo.play().then(() => {
+            hideAudioUnlockBanner();
+        }).catch(err => {
+            console.warn("Mobile autoplay restriction encountered on remote video:", err);
+            // Fallback: Mute video so mobile browser plays the video stream without black screen
+            remoteVideo.muted = true;
+            remoteVideo.play().then(() => {
+                showAudioUnlockBanner();
+            }).catch(e2 => console.error("Could not play remote video even muted:", e2));
+        });
     };
 
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
             sendSignal('candidate', event.candidate);
+        }
+    };
+
+    peerConnection.oniceconnectionstatechange = () => {
+        if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'disconnected') {
+            if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 4000)) {
+                console.log("ICE disconnected/failed; restarting ICE negotiation...");
+                initiateOffer(null);
+            }
         }
     };
 
@@ -1160,13 +1250,50 @@ function createPeerConnection() {
             label.innerHTML = `<i class="fas fa-circle text-success me-1"></i> ${displayName} (Connected)`;
         } else if (state === 'connecting') {
             label.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Connecting to ${displayName}...`;
-        } else if (state === 'disconnected') {
+        } else if (state === 'disconnected' || state === 'failed') {
             label.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-1"></i> Reconnecting...`;
+            if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 4000)) {
+                initiateOffer(null);
+            }
         }
     };
 
     return peerConnection;
 }
+
+// Mobile Audio Autoplay Helpers
+function showAudioUnlockBanner() {
+    const banner = document.getElementById('audioUnlockBanner');
+    if (banner) banner.style.display = 'flex';
+}
+
+function hideAudioUnlockBanner() {
+    const banner = document.getElementById('audioUnlockBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function unlockAudio() {
+    const remoteVideo = document.getElementById('remoteVideo');
+    if (remoteVideo) {
+        remoteVideo.muted = false;
+        remoteVideo.play().then(() => {
+            hideAudioUnlockBanner();
+        }).catch(e => {
+            console.warn("Audio unlock retry:", e);
+        });
+    }
+}
+
+// Global user interaction listener to silently unlock audio on iOS/Android
+['click', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, () => {
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (remoteVideo && remoteVideo.muted && remoteVideo.srcObject) {
+            remoteVideo.muted = false;
+            remoteVideo.play().then(() => hideAudioUnlockBanner()).catch(() => {});
+        }
+    }, { once: false, passive: true });
+});
 
 async function initiateOffer(targetId = null) {
     const now = Date.now();

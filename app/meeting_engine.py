@@ -258,11 +258,11 @@ class MeetingRoom:
                 self.signals[recipient_id] = []
             self.signals[recipient_id].append(sig_data)
         else:
-            for pid in list(self.participants.keys()):
-                if pid != sender_id:
-                    if pid not in self.signals:
-                        self.signals[pid] = []
-                    self.signals[pid].append(sig_data)
+            recipients = (set(self.participants.keys()) | set(self.admitted_sessions)) - {sender_id}
+            for pid in recipients:
+                if pid not in self.signals:
+                    self.signals[pid] = []
+                self.signals[pid].append(sig_data)
 
     def fetch_signals(self, session_id: str) -> List[Dict[str, Any]]:
         """Retrieve and clear pending signaling messages for a participant"""
