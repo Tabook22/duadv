@@ -417,6 +417,187 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ========================================================================= */
+        /* Responsive Mobile Layouts (Portrait & Landscape Phone UX)                 */
+        /* ========================================================================= */
+        @media (max-width: 768px) {
+            html, body, .meet-container {
+                height: 100dvh !important;
+                min-height: 100dvh !important;
+                overflow: hidden !important;
+            }
+
+            .header-bar {
+                height: 46px !important;
+                padding: 4px 10px !important;
+                font-size: 0.85rem !important;
+            }
+
+            .header-bar span.text-truncate {
+                max-width: 130px !important;
+                font-size: 0.8rem !important;
+            }
+
+            .video-grid {
+                flex-direction: column !important;
+                gap: 8px !important;
+                padding: 6px !important;
+                flex-wrap: nowrap !important;
+                overflow: hidden !important;
+            }
+
+            .video-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                height: calc(50% - 4px) !important;
+                flex: 1 1 calc(50% - 4px) !important;
+                border-radius: 10px !important;
+            }
+
+            .avatar-placeholder {
+                width: 72px !important;
+                height: 72px !important;
+                font-size: 1.8rem !important;
+            }
+
+            .video-overlay-name {
+                font-size: 0.72rem !important;
+                padding: 2px 8px !important;
+                bottom: 8px !important;
+                left: 8px !important;
+            }
+
+            .bottom-dock {
+                height: 60px !important;
+                padding: 0 6px !important;
+                justify-content: flex-start !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                gap: 4px !important;
+            }
+
+            .bottom-dock::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            .bottom-dock > div:first-child {
+                display: none !important;
+            }
+
+            .bottom-dock > div {
+                width: auto !important;
+                flex-shrink: 0 !important;
+            }
+
+            .dock-btn {
+                width: 42px !important;
+                height: 42px !important;
+                font-size: 1rem !important;
+                margin: 0 2px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .dock-btn.btn-leave {
+                width: 54px !important;
+                height: 42px !important;
+                border-radius: 20px !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Fullscreen Overlay Side Panels on Mobile */
+            .side-panel {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100dvh !important;
+                z-index: 1050 !important;
+                border-left: none !important;
+            }
+
+            /* Waiting room lobby on mobile */
+            .lobby-card {
+                padding: 20px 14px !important;
+                max-height: 94dvh !important;
+                overflow-y: auto !important;
+                border-radius: 14px !important;
+            }
+
+            .lobby-video-preview-wrapper {
+                height: 170px !important;
+                margin-bottom: 12px !important;
+            }
+        }
+
+        /* Mobile Landscape Viewport */
+        @media (max-height: 520px) {
+            html, body, .meet-container {
+                height: 100dvh !important;
+                min-height: 100dvh !important;
+                overflow: hidden !important;
+            }
+
+            .header-bar {
+                height: 38px !important;
+                padding: 2px 8px !important;
+                font-size: 0.78rem !important;
+            }
+
+            .header-bar .btn {
+                padding: 2px 6px !important;
+                font-size: 0.72rem !important;
+            }
+
+            .video-grid {
+                flex-direction: row !important;
+                gap: 6px !important;
+                padding: 4px !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .video-card {
+                height: 100% !important;
+                max-width: calc(50% - 3px) !important;
+                min-width: 0 !important;
+                flex: 1 1 calc(50% - 3px) !important;
+            }
+
+            .avatar-placeholder {
+                width: 60px !important;
+                height: 60px !important;
+                font-size: 1.5rem !important;
+            }
+
+            .bottom-dock {
+                height: 48px !important;
+                padding: 0 4px !important;
+            }
+
+            .dock-btn {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 0.9rem !important;
+                margin: 0 2px !important;
+            }
+
+            .dock-btn.btn-leave {
+                width: 48px !important;
+                height: 36px !important;
+            }
+
+            .lobby-card {
+                padding: 12px !important;
+                max-height: 94dvh !important;
+                overflow-y: auto !important;
+            }
+
+            .lobby-video-preview-wrapper {
+                height: 130px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -628,6 +809,9 @@
                 </button>
                 <button class="dock-btn" id="btnCam" onclick="toggleCam()" title="Turn off camera (Ctrl + E)">
                     <i class="fas fa-video"></i>
+                </button>
+                <button class="dock-btn d-inline-flex d-md-none" id="btnFlipCam" onclick="flipCamera()" title="Switch Front/Rear Camera">
+                    <i class="fas fa-sync-alt"></i>
                 </button>
                 <button class="dock-btn" id="btnScreen" onclick="toggleScreenShare()" title="Present now / Share screen">
                     <i class="fas fa-desktop"></i>
@@ -886,19 +1070,37 @@ let unreadChatCount = 0;
 let activePanel = null;
 let currentKnockTargetSession = null;
 
-// Multi-vendor STUN servers
+let currentFacingMode = 'user';
+const isPolite = (USER_ROLE !== 'advisor');
+let makingOffer = false;
+let ignoreOffer = false;
+let remoteParticipantSessionId = null;
+
+// Multi-vendor STUN + Free OpenRelay TURN configuration for Carrier-Grade / Mobile NAT Traversal
 const rtcConfig = {
     iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun.cloudflare.com:3478' }
+        { urls: [
+            'stun:stun.l.google.com:19302',
+            'stun:stun1.l.google.com:19302',
+            'stun:stun2.l.google.com:19302',
+            'stun:stun.cloudflare.com:3478',
+            'stun:global.stun.twilio.com:3478'
+        ]},
+        {
+            urls: [
+                'stun:openrelay.metered.ca:80',
+                'turn:openrelay.metered.ca:80',
+                'turn:openrelay.metered.ca:443',
+                'turn:openrelay.metered.ca:443?transport=tcp'
+            ],
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
     ],
     iceCandidatePoolSize: 10
 };
 
 let pendingCandidates = [];
-let isNegotiating = false;
 let lastOfferTimestamp = 0;
 let remoteParticipantName = '';
 let audioContext = null;
@@ -923,8 +1125,20 @@ window.addEventListener('DOMContentLoaded', async () => {
 // =========================================================================
 async function initLobbyPreview() {
     try {
-        lobbyStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('lobbyPreviewVideo').srcObject = lobbyStream;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const constraints = isMobile
+            ? { video: { facingMode: currentFacingMode }, audio: true }
+            : { video: true, audio: true };
+
+        lobbyStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const preview = document.getElementById('lobbyPreviewVideo');
+        preview.srcObject = lobbyStream;
+        preview.playsInline = true;
+        preview.setAttribute('playsinline', '');
+        preview.setAttribute('webkit-playsinline', '');
+        await preview.play().catch(() => {});
+        document.getElementById('lobbyPreviewAvatar').style.display = 'none';
+        preview.style.display = 'block';
     } catch (e) {
         console.warn("Lobby preview device error:", e);
         document.getElementById('lobbyPreviewAvatar').style.display = 'flex';
@@ -1037,19 +1251,23 @@ async function finishLobbyAndEnterCall() {
 async function initMainCall() {
     startDurationCountdown();
 
-    // 1. Try reusing existing lobby preview stream if it has active tracks
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    // 1. Try reusing existing lobby preview stream if it has live tracks
     let acquiredStream = null;
-    if (lobbyStream && lobbyStream.active && lobbyStream.getTracks().length > 0) {
+    if (lobbyStream && lobbyStream.active && lobbyStream.getVideoTracks().some(t => t.readyState === 'live')) {
         acquiredStream = lobbyStream;
     } else {
         // Fallback or direct admission: Request media with mobile-friendly constraints
         const constraintOptions = [
             // Standard / Mobile User Cam
-            { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: { echoCancellation: true, noiseSuppression: true } },
+            { video: { facingMode: currentFacingMode }, audio: { echoCancellation: true, noiseSuppression: true } },
             // Generic video + audio
             { video: true, audio: true },
             // Audio only fallback
-            { audio: true }
+            { audio: true },
+            // Video only fallback
+            { video: true }
         ];
 
         for (const constraints of constraintOptions) {
@@ -1062,40 +1280,62 @@ async function initMainCall() {
         }
     }
 
+    const localVid = document.getElementById('localVideo');
+    const localAvatar = document.getElementById('localAvatar');
+
     if (acquiredStream) {
         localStream = acquiredStream;
-        const localVid = document.getElementById('localVideo');
         localVid.srcObject = localStream;
+        localVid.playsInline = true;
+        localVid.setAttribute('playsinline', '');
+        localVid.setAttribute('webkit-playsinline', '');
         localVid.play().catch(e => console.warn("Local video play deferred:", e));
 
-        const hasVideo = localStream.getVideoTracks().some(t => t.enabled);
+        const hasVideo = localStream.getVideoTracks().some(t => t.readyState === 'live' && t.enabled);
         if (hasVideo) {
             localVid.style.display = 'block';
-            document.getElementById('localAvatar').style.display = 'none';
+            localAvatar.style.display = 'none';
             document.getElementById('btnCam').classList.remove('btn-active-red');
             isVideoStopped = false;
         } else {
             localVid.style.display = 'none';
-            document.getElementById('localAvatar').style.display = 'flex';
+            localAvatar.style.display = 'flex';
             document.getElementById('btnCam').classList.add('btn-active-red');
             isVideoStopped = true;
         }
 
-        // Voice activity visualizer for local microphone
-        setupVoiceActivityDetection(localStream, 'localCard');
+        const hasAudio = localStream.getAudioTracks().some(t => t.readyState === 'live' && t.enabled);
+        if (!hasAudio) {
+            document.getElementById('btnMic').classList.add('btn-active-red');
+            isAudioMuted = true;
+        } else {
+            document.getElementById('btnMic').classList.remove('btn-active-red');
+            isAudioMuted = false;
+            // Voice activity visualizer for local microphone
+            setupVoiceActivityDetection(localStream, 'localCard');
+        }
     } else {
         // No media accessible: display avatar
-        document.getElementById('localAvatar').style.display = 'flex';
-        document.getElementById('localVideo').style.display = 'none';
+        localAvatar.style.display = 'flex';
+        localVid.style.display = 'none';
         document.getElementById('btnCam').classList.add('btn-active-red');
         document.getElementById('btnMic').classList.add('btn-active-red');
         isVideoStopped = true;
         isAudioMuted = true;
     }
 
+    // Hide screen sharing button on mobile devices as it is not supported by mobile browsers
+    if (isMobile || !navigator.mediaDevices.getDisplayMedia) {
+        const btnScreen = document.getElementById('btnScreen');
+        if (btnScreen) btnScreen.style.display = 'none';
+    }
+
+    // Initialize peer connection upfront
+    createPeerConnection();
+
     await joinRoom();
     await sendSignal('user-joined', { name: USER_NAME, role: USER_ROLE });
-    setInterval(pollRoom, 1000);
+    setInterval(pollRoom, 1500);
     loadAvailableDevices();
 }
 
@@ -1170,91 +1410,123 @@ async function endCallForAll() {
 }
 
 // =========================================================================
-// WebRTC Peer Connection & Signaling
+// WebRTC Peer Connection & Signaling (Perfect Negotiation Standard)
 // =========================================================================
 function createPeerConnection() {
     if (peerConnection) return peerConnection;
 
     peerConnection = new RTCPeerConnection(rtcConfig);
 
+    // Attach local stream tracks if available
     if (localStream) {
         localStream.getTracks().forEach(track => {
             peerConnection.addTrack(track, localStream);
         });
     }
 
+    // Ensure audio & video transceivers exist
     const senders = peerConnection.getSenders();
     if (!senders.some(s => s.track && s.track.kind === 'audio')) {
-        try { peerConnection.addTransceiver('audio', { direction: 'recvonly' }); } catch(e){}
+        try { peerConnection.addTransceiver('audio', { direction: 'sendrecv' }); } catch(e){}
     }
     if (!senders.some(s => s.track && s.track.kind === 'video')) {
-        try { peerConnection.addTransceiver('video', { direction: 'recvonly' }); } catch(e){}
+        try { peerConnection.addTransceiver('video', { direction: 'sendrecv' }); } catch(e){}
     }
 
+    peerConnection.onnegotiationneeded = async () => {
+        try {
+            makingOffer = true;
+            await peerConnection.setLocalDescription();
+            await sendSignal('offer', peerConnection.localDescription, remoteParticipantSessionId);
+        } catch (err) {
+            console.warn("onnegotiationneeded error:", err);
+        } finally {
+            makingOffer = false;
+        }
+    };
+
     peerConnection.ontrack = (event) => {
+        console.log("Remote track received:", event.track.kind);
         const remoteVideo = document.getElementById('remoteVideo');
-        let remoteStream = null;
+        const remoteAvatar = document.getElementById('remoteAvatar');
 
         if (event.streams && event.streams[0]) {
-            remoteStream = event.streams[0];
+            remoteVideo.srcObject = event.streams[0];
         } else {
             if (!remoteVideo.srcObject || !(remoteVideo.srcObject instanceof MediaStream)) {
                 remoteVideo.srcObject = new MediaStream();
             }
             remoteVideo.srcObject.addTrack(event.track);
-            remoteStream = remoteVideo.srcObject;
         }
 
-        if (remoteVideo.srcObject !== remoteStream) {
-            remoteVideo.srcObject = remoteStream;
-        }
+        event.track.onunmute = () => {
+            if (event.track.kind === 'video') {
+                remoteAvatar.style.display = 'none';
+                remoteVideo.style.display = 'block';
+            }
+        };
 
-        // Hide avatar and display remote video element
-        document.getElementById('remoteAvatar').style.display = 'none';
-        remoteVideo.style.display = 'block';
+        remoteVideo.playsInline = true;
+        remoteVideo.setAttribute('playsinline', '');
+        remoteVideo.setAttribute('webkit-playsinline', '');
 
-        // Play attempt with mobile autoplay policy handling
+        // Safe playback handling with iOS Safari autoplay policy
         remoteVideo.play().then(() => {
             hideAudioUnlockBanner();
+            if (event.track.kind === 'video') {
+                remoteAvatar.style.display = 'none';
+                remoteVideo.style.display = 'block';
+            }
         }).catch(err => {
-            console.warn("Mobile autoplay restriction encountered on remote video:", err);
-            // Fallback: Mute video so mobile browser plays the video stream without black screen
+            console.warn("Autoplay restriction encountered on remote video:", err);
             remoteVideo.muted = true;
             remoteVideo.play().then(() => {
                 showAudioUnlockBanner();
+                if (event.track.kind === 'video') {
+                    remoteAvatar.style.display = 'none';
+                    remoteVideo.style.display = 'block';
+                }
             }).catch(e2 => console.error("Could not play remote video even muted:", e2));
         });
     };
 
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-            sendSignal('candidate', event.candidate);
+            sendSignal('candidate', event.candidate, remoteParticipantSessionId);
         }
     };
 
     peerConnection.oniceconnectionstatechange = () => {
-        if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'disconnected') {
-            if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 4000)) {
-                console.log("ICE disconnected/failed; restarting ICE negotiation...");
-                initiateOffer(null);
+        const iceState = peerConnection.iceConnectionState;
+        console.log("ICE connection state changed:", iceState);
+        if (iceState === 'failed') {
+            if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 8000)) {
+                console.log("ICE failed; performing ICE restart...");
+                lastOfferTimestamp = Date.now();
+                try { peerConnection.restartIce(); } catch(e){}
             }
         }
     };
 
     peerConnection.onconnectionstatechange = () => {
         const state = peerConnection.connectionState;
+        console.log("Peer connection state changed:", state);
         const label = document.getElementById('remoteNameLabel');
         const displayName = remoteParticipantName || 'Student';
 
         if (state === 'connected') {
             label.innerHTML = `<i class="fas fa-circle text-success me-1"></i> ${displayName} (Connected)`;
+            const remoteVid = document.getElementById('remoteVideo');
+            if (remoteVid.srcObject && remoteVid.srcObject.getVideoTracks().some(t => t.readyState === 'live')) {
+                document.getElementById('remoteAvatar').style.display = 'none';
+                remoteVid.style.display = 'block';
+            }
         } else if (state === 'connecting') {
             label.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Connecting to ${displayName}...`;
-        } else if (state === 'disconnected' || state === 'failed') {
+        } else if (state === 'disconnected') {
             label.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-1"></i> Reconnecting...`;
-            if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 4000)) {
-                initiateOffer(null);
-            }
+        } else if (state === 'failed') {
+            label.innerHTML = `<i class="fas fa-exclamation-circle text-danger me-1"></i> Connection lost`;
         }
     };
 
@@ -1296,20 +1568,19 @@ function unlockAudio() {
 });
 
 async function initiateOffer(targetId = null) {
-    const now = Date.now();
-    if (isNegotiating || (now - lastOfferTimestamp < 2500)) return;
-    isNegotiating = true;
-    lastOfferTimestamp = now;
+    if (makingOffer) return;
+    makingOffer = true;
+    lastOfferTimestamp = Date.now();
 
     try {
         const pc = createPeerConnection();
-        const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+        const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        await sendSignal('offer', offer, targetId);
+        await sendSignal('offer', pc.localDescription, targetId);
     } catch (err) {
         console.error("Offer error:", err);
     } finally {
-        setTimeout(() => { isNegotiating = false; }, 1500);
+        makingOffer = false;
     }
 }
 
@@ -1359,13 +1630,7 @@ async function pollRoom() {
             const others = (data.participants || []).filter(p => p.session_id !== SESSION_ID);
             if (others.length > 0) {
                 remoteParticipantName = others[0].name;
-                if (USER_ROLE === 'advisor') {
-                    const pc = peerConnection;
-                    const needsNegotiation = !pc || pc.connectionState === 'new' || pc.connectionState === 'disconnected';
-                    if (needsNegotiation && !isNegotiating && (Date.now() - lastOfferTimestamp > 3000)) {
-                        initiateOffer(others[0].session_id);
-                    }
-                }
+                remoteParticipantSessionId = others[0].session_id;
             }
 
             // Host Waiting Room List
@@ -1410,12 +1675,26 @@ async function handleSignal(sig) {
 
     if (sig.type === 'user-joined') {
         remoteParticipantName = sig.sender_name;
+        remoteParticipantSessionId = sig.sender_id;
         document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
-        if (USER_ROLE === 'advisor') initiateOffer(sig.sender_id);
+        if (USER_ROLE === 'advisor') {
+            initiateOffer(sig.sender_id);
+        }
     } else if (sig.type === 'offer') {
         remoteParticipantName = sig.sender_name;
+        remoteParticipantSessionId = sig.sender_id;
         const pc = createPeerConnection();
+        const offerCollision = (makingOffer || pc.signalingState !== 'stable');
+        ignoreOffer = !isPolite && offerCollision;
+        if (ignoreOffer) {
+            console.warn("Offer collision detected: ignoring offer as impolite peer");
+            return;
+        }
+
         try {
+            if (offerCollision) {
+                await pc.setLocalDescription({ type: 'rollback' });
+            }
             await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
             await drainPendingCandidates();
             const answer = await pc.createAnswer();
@@ -1425,7 +1704,7 @@ async function handleSignal(sig) {
             console.error("Offer handle error:", err);
         }
     } else if (sig.type === 'answer') {
-        if (peerConnection && peerConnection.signalingState !== 'stable') {
+        if (peerConnection && peerConnection.signalingState === 'have-local-offer') {
             try {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
                 await drainPendingCandidates();
@@ -1437,7 +1716,11 @@ async function handleSignal(sig) {
         if (!sig.payload) return;
         const candidate = new RTCIceCandidate(sig.payload);
         if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
-            try { await peerConnection.addIceCandidate(candidate); } catch(e){}
+            try {
+                await peerConnection.addIceCandidate(candidate);
+            } catch(e) {
+                if (!ignoreOffer) console.warn("Ice candidate add exception:", e);
+            }
         } else {
             pendingCandidates.push(candidate);
         }
@@ -1692,15 +1975,48 @@ function setupVoiceActivityDetection(stream, cardId) {
 }
 
 // =========================================================================
-// Media Controls (Mic, Cam, Screen Share, Devices)
+// Media Controls (Mic, Cam, Flip Camera, Screen Share, Devices)
 // =========================================================================
-function toggleMic() {
-    isAudioMuted = !isAudioMuted;
-    if (localStream) {
-        localStream.getAudioTracks().forEach(t => t.enabled = !isAudioMuted);
-    }
+async function toggleMic() {
     const btn = document.getElementById('btnMic');
     const icon = document.getElementById('localMicIcon');
+
+    const liveAudioTracks = localStream ? localStream.getAudioTracks().filter(t => t.readyState === 'live') : [];
+
+    if (liveAudioTracks.length === 0) {
+        // Microphone track not acquired yet: request microphone permission dynamically
+        try {
+            const micStream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: true, noiseSuppression: true }
+            });
+            const newAudioTrack = micStream.getAudioTracks()[0];
+            if (!localStream) localStream = new MediaStream();
+            localStream.addTrack(newAudioTrack);
+
+            if (peerConnection) {
+                const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
+                if (sender) {
+                    sender.replaceTrack(newAudioTrack);
+                } else {
+                    peerConnection.addTrack(newAudioTrack, localStream);
+                }
+            }
+            setupVoiceActivityDetection(localStream, 'localCard');
+
+            isAudioMuted = false;
+            btn.classList.remove('btn-active-red');
+            btn.innerHTML = '<i class="fas fa-microphone"></i>';
+            icon.className = 'fas fa-microphone';
+            return;
+        } catch (e) {
+            alert("Unable to access microphone: " + e.message);
+            return;
+        }
+    }
+
+    isAudioMuted = !isAudioMuted;
+    liveAudioTracks.forEach(t => t.enabled = !isAudioMuted);
+
     if (isAudioMuted) {
         btn.classList.add('btn-active-red');
         btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
@@ -1712,14 +2028,52 @@ function toggleMic() {
     }
 }
 
-function toggleCam() {
-    isVideoStopped = !isVideoStopped;
-    if (localStream) {
-        localStream.getVideoTracks().forEach(t => t.enabled = !isVideoStopped);
-    }
+async function toggleCam() {
     const btn = document.getElementById('btnCam');
     const vid = document.getElementById('localVideo');
     const avatar = document.getElementById('localAvatar');
+
+    const liveVideoTracks = localStream ? localStream.getVideoTracks().filter(t => t.readyState === 'live') : [];
+
+    if (liveVideoTracks.length === 0) {
+        // Camera was not acquired during lobby or admissions: request user camera dynamically
+        try {
+            const camStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: currentFacingMode }
+            });
+            const newVidTrack = camStream.getVideoTracks()[0];
+            if (!localStream) localStream = new MediaStream();
+            localStream.addTrack(newVidTrack);
+
+            vid.srcObject = localStream;
+            vid.playsInline = true;
+            vid.setAttribute('playsinline', '');
+            vid.setAttribute('webkit-playsinline', '');
+            await vid.play().catch(() => {});
+
+            if (peerConnection) {
+                const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                    sender.replaceTrack(newVidTrack);
+                } else {
+                    peerConnection.addTrack(newVidTrack, localStream);
+                }
+            }
+
+            isVideoStopped = false;
+            btn.classList.remove('btn-active-red');
+            btn.innerHTML = '<i class="fas fa-video"></i>';
+            vid.style.display = 'block';
+            avatar.style.display = 'none';
+            return;
+        } catch (e) {
+            alert("Unable to access camera: " + e.message + "\nPlease check browser camera permissions.");
+            return;
+        }
+    }
+
+    isVideoStopped = !isVideoStopped;
+    liveVideoTracks.forEach(t => t.enabled = !isVideoStopped);
 
     if (isVideoStopped) {
         btn.classList.add('btn-active-red');
@@ -1731,6 +2085,61 @@ function toggleCam() {
         btn.innerHTML = '<i class="fas fa-video"></i>';
         vid.style.display = 'block';
         avatar.style.display = 'none';
+    }
+}
+
+async function flipCamera() {
+    currentFacingMode = (currentFacingMode === 'user' ? 'environment' : 'user');
+    const vid = document.getElementById('localVideo');
+
+    try {
+        let camStream = null;
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: currentFacingMode } }
+            });
+        } catch (e) {
+            camStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: currentFacingMode }
+            });
+        }
+
+        const newTrack = camStream.getVideoTracks()[0];
+        if (localStream) {
+            const oldTracks = localStream.getVideoTracks();
+            oldTracks.forEach(t => {
+                localStream.removeTrack(t);
+                t.stop();
+            });
+            localStream.addTrack(newTrack);
+        } else {
+            localStream = new MediaStream([newTrack]);
+        }
+
+        vid.srcObject = localStream;
+        vid.playsInline = true;
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('webkit-playsinline', '');
+
+        // Mirror selfie camera only
+        if (currentFacingMode === 'user') {
+            vid.classList.add('mirrored');
+        } else {
+            vid.classList.remove('mirrored');
+        }
+
+        await vid.play().catch(() => {});
+
+        if (peerConnection) {
+            const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (sender) {
+                sender.replaceTrack(newTrack);
+            } else {
+                peerConnection.addTrack(newTrack, localStream);
+            }
+        }
+    } catch (err) {
+        console.warn("Could not switch camera:", err);
     }
 }
 
