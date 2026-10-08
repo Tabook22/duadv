@@ -782,7 +782,7 @@
 
             <!-- Remote Participant Card -->
             <div class="video-card" id="remoteCard">
-                <video id="remoteVideo" autoplay playsinline webkit-playsinline="true"></video>
+                <video id="remoteVideo" autoplay playsinline webkit-playsinline="true" style="display: none;"></video>
                 <div class="avatar-placeholder" id="remoteAvatar">
                     <i class="fas fa-user"></i>
                 </div>
@@ -1076,7 +1076,7 @@ let makingOffer = false;
 let ignoreOffer = false;
 let remoteParticipantSessionId = null;
 
-// Multi-vendor STUN + Free OpenRelay TURN configuration for Carrier-Grade / Mobile NAT Traversal
+// Multi-vendor verified responsive STUN servers
 const rtcConfig = {
     iceServers: [
         { urls: [
@@ -1084,18 +1084,8 @@ const rtcConfig = {
             'stun:stun1.l.google.com:19302',
             'stun:stun2.l.google.com:19302',
             'stun:stun.cloudflare.com:3478',
-            'stun:global.stun.twilio.com:3478'
-        ]},
-        {
-            urls: [
-                'stun:openrelay.metered.ca:80',
-                'turn:openrelay.metered.ca:80',
-                'turn:openrelay.metered.ca:443',
-                'turn:openrelay.metered.ca:443?transport=tcp'
-            ],
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
+            'stun:stun.freeswitch.org:3478'
+        ]}
     ],
     iceCandidatePoolSize: 10
 };
@@ -1424,7 +1414,7 @@ function createPeerConnection() {
         });
     }
 
-    // Ensure audio & video transceivers exist
+    // Ensure audio & video transceivers exist with sendrecv direction
     const senders = peerConnection.getSenders();
     if (!senders.some(s => s.track && s.track.kind === 'audio')) {
         try { peerConnection.addTransceiver('audio', { direction: 'sendrecv' }); } catch(e){}
@@ -1433,38 +1423,42 @@ function createPeerConnection() {
         try { peerConnection.addTransceiver('video', { direction: 'sendrecv' }); } catch(e){}
     }
 
-    peerConnection.onnegotiationneeded = async () => {
-        try {
-            makingOffer = true;
-            await peerConnection.setLocalDescription();
-            await sendSignal('offer', peerConnection.localDescription, remoteParticipantSessionId);
-        } catch (err) {
-            console.warn("onnegotiationneeded error:", err);
-        } finally {
-            makingOffer = false;
-        }
-    };
-
     peerConnection.ontrack = (event) => {
         console.log("Remote track received:", event.track.kind);
         const remoteVideo = document.getElementById('remoteVideo');
         const remoteAvatar = document.getElementById('remoteAvatar');
 
+        let stream = null;
         if (event.streams && event.streams[0]) {
-            remoteVideo.srcObject = event.streams[0];
+            stream = event.streams[0];
         } else {
             if (!remoteVideo.srcObject || !(remoteVideo.srcObject instanceof MediaStream)) {
                 remoteVideo.srcObject = new MediaStream();
             }
             remoteVideo.srcObject.addTrack(event.track);
+            stream = remoteVideo.srcObject;
+        }
+        remoteVideo.srcObject = stream;
+
+        // If audio track, setup speaking visualizer
+        if (event.track.kind === 'audio') {
+            setupVoiceActivityDetection(stream, 'remoteCard');
         }
 
-        event.track.onunmute = () => {
-            if (event.track.kind === 'video') {
-                remoteAvatar.style.display = 'none';
+        // If video track, show video once active
+        if (event.track.kind === 'video') {
+            remoteVideo.style.display = 'block';
+            remoteAvatar.style.display = 'none';
+
+            event.track.onunmute = () => {
                 remoteVideo.style.display = 'block';
-            }
-        };
+                remoteAvatar.style.display = 'none';
+            };
+            event.track.onmute = () => {
+                remoteVideo.style.display = 'none';
+                remoteAvatar.style.display = 'flex';
+            };
+        }
 
         remoteVideo.playsInline = true;
         remoteVideo.setAttribute('playsinline', '');
@@ -1478,7 +1472,7 @@ function createPeerConnection() {
                 remoteVideo.style.display = 'block';
             }
         }).catch(err => {
-            console.warn("Autoplay restriction encountered on remote video:", err);
+            console.warn("Autoplay restriction on remote video:", err);
             remoteVideo.muted = true;
             remoteVideo.play().then(() => {
                 showAudioUnlockBanner();
@@ -1492,7 +1486,13 @@ function createPeerConnection() {
 
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-            sendSignal('candidate', event.candidate, remoteParticipantSessionId);
+            const candPayload = {
+                candidate: event.candidate.candidate,
+                sdpMid: event.candidate.sdpMid,
+                sdpMLineIndex: event.candidate.sdpMLineIndex,
+                usernameFragment: event.candidate.usernameFragment
+            };
+            sendSignal('candidate', candPayload, remoteParticipantSessionId);
         }
     };
 
@@ -1501,7 +1501,7 @@ function createPeerConnection() {
         console.log("ICE connection state changed:", iceState);
         if (iceState === 'failed') {
             if (USER_ROLE === 'advisor' && (Date.now() - lastOfferTimestamp > 8000)) {
-                console.log("ICE failed; performing ICE restart...");
+                console.log("ICE failed; restarting ICE negotiation...");
                 lastOfferTimestamp = Date.now();
                 try { peerConnection.restartIce(); } catch(e){}
             }
@@ -1574,11 +1574,15 @@ async function initiateOffer(targetId = null) {
 
     try {
         const pc = createPeerConnection();
-        const offer = await pc.createOffer();
+        const offer = await pc.createOffer({
+            offerToReceiveAudio: true,
+            offerToReceiveVideo: true
+        });
         await pc.setLocalDescription(offer);
-        await sendSignal('offer', pc.localDescription, targetId);
+        await sendSignal('offer', { type: offer.type, sdp: offer.sdp }, targetId);
+        console.log("WebRTC offer dispatched to target:", targetId);
     } catch (err) {
-        console.error("Offer error:", err);
+        console.error("initiateOffer error:", err);
     } finally {
         makingOffer = false;
     }
@@ -1631,6 +1635,16 @@ async function pollRoom() {
             if (others.length > 0) {
                 remoteParticipantName = others[0].name;
                 remoteParticipantSessionId = others[0].session_id;
+
+                // If advisor is in the room and connection is not yet established, initiate offer cleanly
+                if (USER_ROLE === 'advisor') {
+                    const pc = peerConnection;
+                    const needsInitialOffer = !pc || (pc.connectionState !== 'connected' && pc.signalingState === 'stable' && (Date.now() - lastOfferTimestamp > 6000));
+                    if (needsInitialOffer && !makingOffer) {
+                        console.log("Advisor initiating offer to attendee:", others[0].session_id);
+                        initiateOffer(others[0].session_id);
+                    }
+                }
             }
 
             // Host Waiting Room List
@@ -1681,45 +1695,41 @@ async function handleSignal(sig) {
             initiateOffer(sig.sender_id);
         }
     } else if (sig.type === 'offer') {
+        console.log("Received offer from:", sig.sender_id);
         remoteParticipantName = sig.sender_name;
         remoteParticipantSessionId = sig.sender_id;
+        document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
         const pc = createPeerConnection();
-        const offerCollision = (makingOffer || pc.signalingState !== 'stable');
-        ignoreOffer = !isPolite && offerCollision;
-        if (ignoreOffer) {
-            console.warn("Offer collision detected: ignoring offer as impolite peer");
-            return;
-        }
 
         try {
-            if (offerCollision) {
-                await pc.setLocalDescription({ type: 'rollback' });
-            }
             await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
             await drainPendingCandidates();
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
-            await sendSignal('answer', answer, sig.sender_id);
+            await sendSignal('answer', { type: answer.type, sdp: answer.sdp }, sig.sender_id);
+            console.log("WebRTC answer sent to host:", sig.sender_id);
         } catch (err) {
-            console.error("Offer handle error:", err);
+            console.error("Offer processing error:", err);
         }
     } else if (sig.type === 'answer') {
+        console.log("Received answer from:", sig.sender_id);
         if (peerConnection && peerConnection.signalingState === 'have-local-offer') {
             try {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
                 await drainPendingCandidates();
+                console.log("WebRTC connection established between host and attendee!");
             } catch (err) {
                 console.error("Answer handle error:", err);
             }
         }
     } else if (sig.type === 'candidate') {
-        if (!sig.payload) return;
+        if (!sig.payload || !sig.payload.candidate) return;
         const candidate = new RTCIceCandidate(sig.payload);
         if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
             try {
                 await peerConnection.addIceCandidate(candidate);
             } catch(e) {
-                if (!ignoreOffer) console.warn("Ice candidate add exception:", e);
+                console.warn("Ice candidate add exception:", e);
             }
         } else {
             pendingCandidates.push(candidate);
@@ -1748,7 +1758,9 @@ async function drainPendingCandidates() {
     if (!peerConnection || !peerConnection.remoteDescription) return;
     while (pendingCandidates.length > 0) {
         const cand = pendingCandidates.shift();
-        try { await peerConnection.addIceCandidate(cand); } catch(e){}
+        try {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(cand));
+        } catch(e){}
     }
 }
 
