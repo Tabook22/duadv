@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 0.0
 semester_gpa: null
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Mansoor Salim Mansoor Ghalib Alshanfari

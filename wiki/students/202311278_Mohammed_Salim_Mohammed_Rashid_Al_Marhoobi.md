@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "MODERATE"
 cgpa: 65.63
 semester_gpa: 61.5
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Mohammed Salim Mohammed Rashid Al Marhoobi

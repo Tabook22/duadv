@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "CRITICAL"
 cgpa: 63.17
 semester_gpa: 63.0
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Sharifa Ali Janazel Masan

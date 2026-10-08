@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "MODERATE"
 cgpa: 61.63
 semester_gpa: 51.25
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Aryam Fayal Said Salim Al-Gheilani

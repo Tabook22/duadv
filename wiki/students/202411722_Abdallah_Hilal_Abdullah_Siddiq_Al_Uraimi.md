@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "MODERATE"
 cgpa: 62.86
 semester_gpa: 61.33
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Abdallah Hilal Abdullah Siddiq Al Uraimi

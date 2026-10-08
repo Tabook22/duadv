@@ -15,6 +15,7 @@
             --meet-green: #34a853;
             --meet-blue: #1a73e8;
             --meet-text: #e8eaed;
+            --meet-card-border: #3c4043;
         }
 
         body, html {
@@ -22,7 +23,7 @@
             margin: 0;
             background-color: var(--meet-bg);
             color: var(--meet-text);
-            font-family: 'Google Sans', Roboto, Arial, sans-serif;
+            font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
             overflow: hidden;
         }
 
@@ -46,13 +47,14 @@
         }
 
         .header-bar {
-            height: 52px;
-            padding: 8px 16px;
+            height: 56px;
+            padding: 8px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(32, 33, 36, 0.9);
+            background: rgba(32, 33, 36, 0.95);
             z-index: 10;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
         .video-grid {
@@ -64,6 +66,7 @@
             padding: 16px;
             position: relative;
             background-color: #1a1a1c;
+            flex-wrap: wrap;
         }
 
         .video-card {
@@ -74,11 +77,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            border: 1px solid #3c4043;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            border: 2px solid transparent;
             height: 85%;
             flex: 1;
+            min-width: 320px;
             max-width: 50%;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .video-card.speaking {
+            border-color: var(--meet-green) !important;
+            box-shadow: 0 0 16px rgba(52, 168, 83, 0.6) !important;
         }
 
         .video-card.single {
@@ -101,7 +111,7 @@
             position: absolute;
             bottom: 12px;
             left: 12px;
-            background: rgba(32, 33, 36, 0.75);
+            background: rgba(32, 33, 36, 0.85);
             padding: 4px 12px;
             border-radius: 6px;
             font-size: 0.85rem;
@@ -109,20 +119,21 @@
             align-items: center;
             gap: 6px;
             backdrop-filter: blur(4px);
+            z-index: 5;
         }
 
         .avatar-placeholder {
-            width: 100px;
-            height: 100px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
-            background: #4285f4;
+            background: linear-gradient(135deg, #4285f4, #1a73e8);
             color: white;
             font-size: 2.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 500;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
         }
 
         /* Bottom Controls Dock (Google Meet Style) */
@@ -134,6 +145,7 @@
             padding: 0 24px;
             background: var(--meet-bg);
             z-index: 20;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
 
         .dock-btn {
@@ -146,15 +158,16 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            margin: 0 6px;
+            font-size: 1.15rem;
+            margin: 0 5px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
 
         .dock-btn:hover {
             background-color: #5f6368;
+            transform: translateY(-2px);
         }
 
         .dock-btn.btn-active-red {
@@ -162,8 +175,19 @@
             color: #fff !important;
         }
 
+        .dock-btn.btn-active-recording {
+            background-color: var(--meet-red) !important;
+            animation: pulse-recording 1.5s infinite;
+        }
+
+        @keyframes pulse-recording {
+            0% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+        }
+
         .dock-btn.btn-leave {
-            width: 64px;
+            width: 68px;
             border-radius: 24px;
             background-color: var(--meet-red);
         }
@@ -172,9 +196,9 @@
             background-color: #d93025;
         }
 
-        /* Side Panels (Chat, Notes, Files, Dossier) */
+        /* Side Panels (Chat, Notes, Files, Dossier, Waiting Room) */
         .side-panel {
-            width: 380px;
+            width: 390px;
             background: #fff;
             color: #202124;
             display: none;
@@ -195,7 +219,7 @@
         }
 
         .panel-header {
-            padding: 16px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -219,8 +243,8 @@
         }
         .chat-text {
             background: #f1f3f4;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 8px 14px;
+            border-radius: 12px;
             font-size: 0.9rem;
             display: inline-block;
             word-break: break-word;
@@ -230,6 +254,12 @@
             background: #e8f0fe;
             color: #1a73e8;
         }
+        .chat-system .chat-text {
+            background: #fef7e0;
+            color: #b06000;
+            font-size: 0.8rem;
+            border: 1px dashed #f9ab00;
+        }
         .chat-mine {
             text-align: right;
         }
@@ -237,38 +267,290 @@
         /* Badge notification */
         .badge-count {
             position: absolute;
-            top: -2px;
-            right: -2px;
+            top: -4px;
+            right: -4px;
             background: var(--meet-red);
             color: white;
             border-radius: 50%;
             font-size: 0.7rem;
             padding: 2px 6px;
+            font-weight: 700;
+        }
+
+        /* Host Floating Knock Request Banner */
+        .knock-banner {
+            position: absolute;
+            top: 68px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d2e30;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 32px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            gap: 16px;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.15);
+            animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translate(-50%, -20px); opacity: 0; }
+            100% { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        /* Pre-Meeting Waiting Room / Green Room Overlay */
+        .waiting-room-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #202124;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .lobby-card {
+            background: #2d2e30;
+            border-radius: 20px;
+            padding: 32px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            border: 1px solid #3c4043;
+            text-align: center;
+        }
+
+        .lobby-video-preview-wrapper {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: #1a1a1c;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 18px;
+            border: 1px solid #3c4043;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lobby-video-preview-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .lobby-controls-bar {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: rgba(32, 33, 36, 0.8);
+            padding: 6px 14px;
+            border-radius: 24px;
+            backdrop-filter: blur(4px);
+        }
+
+        .lobby-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #3c4043;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .lobby-btn.active-red {
+            background: var(--meet-red) !important;
+        }
+
+        /* Pulsing waiting status */
+        .pulsing-ring {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(26, 115, 232, 0.3);
+            border-top-color: #1a73e8;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
 
-<div class="meet-container">
-    <!-- Main Video Stage -->
-    <div class="stage-area" id="stageArea">
-        <!-- Header bar -->
-        <div class="header-bar">
-            <div class="d-flex align-items-center">
-                <span class="badge bg-primary text-uppercase me-2 font-monospace">{{ room.room_id }}</span>
-                <span class="fw-semibold text-truncate" style="max-width: 320px;">{{ room.title }}</span>
+<!-- ========================================================================= -->
+<!-- Waiting Room Lobby (Google Meet Style Pre-Meeting Green Room)             -->
+<!-- Shown to attendees who need to enter passcode or request host admission    -->
+<!-- ========================================================================= -->
+<div id="waitingRoomOverlay" class="waiting-room-overlay" style="display: none;">
+    <div class="lobby-card" id="lobbyJoinCard">
+        <div class="d-flex align-items-center justify-content-center mb-2">
+            <span class="badge bg-primary px-3 py-1 font-monospace">{{ room.room_id }}</span>
+        </div>
+        <h4 class="fw-bold mb-1">{{ room.title }}</h4>
+        <p class="text-muted small mb-3">Host: {{ room.advisor_name }} &bull; Dhofar University</p>
+
+        <!-- Live Camera & Mic Preview -->
+        <div class="lobby-video-preview-wrapper">
+            <video id="lobbyPreviewVideo" autoplay playsinline muted></video>
+            <div id="lobbyPreviewAvatar" class="avatar-placeholder" style="display: none;">
+                <i class="fas fa-user"></i>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <span id="callDuration" class="badge bg-dark border text-muted">00:00</span>
-                <button class="btn btn-sm btn-outline-light" onclick="copyInviteLink()" title="Copy invite link">
-                    <i class="fas fa-link me-1"></i> Copy Link
+            <div class="lobby-controls-bar">
+                <button type="button" class="lobby-btn" id="lobbyBtnMic" onclick="toggleLobbyMic()" title="Toggle Mic">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button type="button" class="lobby-btn" id="lobbyBtnCam" onclick="toggleLobbyCam()" title="Toggle Camera">
+                    <i class="fas fa-video"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Audio unlock prompt for mobile devices -->
-        <div id="audioUnlockBanner" onclick="unlockAudio()" style="display: none; position: absolute; top: 72px; left: 50%; transform: translateX(-50%); background: #1a73e8; color: #fff; padding: 10px 22px; border-radius: 28px; font-weight: 500; font-size: 0.9rem; z-index: 100; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.5);">
-            <i class="fas fa-volume-up me-2"></i> Tap to enable sound
+        <!-- Name & Passcode Form -->
+        <div id="lobbyFormArea">
+            <div class="row g-2 mb-2 text-start">
+                <div class="col-md-7">
+                    <label class="small text-muted fw-semibold">Your Full Name:</label>
+                    <input type="text" id="lobbyUserName" class="form-control form-control-sm bg-dark text-light border-secondary" 
+                           value="{{ user_name }}" placeholder="Enter your full name">
+                </div>
+                <div class="col-md-5">
+                    <label class="small text-muted fw-semibold">Your Role:</label>
+                    <select id="lobbyUserRole" class="form-select form-select-sm bg-dark text-light border-secondary">
+                        <option value="student" {{ 'selected' if role == 'student' or not role else '' }}>Student Advisee</option>
+                        <option value="guest">External Guest</option>
+                        <option value="parent">Parent / Guardian</option>
+                        <option value="co_advisor">Co-Advisor / Faculty</option>
+                        <option value="evaluator">External Evaluator</option>
+                    </select>
+                </div>
+            </div>
+
+            {% if require_passcode %}
+            <div class="mb-3 text-start">
+                <label class="small text-muted fw-semibold"><i class="fas fa-lock text-warning me-1"></i> Meeting Passcode / PIN:</label>
+                <input type="text" id="lobbyPasscode" class="form-control form-control-sm bg-dark text-light border-secondary font-monospace" 
+                       placeholder="Enter room passcode (e.g. DU-XXXX)">
+            </div>
+            {% endif %}
+
+            <div id="lobbyErrorMessage" class="alert alert-danger py-2 small" style="display: none;"></div>
+
+            <button type="button" class="btn btn-primary w-100 py-2 fw-bold" onclick="submitKnockRequest()">
+                <i class="fas fa-hand-paper me-2"></i> Ask to Join Meeting
+            </button>
+        </div>
+
+        <!-- Waiting for Host Approval Spinner -->
+        <div id="lobbyWaitingArea" style="display: none;">
+            <div class="pulsing-ring"></div>
+            <h5 class="fw-bold mb-2">Asking to join...</h5>
+            <p class="text-muted small mb-3">
+                You'll join the meeting when host <strong>{{ room.advisor_name }}</strong> admits you.
+            </p>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelKnockRequest()">
+                Cancel Request
+            </button>
+        </div>
+
+        <!-- Denied Message Area -->
+        <div id="lobbyDeniedArea" style="display: none;">
+            <div class="text-danger mb-3">
+                <i class="fas fa-times-circle fa-3x"></i>
+            </div>
+            <h5 class="fw-bold text-danger mb-2">Entry Request Declined</h5>
+            <p class="text-muted small mb-3">
+                The meeting host was unable to admit you to this session at this time.
+            </p>
+            <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-outline-primary btn-sm">
+                Return to Advising Portal
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- Host Floating Banner for Knock Requests                                   -->
+<!-- ========================================================================= -->
+<div id="knockBanner" class="knock-banner">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-user-clock text-warning fa-lg me-2"></i>
+        <div>
+            <div class="fw-bold small" id="knockBannerText">Participant is asking to join</div>
+            <small class="text-muted" id="knockBannerSub">Waiting in lobby</small>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-success px-3 fw-bold" onclick="admitKnockFromBanner()">
+            <i class="fas fa-check me-1"></i> Admit
+        </button>
+        <button class="btn btn-sm btn-outline-danger px-3" onclick="denyKnockFromBanner()">
+            <i class="fas fa-times me-1"></i> Deny
+        </button>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- In-Call Main Stage & Dock                                                 -->
+<!-- ========================================================================= -->
+<div class="meet-container">
+    <div class="stage-area" id="stageArea">
+        <!-- Top Header Bar -->
+        <div class="header-bar">
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary text-uppercase me-2 font-monospace">{{ room.room_id }}</span>
+                <span class="fw-semibold text-truncate me-2" style="max-width: 300px;">{{ room.title }}</span>
+                {% if room.require_passcode %}
+                <span class="badge bg-warning text-dark me-2 small"><i class="fas fa-lock me-1"></i>Passcode Protected</span>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <!-- Recording Active Badge -->
+                <span id="recordingBadge" class="badge bg-danger text-white d-none align-items-center">
+                    <i class="fas fa-circle me-1" style="font-size: 0.6rem; animation: blink 1s infinite;"></i>
+                    <span id="recordingTimerText">REC 00:00</span>
+                </span>
+
+                <!-- Duration Countdown Timer -->
+                <span id="callDurationBadge" class="badge bg-dark border text-light py-2 px-3">
+                    <i class="fas fa-clock me-1 text-primary"></i> <span id="callDurationText">00:00</span>
+                </span>
+
+                <!-- Host Quick Duration Extension -->
+                {% if role == 'advisor' %}
+                <button class="btn btn-sm btn-outline-light py-1 px-2" onclick="extendMeetingDuration(15)" title="Add 15 minutes to session">
+                    <i class="fas fa-plus me-1"></i> +15m
+                </button>
+                <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="endCallForAll()" title="End call for everyone">
+                    <i class="fas fa-power-off me-1"></i> End Call
+                </button>
+                {% endif %}
+
+                <button class="btn btn-sm btn-outline-light" onclick="copyInviteLink()" title="Copy invite link">
+                    <i class="fas fa-link me-1"></i> Copy Link
+                </button>
+            </div>
         </div>
 
         <!-- Video Grid Area -->
@@ -282,6 +564,7 @@
                 <div class="video-overlay-name">
                     <i class="fas fa-microphone" id="localMicIcon"></i>
                     <span>{{ user_name }} (You)</span>
+                    <span class="badge bg-primary" style="font-size: 0.65rem;">{{ 'Host' if role == 'advisor' else 'Participant' }}</span>
                 </div>
             </div>
 
@@ -293,7 +576,7 @@
                 </div>
                 <div class="video-overlay-name">
                     <i class="fas fa-microphone" id="remoteMicIcon"></i>
-                    <span id="remoteNameLabel">Waiting for student to join...</span>
+                    <span id="remoteNameLabel">Waiting for student or guest to join...</span>
                 </div>
             </div>
         </div>
@@ -303,46 +586,85 @@
             <!-- Left Info -->
             <div class="d-flex align-items-center text-truncate" style="width: 250px;">
                 <small class="text-muted d-none d-md-block">
-                    Dhofar University SIS &bull; Live Advising Room
+                    Dhofar University SIS &bull; Video Conference
                 </small>
             </div>
 
             <!-- Center Controls -->
             <div class="d-flex align-items-center justify-content-center">
-                <button class="dock-btn" id="btnMic" onclick="toggleMic()" title="Turn off microphone (ctrl + d)">
+                <button class="dock-btn" id="btnMic" onclick="toggleMic()" title="Turn off microphone (Ctrl + D)">
                     <i class="fas fa-microphone"></i>
                 </button>
-                <button class="dock-btn" id="btnCam" onclick="toggleCam()" title="Turn off camera (ctrl + e)">
+                <button class="dock-btn" id="btnCam" onclick="toggleCam()" title="Turn off camera (Ctrl + E)">
                     <i class="fas fa-video"></i>
                 </button>
                 <button class="dock-btn" id="btnScreen" onclick="toggleScreenShare()" title="Present now / Share screen">
                     <i class="fas fa-desktop"></i>
                 </button>
-                <button class="dock-btn btn-leave" onclick="leaveMeeting()" title="Leave call">
+                <button class="dock-btn" id="btnRecord" onclick="toggleSessionRecording()" title="Record this advising session">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>
+                <button class="dock-btn" id="btnDevices" onclick="openDeviceSettingsModal()" title="Microphone & Camera Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="dock-btn btn-leave" onclick="leaveMeeting()" title="Leave meeting">
                     <i class="fas fa-phone-slash"></i>
                 </button>
             </div>
 
             <!-- Right Tools -->
-            <div class="d-flex align-items-center justify-content-end" style="width: 250px;">
+            <div class="d-flex align-items-center justify-content-end" style="width: 280px;">
+                <!-- Host Waiting Room Control Button -->
+                {% if role == 'advisor' %}
+                <button class="dock-btn" id="btnWaitingRoom" onclick="togglePanel('waiting')" title="Waiting Room / Knock Requests">
+                    <i class="fas fa-user-clock"></i>
+                    <span id="waitingBadge" class="badge-count" style="display: none;">0</span>
+                </button>
+                {% endif %}
+
                 {% if audit or group_students %}
                 <button class="dock-btn" onclick="togglePanel('dossier')" title="Student Degree Audit & Standing">
                     <i class="fas fa-id-card"></i>
                 </button>
                 {% endif %}
+
                 <button class="dock-btn" onclick="togglePanel('notes')" title="Shared Advising Notes">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="dock-btn" onclick="togglePanel('files')" title="Share Files & Transcripts">
+                <button class="dock-btn" onclick="togglePanel('files')" title="Share Files & Session Recordings">
                     <i class="fas fa-folder-open"></i>
+                    <span id="filesBadge" class="badge-count" style="display: none;">0</span>
                 </button>
-                <button class="dock-btn" onclick="togglePanel('chat')" title="In-call messages">
+                <button class="dock-btn" onclick="togglePanel('chat')" title="In-call chat messages">
                     <i class="fas fa-comment-alt"></i>
                     <span id="chatBadge" class="badge-count" style="display: none;">0</span>
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- ========================================================================= -->
+    <!-- Side Panels (Waiting Room, Chat, Notes, Files, Dossier)                   -->
+    <!-- ========================================================================= -->
+
+    <!-- Side Panel 0: Host Waiting Room Manager -->
+    {% if role == 'advisor' %}
+    <div class="side-panel" id="panelWaiting">
+        <div class="panel-header bg-primary text-white">
+            <h6 class="fw-bold mb-0"><i class="fas fa-user-clock me-2"></i> Waiting Room Lobby</h6>
+            <button class="btn-close btn-close-white" onclick="closePanels()"></button>
+        </div>
+        <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
+            <small class="text-muted"><span id="waitingCountLabel">0</span> people waiting to join</small>
+            <button class="btn btn-sm btn-outline-success py-0" onclick="admitAllWaiting()">
+                <i class="fas fa-check-double me-1"></i> Admit All
+            </button>
+        </div>
+        <div class="panel-content" id="waitingListContainer">
+            <div class="text-muted small text-center py-4">No attendees currently in the waiting room.</div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Side Panel 1: Chat -->
     <div class="side-panel" id="panelChat">
@@ -383,23 +705,31 @@
         </div>
     </div>
 
-    <!-- Side Panel 3: In-Meeting Files Sharing -->
+    <!-- Side Panel 3: In-Meeting Documents & Saved Recordings -->
     <div class="side-panel" id="panelFiles">
         <div class="panel-header">
-            <h6 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-success"></i> Shared Documents</h6>
+            <h6 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-success"></i> Documents & Recordings</h6>
             <button class="btn-close" onclick="closePanels()"></button>
         </div>
         <div class="panel-content">
             <div class="border rounded p-3 mb-3 bg-light text-center">
                 <input type="file" id="fileUploadInput" class="d-none" onchange="uploadMeetingFile(event)">
                 <button class="btn btn-outline-primary btn-sm w-100" onclick="document.getElementById('fileUploadInput').click()">
-                    <i class="fas fa-cloud-upload-alt me-1"></i> Share Transcript or Schedule
+                    <i class="fas fa-cloud-upload-alt me-1"></i> Share Document or Schedule
                 </button>
-                <small class="text-muted d-block mt-1">Upload PDF, Excel or document for instant download</small>
+                <small class="text-muted d-block mt-1">Upload PDF, Excel or transcript</small>
             </div>
-            <h6 class="small fw-bold text-muted mb-2">Available Documents</h6>
+
+            <!-- Saved Session Recordings Section -->
+            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-film text-danger me-1"></i> Session Video Recordings</h6>
+            <div id="savedRecordingsList" class="list-group list-group-flush mb-4">
+                <div class="text-muted small text-center py-2">No recordings saved yet.</div>
+            </div>
+
+            <!-- Shared Documents Section -->
+            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-file-alt text-primary me-1"></i> Shared Documents</h6>
             <div id="sharedFilesList" class="list-group list-group-flush">
-                <div class="text-muted small text-center py-3">No documents shared yet.</div>
+                <div class="text-muted small text-center py-2">No documents shared yet.</div>
             </div>
         </div>
     </div>
@@ -417,104 +747,103 @@
             <button class="btn-close btn-close-white" onclick="closePanels()"></button>
         </div>
         <div class="panel-content">
-            {% if group_students|length > 1 %}
-            <!-- Student switcher tabs for group meetings -->
-            <ul class="nav nav-pills nav-fill mb-3 p-1 bg-light rounded" id="groupStudentTabs" role="tablist">
-                {% for item in group_students %}
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link py-1 px-2 small text-truncate {{ 'active fw-bold' if loop.first else '' }}" 
-                            id="tab-btn-{{ item.student.id }}" 
-                            data-bs-toggle="pill" 
-                            data-bs-target="#tab-pane-{{ item.student.id }}" 
-                            type="button" 
-                            role="tab"
-                            title="{{ item.student.name }} ({{ item.student.id }})">
-                        {{ item.student.name.split(' ')[0] }}
-                    </button>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-
-            <div class="tab-content" id="groupStudentTabContent">
-                {% for item in group_students %}
-                {% set cur_student = item.student %}
-                {% set cur_audit = item.audit %}
-                <div class="tab-pane fade {{ 'show active' if loop.first else '' }}" 
-                     id="tab-pane-{{ cur_student.id }}" 
-                     role="tabpanel">
+            {% for item in group_students %}
+            {% set cur_student = item.student %}
+            {% set cur_audit = item.audit %}
+            <div class="card mb-3 border-0 bg-light">
+                <div class="card-body p-3">
+                    <h5 class="fw-bold text-primary mb-1">{{ cur_student.name }}</h5>
+                    <div class="font-monospace small text-muted mb-2">ID: {{ cur_student.id }} &bull; {{ cur_student.program or 'Computer Science' }}</div>
                     
-                    <div class="card mb-3 border-0 bg-light">
-                        <div class="card-body p-3">
-                            <h5 class="fw-bold text-primary mb-1">{{ cur_student.name }}</h5>
-                            <div class="font-monospace small text-muted mb-2">ID: {{ cur_student.id }} &bull; {{ cur_student.program or 'Computer Science' }}</div>
-                            
-                            {% set st = cur_student.status or 'Good Standing' %}
-                            <div class="mb-2">
-                                <span class="badge bg-{{ 'danger' if 'Strict' in st else 'warning text-dark' if 'Probation' in st else 'success' }} fs-7">
-                                    {{ st }}
-                                </span>
+                    <div class="row g-2 mb-2 text-center">
+                        <div class="col-4">
+                            <div class="p-2 border rounded bg-white">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">CGPA</small>
+                                <strong class="fs-6 {{ 'text-danger' if (cur_student.cgpa or cur_student.gpa or 0) < 2.0 else 'text-success' }}">
+                                    {{ "%.2f"|format(cur_student.cgpa or cur_student.gpa or 0.0) }}
+                                </strong>
                             </div>
-
-                            {% if cur_audit %}
-                            <div class="row g-2 text-center mt-2">
-                                <div class="col-6">
-                                    <div class="p-2 border rounded bg-white">
-                                        <div class="text-muted small">CGPA</div>
-                                        <strong class="fs-6 text-{{ 'danger' if cur_audit.current_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(cur_audit.current_gpa) }}%</strong>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="p-2 border rounded bg-white">
-                                        <div class="text-muted small">SGPA</div>
-                                        <strong class="fs-6">{{ "%.2f"|format(cur_audit.semester_gpa) if cur_audit.semester_gpa else '-' }}%</strong>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 border rounded bg-white">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">Passed Cr</small>
+                                <strong class="fs-6 text-primary">{{ cur_student.credits_completed or 'N/A' }}</strong>
                             </div>
-                            {% endif %}
                         </div>
-                    </div>
-
-                    {% if cur_audit %}
-                    <div class="mb-3">
-                        <h6 class="fw-bold small text-muted">Curriculum Progress</h6>
-                        <div class="progress mb-1" style="height: 10px;">
-                            <div class="progress-bar bg-success" style="width: {{ cur_audit.earned_percentage }}%;"></div>
+                        <div class="col-4">
+                            <div class="p-2 border rounded bg-white">
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">Status</small>
+                                <strong class="fs-6" style="font-size: 0.8rem;">{{ cur_student.status or 'Normal' }}</strong>
+                            </div>
                         </div>
-                        <small class="text-muted">{{ cur_audit.earned_credits }} of {{ cur_audit.total_plan_credits }} Credits Completed ({{ cur_audit.earned_percentage }}%)</small>
-                    </div>
-                    {% endif %}
-
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="{{ url_for('main.student_advising_plan', student_id=cur_student.id) }}" target="_blank" class="btn btn-warning btn-sm fw-semibold text-dark">
-                            <i class="fas fa-print me-1"></i> Open Advising Action Plan
-                        </a>
-                        <a href="{{ url_for('main.student_detail', student_id=cur_student.id) }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-external-link-alt me-1"></i> Full Student Profile
-                        </a>
-                        <a href="{{ url_for('main.student_transcript_pdf', student_id=cur_student.id) }}" target="_blank" class="btn btn-outline-danger btn-sm">
-                            <i class="fas fa-file-pdf me-1"></i> Academic Transcript PDF
-                        </a>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}
 </div>
 
-<!-- WebRTC & Meeting Collaboration Logic -->
+<!-- ========================================================================= -->
+<!-- Device Settings Modal (Select Cam / Mic)                                  -->
+<!-- ========================================================================= -->
+<div class="modal fade" id="deviceSettingsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0 bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold"><i class="fas fa-sliders-h me-2 text-primary"></i> Audio &amp; Video Settings</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Microphone:</label>
+                    <select id="selectAudioInput" class="form-select bg-dark text-light border-secondary"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Camera:</label>
+                    <select id="selectVideoInput" class="form-select bg-dark text-light border-secondary"></select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Mic Volume Test:</label>
+                    <div class="progress bg-secondary" style="height: 10px;">
+                        <div id="micVolumeBar" class="progress-bar bg-success" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ========================================================================= -->
+<!-- WebRTC, Waiting Room, Duration Timer & Recording Scripts                  -->
+<!-- ========================================================================= -->
 <script>
 const ROOM_ID = "{{ room.room_id }}";
 const APP_PREFIX = "{{ request.script_root }}";
-const USER_NAME = "{{ user_name }}";
-const USER_ROLE = "{{ role }}";
-const SESSION_ID = 'user_' + Math.random().toString(36).substring(2, 10);
+let USER_NAME = "{{ user_name }}";
+let USER_ROLE = "{{ role }}";
+const REQUIRE_ADMISSION = {{ 'true' if require_admission else 'false' }};
+const REQUIRE_PASSCODE = {{ 'true' if require_passcode else 'false' }};
+const DURATION_MINUTES = {{ duration_minutes or 0 }};
+let remainingSeconds = {{ remaining_seconds if remaining_seconds is not none else -1 }};
 
+const SESSION_ID = 'sess_' + Math.random().toString(36).substring(2, 10);
+
+let isAdmitted = (USER_ROLE === 'advisor' || !REQUIRE_ADMISSION);
+let lobbyStream = null;
 let localStream = null;
 let peerConnection = null;
 let screenStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingStartTime = 0;
+let recordingTimerInterval = null;
+
 let isAudioMuted = false;
 let isVideoStopped = false;
 let isScreenSharing = false;
@@ -524,15 +853,15 @@ let knownNotesVersion = 0;
 let notesDirtyTimeout = null;
 let unreadChatCount = 0;
 let activePanel = null;
+let currentKnockTargetSession = null;
 
-// Enhanced multi-vendor STUN configuration
+// Multi-vendor STUN servers
 const rtcConfig = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun.cloudflare.com:3478' },
-        { urls: 'stun:global.stun.twilio.com:3478' }
+        { urls: 'stun:stun.cloudflare.com:3478' }
     ],
     iceCandidatePoolSize: 10
 };
@@ -541,41 +870,168 @@ let pendingCandidates = [];
 let isNegotiating = false;
 let lastOfferTimestamp = 0;
 let remoteParticipantName = '';
+let audioContext = null;
+let analyser = null;
+let micSource = null;
 
-// Initialize Media and Join Room
-async function initCall() {
-    startCallTimer();
-    
-    // 1. Request camera and microphone
+// =========================================================================
+// Initialization Flow
+// =========================================================================
+window.addEventListener('DOMContentLoaded', async () => {
+    if (!isAdmitted) {
+        // Show Waiting Room Lobby
+        document.getElementById('waitingRoomOverlay').style.display = 'flex';
+        await initLobbyPreview();
+    } else {
+        await initMainCall();
+    }
+});
+
+// =========================================================================
+// Green Room Lobby (Pre-Meeting Cam/Mic Check & Knock)
+// =========================================================================
+async function initLobbyPreview() {
+    try {
+        lobbyStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('lobbyPreviewVideo').srcObject = lobbyStream;
+    } catch (e) {
+        console.warn("Lobby preview device error:", e);
+        document.getElementById('lobbyPreviewAvatar').style.display = 'flex';
+        document.getElementById('lobbyPreviewVideo').style.display = 'none';
+    }
+}
+
+function toggleLobbyMic() {
+    if (lobbyStream) {
+        const audio = lobbyStream.getAudioTracks()[0];
+        if (audio) {
+            audio.enabled = !audio.enabled;
+            document.getElementById('lobbyBtnMic').classList.toggle('active-red', !audio.enabled);
+        }
+    }
+}
+
+function toggleLobbyCam() {
+    if (lobbyStream) {
+        const video = lobbyStream.getVideoTracks()[0];
+        if (video) {
+            video.enabled = !video.enabled;
+            document.getElementById('lobbyBtnCam').classList.toggle('active-red', !video.enabled);
+            document.getElementById('lobbyPreviewVideo').style.display = video.enabled ? 'block' : 'none';
+            document.getElementById('lobbyPreviewAvatar').style.display = video.enabled ? 'none' : 'flex';
+        }
+    }
+}
+
+async function submitKnockRequest() {
+    const nameInput = document.getElementById('lobbyUserName');
+    const roleInput = document.getElementById('lobbyUserRole');
+    const passcodeElem = document.getElementById('lobbyPasscode');
+    const passcode = passcodeElem ? passcodeElem.value.trim() : null;
+
+    USER_NAME = nameInput.value.trim() || 'Guest';
+    USER_ROLE = roleInput.value;
+
+    const errMsg = document.getElementById('lobbyErrorMessage');
+    errMsg.style.display = 'none';
+
+    try {
+        const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/knock`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                session_id: SESSION_ID,
+                name: USER_NAME,
+                role: USER_ROLE,
+                passcode: passcode,
+                affiliation: roleInput.options[roleInput.selectedIndex].text
+            })
+        });
+        const data = await res.json();
+
+        if (data.status === 'admitted') {
+            // Admitted immediately
+            finishLobbyAndEnterCall();
+        } else if (data.status === 'waiting') {
+            // Placed into waiting lobby
+            document.getElementById('lobbyFormArea').style.display = 'none';
+            document.getElementById('lobbyWaitingArea').style.display = 'block';
+            startKnockStatusPolling();
+        } else {
+            errMsg.innerText = data.message || 'Unable to join meeting.';
+            errMsg.style.display = 'block';
+        }
+    } catch (e) {
+        errMsg.innerText = 'Connection error: ' + e.message;
+        errMsg.style.display = 'block';
+    }
+}
+
+let knockStatusPollInterval = null;
+function startKnockStatusPolling() {
+    knockStatusPollInterval = setInterval(async () => {
+        try {
+            const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/knock-status?session_id=${SESSION_ID}`);
+            const data = await res.json();
+
+            if (data.status === 'admitted') {
+                clearInterval(knockStatusPollInterval);
+                finishLobbyAndEnterCall();
+            } else if (data.status === 'denied') {
+                clearInterval(knockStatusPollInterval);
+                document.getElementById('lobbyWaitingArea').style.display = 'none';
+                document.getElementById('lobbyDeniedArea').style.display = 'block';
+            }
+        } catch (e) {
+            console.warn("Knock status error:", e);
+        }
+    }, 1500);
+}
+
+function cancelKnockRequest() {
+    if (knockStatusPollInterval) clearInterval(knockStatusPollInterval);
+    document.getElementById('lobbyWaitingArea').style.display = 'none';
+    document.getElementById('lobbyFormArea').style.display = 'block';
+}
+
+function finishLobbyAndEnterCall() {
+    if (lobbyStream) {
+        lobbyStream.getTracks().forEach(t => t.stop());
+    }
+    document.getElementById('waitingRoomOverlay').style.display = 'none';
+    isAdmitted = true;
+    initMainCall();
+}
+
+// =========================================================================
+// Main Call Setup (Camera, Microphone, Heartbeat & WebRTC)
+// =========================================================================
+async function initMainCall() {
+    startDurationCountdown();
+
     try {
         localStream = await navigator.mediaDevices.getUserMedia({
             video: { width: { ideal: 1280 }, height: { ideal: 720 } },
             audio: { echoCancellation: true, noiseSuppression: true }
         });
         document.getElementById('localVideo').srcObject = localStream;
+        setupVoiceActivityDetection(localStream, 'localCard');
     } catch (err) {
-        console.warn("Camera/Mic not accessible, trying audio-only or fallback", err);
+        console.warn("Camera/Mic not accessible directly:", err);
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: { echoCancellation: true, noiseSuppression: true } 
-            });
-        } catch (e2) {
-            console.warn("Running in viewer/transceiver-only mode (no local inputs)", e2);
-        }
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            setupVoiceActivityDetection(localStream, 'localCard');
+        } catch (e2) {}
         document.getElementById('localAvatar').style.display = 'flex';
         document.getElementById('localVideo').style.display = 'none';
         document.getElementById('btnCam').classList.add('btn-active-red');
         isVideoStopped = true;
     }
 
-    // 2. Register participant on backend
     await joinRoom();
-
-    // 3. Announce arrival to room peers
     await sendSignal('user-joined', { name: USER_NAME, role: USER_ROLE });
-
-    // 4. Start active signaling & heartbeat loop (every 1s)
     setInterval(pollRoom, 1000);
+    loadAvailableDevices();
 }
 
 async function joinRoom() {
@@ -594,48 +1050,87 @@ async function joinRoom() {
     }
 }
 
-function startCallTimer() {
-    let seconds = 0;
+// =========================================================================
+// Meeting Duration & Countdown Management
+// =========================================================================
+function startDurationCountdown() {
     setInterval(() => {
-        seconds++;
-        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-        const secs = (seconds % 60).toString().padStart(2, '0');
-        document.getElementById('callDuration').innerText = `${mins}:${secs}`;
+        const text = document.getElementById('callDurationText');
+        const badge = document.getElementById('callDurationBadge');
+
+        if (remainingSeconds > 0) {
+            remainingSeconds--;
+            const mins = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
+            const secs = (remainingSeconds % 60).toString().padStart(2, '0');
+            text.innerText = `${mins}:${secs} left`;
+
+            if (remainingSeconds <= 300) { // 5 minutes remaining warning
+                badge.className = 'badge bg-warning text-dark border py-2 px-3';
+            }
+        } else if (remainingSeconds === 0) {
+            text.innerText = `Time Expired`;
+            badge.className = 'badge bg-danger text-white border py-2 px-3';
+        } else {
+            text.innerText = `Unlimited`;
+        }
     }, 1000);
 }
 
-// PeerConnection Factory & Event Setup
+async function extendMeetingDuration(minutes = 15) {
+    try {
+        const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/extend`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ minutes: minutes })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            remainingSeconds = data.remaining_seconds;
+            alert(`Meeting extended by ${minutes} minutes!`);
+        }
+    } catch (e) {
+        alert("Failed to extend duration: " + e.message);
+    }
+}
+
+async function endCallForAll() {
+    if (confirm("Are you sure you want to end this advising meeting for everyone?")) {
+        try {
+            await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/end`, { method: 'POST' });
+            window.location.href = APP_PREFIX + '/meetings';
+        } catch (e) {
+            alert("Error ending meeting: " + e.message);
+        }
+    }
+}
+
+// =========================================================================
+// WebRTC Peer Connection & Signaling
+// =========================================================================
 function createPeerConnection() {
     if (peerConnection) return peerConnection;
 
-    console.log("[WebRTC] Creating new RTCPeerConnection...");
     peerConnection = new RTCPeerConnection(rtcConfig);
 
-    // Add local tracks if available
     if (localStream) {
         localStream.getTracks().forEach(track => {
-            console.log("[WebRTC] Adding local track:", track.kind);
             peerConnection.addTrack(track, localStream);
         });
     }
 
-    // Ensure transceiver lines for receiving audio and video even if local mic/cam not active
     const senders = peerConnection.getSenders();
-    const hasAudio = senders.some(s => s.track && s.track.kind === 'audio');
-    const hasVideo = senders.some(s => s.track && s.track.kind === 'video');
-    if (!hasAudio) {
+    if (!senders.some(s => s.track && s.track.kind === 'audio')) {
         try { peerConnection.addTransceiver('audio', { direction: 'recvonly' }); } catch(e){}
     }
-    if (!hasVideo) {
+    if (!senders.some(s => s.track && s.track.kind === 'video')) {
         try { peerConnection.addTransceiver('video', { direction: 'recvonly' }); } catch(e){}
     }
 
-    // Inbound media track received
     peerConnection.ontrack = (event) => {
-        console.log("[WebRTC] Inbound track received:", event.track.kind, event);
         const remoteVideo = document.getElementById('remoteVideo');
         if (event.streams && event.streams[0]) {
             remoteVideo.srcObject = event.streams[0];
+            setupVoiceActivityDetection(event.streams[0], 'remoteCard');
         } else {
             let stream = remoteVideo.srcObject;
             if (!stream || !(stream instanceof MediaStream)) {
@@ -643,88 +1138,49 @@ function createPeerConnection() {
                 remoteVideo.srcObject = stream;
             }
             stream.addTrack(event.track);
+            setupVoiceActivityDetection(stream, 'remoteCard');
         }
-
-        // Show remote video element, hide placeholder avatar
         document.getElementById('remoteAvatar').style.display = 'none';
         remoteVideo.style.display = 'block';
-
-        // Play video (with mobile policy recovery)
-        const playPromise = remoteVideo.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                hideAudioBanner();
-            }).catch(err => {
-                console.warn("[WebRTC] Autoplay restricted by mobile browser policy:", err);
-                showAudioBanner();
-            });
-        }
+        remoteVideo.play().catch(() => {});
     };
 
-    // ICE Candidate gathering
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
             sendSignal('candidate', event.candidate);
         }
     };
 
-    // Peer connection state updates
     peerConnection.onconnectionstatechange = () => {
         const state = peerConnection.connectionState;
-        console.log("[WebRTC] Connection state changed:", state);
         const label = document.getElementById('remoteNameLabel');
-        const displayName = remoteParticipantName || (USER_ROLE === 'advisor' ? 'Student' : 'Advisor');
+        const displayName = remoteParticipantName || 'Student';
 
         if (state === 'connected') {
             label.innerHTML = `<i class="fas fa-circle text-success me-1"></i> ${displayName} (Connected)`;
-            hideAudioBanner();
         } else if (state === 'connecting') {
             label.innerHTML = `<i class="fas fa-spinner fa-spin text-warning me-1"></i> Connecting to ${displayName}...`;
         } else if (state === 'disconnected') {
-            label.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-1"></i> ${displayName} (Reconnecting...)`;
-        } else if (state === 'failed') {
-            label.innerHTML = `<i class="fas fa-times-circle text-danger me-1"></i> Connection failed, retrying...`;
-            setTimeout(() => {
-                if (peerConnection && peerConnection.connectionState === 'failed') {
-                    resetPeerConnection();
-                    if (USER_ROLE === 'advisor') initiateOffer();
-                }
-            }, 2500);
+            label.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-1"></i> Reconnecting...`;
         }
     };
 
     return peerConnection;
 }
 
-function resetPeerConnection() {
-    if (peerConnection) {
-        try { peerConnection.close(); } catch(e){}
-        peerConnection = null;
-    }
-    pendingCandidates = [];
-    isNegotiating = false;
-}
-
 async function initiateOffer(targetId = null) {
     const now = Date.now();
-    if (isNegotiating || (now - lastOfferTimestamp < 2500)) {
-        return;
-    }
+    if (isNegotiating || (now - lastOfferTimestamp < 2500)) return;
     isNegotiating = true;
     lastOfferTimestamp = now;
 
     try {
         const pc = createPeerConnection();
-        console.log("[WebRTC] Creating SDP offer for peer:", targetId || 'all');
-        const offer = await pc.createOffer({
-            offerToReceiveAudio: true,
-            offerToReceiveVideo: true
-        });
+        const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
         await pc.setLocalDescription(offer);
         await sendSignal('offer', offer, targetId);
-        console.log("[WebRTC] SDP offer sent successfully");
     } catch (err) {
-        console.error("[WebRTC] Failed to create offer:", err);
+        console.error("Offer error:", err);
     } finally {
         setTimeout(() => { isNegotiating = false; }, 1500);
     }
@@ -744,51 +1200,53 @@ async function sendSignal(type, payload, recipientId = null) {
             })
         });
     } catch (e) {
-        console.error("Signal send error:", e);
+        console.error("Signal error:", e);
     }
 }
 
-// Room Polling Loop (Signals, Chat, Notes, Files)
+// =========================================================================
+// Polling Loop (Signals, Chat, Notes, Files, Waiting Room)
+// =========================================================================
 async function pollRoom() {
     try {
-        const url = `${APP_PREFIX}/api/meeting/${ROOM_ID}/poll?session_id=${SESSION_ID}&since_chat_id=${knownChatId || ''}&notes_version=${knownNotesVersion}`;
+        const url = `${APP_PREFIX}/api/meeting/${ROOM_ID}/poll?session_id=${SESSION_ID}&role=${USER_ROLE}&since_chat_id=${knownChatId || ''}&notes_version=${knownNotesVersion}`;
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.status === 'success') {
-            // 1. Process incoming WebRTC signaling messages
+            // Check if host ended call
+            if (data.is_ended) {
+                alert("The meeting host has ended this advising session.");
+                window.location.href = USER_ROLE === 'advisor' ? `${APP_PREFIX}/meetings` : `${APP_PREFIX || '/'}`;
+                return;
+            }
+
+            // WebRTC Signals
             if (data.signals && data.signals.length > 0) {
                 for (const sig of data.signals) {
                     await handleSignal(sig);
                 }
             }
 
-            // 2. Track remote participants and auto-negotiate
+            // Participants
             const others = (data.participants || []).filter(p => p.session_id !== SESSION_ID);
             if (others.length > 0) {
-                const primaryOther = others[0];
-                remoteParticipantName = primaryOther.name;
-
-                // If Advisor and connection is not established, trigger offer to the student
+                remoteParticipantName = others[0].name;
                 if (USER_ROLE === 'advisor') {
                     const pc = peerConnection;
-                    const needsNegotiation = !pc || 
-                        pc.connectionState === 'new' || 
-                        pc.connectionState === 'disconnected' || 
-                        pc.connectionState === 'failed';
-
+                    const needsNegotiation = !pc || pc.connectionState === 'new' || pc.connectionState === 'disconnected';
                     if (needsNegotiation && !isNegotiating && (Date.now() - lastOfferTimestamp > 3000)) {
-                        console.log("[WebRTC] Remote participant active, auto-initiating offer to:", primaryOther.name);
-                        initiateOffer(primaryOther.session_id);
+                        initiateOffer(others[0].session_id);
                     }
-                }
-            } else {
-                if (!peerConnection || peerConnection.connectionState !== 'connected') {
-                    document.getElementById('remoteNameLabel').innerText = "Waiting for other participant to join...";
                 }
             }
 
-            // 3. In-room chat updates
+            // Host Waiting Room List
+            if (USER_ROLE === 'advisor' && data.waiting_list) {
+                renderWaitingList(data.waiting_list);
+            }
+
+            // Chat Messages
             if (data.chat_messages && data.chat_messages.length > 0) {
                 for (const msg of data.chat_messages) {
                     appendChatMessage(msg);
@@ -802,7 +1260,7 @@ async function pollRoom() {
                 }
             }
 
-            // 4. Shared Notes updates
+            // Shared Notes
             if (data.notes && data.notes_version > knownNotesVersion) {
                 knownNotesVersion = data.notes_version;
                 const area = document.getElementById('notesArea');
@@ -811,10 +1269,9 @@ async function pollRoom() {
                 }
             }
 
-            // 5. Shared files updates
-            if (data.files) {
-                renderSharedFiles(data.files);
-            }
+            // Shared Files & Recordings
+            if (data.files) renderSharedFiles(data.files);
+            if (data.recordings) renderSavedRecordings(data.recordings);
         }
     } catch (e) {
         console.warn("Poll heartbeat exception:", e);
@@ -825,19 +1282,11 @@ async function handleSignal(sig) {
     if (sig.sender_id === SESSION_ID) return;
 
     if (sig.type === 'user-joined') {
-        console.log("[WebRTC] Peer joined room:", sig.sender_name, sig.sender_id);
         remoteParticipantName = sig.sender_name;
         document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
-        if (USER_ROLE === 'advisor') {
-            initiateOffer(sig.sender_id);
-        }
-        return;
-    }
-
-    if (sig.type === 'offer') {
-        console.log("[WebRTC] Received offer from:", sig.sender_name);
+        if (USER_ROLE === 'advisor') initiateOffer(sig.sender_id);
+    } else if (sig.type === 'offer') {
         remoteParticipantName = sig.sender_name;
-        document.getElementById('remoteNameLabel').innerText = `Connecting to ${sig.sender_name}...`;
         const pc = createPeerConnection();
         try {
             await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
@@ -845,40 +1294,43 @@ async function handleSignal(sig) {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             await sendSignal('answer', answer, sig.sender_id);
-            console.log("[WebRTC] Answer generated and sent to:", sig.sender_id);
         } catch (err) {
-            console.error("[WebRTC] Error handling offer:", err);
+            console.error("Offer handle error:", err);
         }
     } else if (sig.type === 'answer') {
-        console.log("[WebRTC] Received answer from:", sig.sender_name);
         if (peerConnection && peerConnection.signalingState !== 'stable') {
             try {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(sig.payload));
                 await drainPendingCandidates();
-                console.log("[WebRTC] Remote answer applied successfully");
             } catch (err) {
-                console.error("[WebRTC] Error applying answer:", err);
+                console.error("Answer handle error:", err);
             }
         }
     } else if (sig.type === 'candidate') {
         if (!sig.payload) return;
         const candidate = new RTCIceCandidate(sig.payload);
         if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
-            try {
-                await peerConnection.addIceCandidate(candidate);
-            } catch (err) {
-                console.warn("[WebRTC] Failed to add ICE candidate:", err);
-            }
+            try { await peerConnection.addIceCandidate(candidate); } catch(e){}
         } else {
             pendingCandidates.push(candidate);
         }
-    } else if (sig.type === 'user-left') {
-        console.log("[WebRTC] Participant left call:", sig.sender_name);
-        const displayName = sig.sender_name || 'Participant';
-        document.getElementById('remoteNameLabel').innerText = `${displayName} left the call`;
-        document.getElementById('remoteAvatar').style.display = 'flex';
-        document.getElementById('remoteVideo').style.display = 'none';
-        resetPeerConnection();
+    } else if (sig.type === 'knock-request') {
+        if (USER_ROLE === 'advisor') {
+            playChimeSound();
+            showKnockBanner(sig.payload);
+        }
+    } else if (sig.type === 'time-extended') {
+        remainingSeconds = sig.payload.remaining_seconds;
+        appendChatMessage({
+            sender: 'System',
+            role: 'system',
+            text: `⏱️ Meeting extended by ${sig.payload.extended_by_minutes} minutes.`,
+            time: new Date().toLocaleTimeString(),
+            is_system: true
+        });
+    } else if (sig.type === 'meeting-ended') {
+        alert("Meeting host has ended the session.");
+        window.location.href = USER_ROLE === 'advisor' ? `${APP_PREFIX}/meetings` : `${APP_PREFIX || '/'}`;
     }
 }
 
@@ -886,38 +1338,235 @@ async function drainPendingCandidates() {
     if (!peerConnection || !peerConnection.remoteDescription) return;
     while (pendingCandidates.length > 0) {
         const cand = pendingCandidates.shift();
+        try { await peerConnection.addIceCandidate(cand); } catch(e){}
+    }
+}
+
+// =========================================================================
+// Host Waiting Room / Knocking Management
+// =========================================================================
+function playChimeSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+    } catch(e){}
+}
+
+function showKnockBanner(payload) {
+    currentKnockTargetSession = payload.session_id;
+    const banner = document.getElementById('knockBanner');
+    document.getElementById('knockBannerText').innerText = `${payload.name} (${payload.affiliation || 'Guest'})`;
+    banner.style.display = 'flex';
+}
+
+async function admitKnockFromBanner() {
+    if (!currentKnockTargetSession) return;
+    await admitGuest(currentKnockTargetSession);
+    document.getElementById('knockBanner').style.display = 'none';
+}
+
+async function denyKnockFromBanner() {
+    if (!currentKnockTargetSession) return;
+    await denyGuest(currentKnockTargetSession);
+    document.getElementById('knockBanner').style.display = 'none';
+}
+
+async function admitGuest(sessionId) {
+    try {
+        await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/admit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ session_id: sessionId })
+        });
+        pollRoom();
+    } catch(e){}
+}
+
+async function denyGuest(sessionId) {
+    try {
+        await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/deny`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ session_id: sessionId })
+        });
+        pollRoom();
+    } catch(e){}
+}
+
+async function admitAllWaiting() {
+    const btns = document.querySelectorAll('.admit-waiting-btn');
+    for (const b of btns) {
+        const sid = b.getAttribute('data-session-id');
+        if (sid) await admitGuest(sid);
+    }
+}
+
+function renderWaitingList(list) {
+    const container = document.getElementById('waitingListContainer');
+    const badge = document.getElementById('waitingBadge');
+    const countLabel = document.getElementById('waitingCountLabel');
+    
+    if (countLabel) countLabel.innerText = list.length;
+    if (badge) {
+        badge.innerText = list.length;
+        badge.style.display = list.length > 0 ? 'inline-block' : 'none';
+    }
+
+    if (!container) return;
+    if (list.length === 0) {
+        container.innerHTML = '<div class="text-muted small text-center py-4">No attendees currently in the waiting room.</div>';
+        return;
+    }
+
+    container.innerHTML = list.map(item => `
+        <div class="card mb-2 border shadow-sm p-2 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong class="text-dark">${item.name}</strong>
+                <span class="badge bg-secondary font-monospace" style="font-size: 0.65rem;">${item.role}</span>
+            </div>
+            <div class="text-muted small mb-2">${item.affiliation || 'Advisee / Guest'}</div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-success flex-grow-1 admit-waiting-btn" data-session-id="${item.session_id}" onclick="admitGuest('${item.session_id}')">
+                    <i class="fas fa-check me-1"></i> Admit
+                </button>
+                <button class="btn btn-sm btn-outline-danger flex-grow-1" onclick="denyGuest('${item.session_id}')">
+                    <i class="fas fa-times me-1"></i> Deny
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// =========================================================================
+// Session Recording (MediaRecorder API)
+// =========================================================================
+async function toggleSessionRecording() {
+    const btn = document.getElementById('btnRecord');
+    const badge = document.getElementById('recordingBadge');
+
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
         try {
-            await peerConnection.addIceCandidate(cand);
-        } catch (e) {
-            console.warn("[WebRTC] Error applying queued candidate:", e);
+            // Screen + Audio or Local Audio/Video capture
+            let recordStream = null;
+            if (navigator.mediaDevices.getDisplayMedia) {
+                recordStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            } else if (localStream) {
+                recordStream = localStream;
+            }
+
+            if (!recordStream) return;
+
+            recordedChunks = [];
+            mediaRecorder = new MediaRecorder(recordStream, { mimeType: 'video/webm;codecs=vp8,opus' });
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                handleRecordingFinished();
+                badge.classList.remove('d-flex');
+                badge.classList.add('d-none');
+                btn.classList.remove('btn-active-recording');
+                clearInterval(recordingTimerInterval);
+            };
+
+            mediaRecorder.start(1000);
+            recordingStartTime = Date.now();
+            btn.classList.add('btn-active-recording');
+            badge.classList.remove('d-none');
+            badge.classList.add('d-flex');
+
+            recordingTimerInterval = setInterval(() => {
+                const diff = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const m = Math.floor(diff / 60).toString().padStart(2, '0');
+                const s = (diff % 60).toString().padStart(2, '0');
+                document.getElementById('recordingTimerText').innerText = `REC ${m}:${s}`;
+            }, 1000);
+
+            // Announce in chat
+            sendChatDirect(`${USER_NAME} started recording this advising session.`);
+        } catch (err) {
+            console.warn("Recording cancelled or failed:", err);
         }
+    } else {
+        mediaRecorder.stop();
     }
 }
 
-// Mobile Audio Unlock Controls
-function showAudioBanner() {
-    const banner = document.getElementById('audioUnlockBanner');
-    if (banner) banner.style.display = 'block';
-}
+async function handleRecordingFinished() {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const filename = `session_rec_${ROOM_ID}_${new Date().toISOString().slice(0,10)}.webm`;
 
-function hideAudioBanner() {
-    const banner = document.getElementById('audioUnlockBanner');
-    if (banner) banner.style.display = 'none';
-}
+    // Prompt user to save locally and optionally upload to room storage
+    const download = confirm("Session recording finished!\n\nClick OK to download the recorded video to your device, and save a copy for the student.");
+    if (download) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+    }
 
-function unlockAudio() {
-    const remoteVideo = document.getElementById('remoteVideo');
-    if (remoteVideo) {
-        remoteVideo.muted = false;
-        remoteVideo.play().then(() => {
-            hideAudioBanner();
-        }).catch(() => {});
+    // Auto-upload recording to meeting documents so advisees can review later
+    const fd = new FormData();
+    fd.append('file', blob, filename);
+    fd.append('recorded_by', USER_NAME);
+
+    try {
+        await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/upload-recording`, {
+            method: 'POST',
+            body: fd
+        });
+        pollRoom();
+    } catch(e){
+        console.warn("Auto recording upload:", e);
     }
 }
-document.addEventListener('click', unlockAudio);
-document.addEventListener('touchstart', unlockAudio);
 
-// Media Controls (Mic, Cam, Screen Share)
+// =========================================================================
+// Voice Activity Detection (Speaking Visualizer)
+// =========================================================================
+function setupVoiceActivityDetection(stream, cardId) {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const src = ctx.createMediaStreamSource(stream);
+        const an = ctx.createAnalyser();
+        an.fftSize = 256;
+        src.connect(an);
+
+        const dataArray = new Uint8Array(an.frequencyBinCount);
+        const card = document.getElementById(cardId);
+
+        function checkLevel() {
+            an.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+            const avg = sum / dataArray.length;
+            if (avg > 18) {
+                card.classList.add('speaking');
+            } else {
+                card.classList.remove('speaking');
+            }
+            requestAnimationFrame(checkLevel);
+        }
+        checkLevel();
+    } catch(e){}
+}
+
+// =========================================================================
+// Media Controls (Mic, Cam, Screen Share, Devices)
+// =========================================================================
 function toggleMic() {
     isAudioMuted = !isAudioMuted;
     if (localStream) {
@@ -964,19 +1613,15 @@ async function toggleScreenShare() {
         try {
             screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             const screenTrack = screenStream.getVideoTracks()[0];
-            
             if (peerConnection) {
                 const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                 if (sender) sender.replaceTrack(screenTrack);
             }
-            
             document.getElementById('localVideo').srcObject = screenStream;
             btn.classList.add('btn-active-red');
             isScreenSharing = true;
 
-            screenTrack.onended = () => {
-                stopScreenShare();
-            };
+            screenTrack.onended = () => { stopScreenShare(); };
         } catch (err) {
             console.warn("Screen share cancelled", err);
         }
@@ -986,9 +1631,7 @@ async function toggleScreenShare() {
 }
 
 function stopScreenShare() {
-    if (screenStream) {
-        screenStream.getTracks().forEach(t => t.stop());
-    }
+    if (screenStream) screenStream.getTracks().forEach(t => t.stop());
     if (localStream && peerConnection) {
         const vidTrack = localStream.getVideoTracks()[0];
         const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
@@ -1013,9 +1656,35 @@ function leaveMeeting() {
     }
 }
 
-// Side Panels Management
+async function loadAvailableDevices() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioSelect = document.getElementById('selectAudioInput');
+        const videoSelect = document.getElementById('selectVideoInput');
+        audioSelect.innerHTML = '';
+        videoSelect.innerHTML = '';
+
+        devices.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.deviceId;
+            opt.text = d.label || `${d.kind} (${opt.value.slice(0,5)})`;
+            if (d.kind === 'audioinput') audioSelect.appendChild(opt);
+            else if (d.kind === 'videoinput') videoSelect.appendChild(opt);
+        });
+    } catch(e){}
+}
+
+function openDeviceSettingsModal() {
+    loadAvailableDevices();
+    const modal = new bootstrap.Modal(document.getElementById('deviceSettingsModal'));
+    modal.show();
+}
+
+// =========================================================================
+// Side Panels Management (Chat, Notes, Files, Dossier)
+// =========================================================================
 function togglePanel(panelName) {
-    const panels = ['chat', 'notes', 'files', 'dossier'];
+    const panels = ['chat', 'notes', 'files', 'dossier', 'waiting'];
     const targetId = 'panel' + panelName.charAt(0).toUpperCase() + panelName.slice(1);
     const targetElem = document.getElementById(targetId);
 
@@ -1046,22 +1715,28 @@ function closePanels() {
     activePanel = null;
 }
 
-// Chat Functionality
+// =========================================================================
+// Chat, Notes & File Sharing Logic
+// =========================================================================
 async function sendChat(e) {
     e.preventDefault();
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (!text) return;
-
     input.value = '';
+    await sendChatDirect(text);
+}
+
+async function sendChatDirect(text, isSystem = false) {
     try {
         const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/chat`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                sender: USER_NAME,
-                role: USER_ROLE,
-                text: text
+                sender: isSystem ? 'System' : USER_NAME,
+                role: isSystem ? 'system' : USER_ROLE,
+                text: text,
+                is_system: isSystem
             })
         });
         const d = await res.json();
@@ -1069,16 +1744,15 @@ async function sendChat(e) {
             appendChatMessage(d.message);
             knownChatId = d.message.id;
         }
-    } catch (err) {
-        console.error("Chat send error:", err);
-    }
+    } catch (err) {}
 }
 
 function appendChatMessage(msg) {
     const list = document.getElementById('chatMessagesList');
     const isMine = msg.sender === USER_NAME;
+    const isSys = msg.is_system || msg.role === 'system';
     const div = document.createElement('div');
-    div.className = `chat-bubble ${isMine ? 'chat-mine' : ''}`;
+    div.className = `chat-bubble ${isMine ? 'chat-mine' : ''} ${isSys ? 'chat-system' : ''}`;
     div.innerHTML = `
         <div class="chat-meta"><strong>${msg.sender}</strong> &bull; ${msg.time}</div>
         <div class="chat-text">${msg.text}</div>
@@ -1088,7 +1762,6 @@ function appendChatMessage(msg) {
     box.scrollTop = box.scrollHeight;
 }
 
-// Notes Collaboration Functionality
 function onNotesChanged() {
     document.getElementById('notesStatus').innerHTML = '<i class="fas fa-spinner fa-spin text-warning me-1"></i> Saving...';
     clearTimeout(notesDirtyTimeout);
@@ -1098,10 +1771,7 @@ function onNotesChanged() {
             const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/notes`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    sender: USER_NAME,
-                    notes: text
-                })
+                body: JSON.stringify({ sender: USER_NAME, notes: text })
             });
             const d = await res.json();
             if (d.status === 'success') {
@@ -1120,7 +1790,6 @@ function copyNotes() {
     alert('Advising notes copied to clipboard!');
 }
 
-// Files Upload & Download
 async function uploadMeetingFile(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1148,7 +1817,7 @@ async function uploadMeetingFile(e) {
 function renderSharedFiles(files) {
     const list = document.getElementById('sharedFilesList');
     if (!files || files.length === 0) {
-        list.innerHTML = '<div class="text-muted small text-center py-3">No documents shared yet.</div>';
+        list.innerHTML = '<div class="text-muted small text-center py-2">No documents shared yet.</div>';
         return;
     }
 
@@ -1156,11 +1825,32 @@ function renderSharedFiles(files) {
         <div class="list-group-item d-flex justify-content-between align-items-center p-2 border-0 border-bottom">
             <div class="text-truncate me-2">
                 <i class="fas fa-file-pdf text-danger me-1"></i>
-                <span class="small fw-semibold">${f.original_name}</span>
-                <div class="text-muted" style="font-size: 0.7rem;">Shared by ${f.uploaded_by} &bull; ${f.time}</div>
+                <span class="small fw-semibold text-dark">${f.original_name}</span>
+                <div class="text-muted" style="font-size: 0.7rem;">${f.uploaded_by} &bull; ${f.time}</div>
             </div>
             <a href="${APP_PREFIX}/api/meeting/${ROOM_ID}/file/${f.filename}" class="btn btn-sm btn-outline-primary py-0" download>
                 <i class="fas fa-download"></i>
+            </a>
+        </div>
+    `).join('');
+}
+
+function renderSavedRecordings(recs) {
+    const list = document.getElementById('savedRecordingsList');
+    if (!recs || recs.length === 0) {
+        list.innerHTML = '<div class="text-muted small text-center py-2">No recordings saved yet.</div>';
+        return;
+    }
+
+    list.innerHTML = recs.map(r => `
+        <div class="list-group-item d-flex justify-content-between align-items-center p-2 border-0 border-bottom bg-light rounded mb-1">
+            <div class="text-truncate me-2">
+                <i class="fas fa-film text-danger me-1"></i>
+                <span class="small fw-bold text-dark">${r.original_name}</span>
+                <div class="text-muted" style="font-size: 0.7rem;">Saved by ${r.recorded_by} &bull; ${r.time}</div>
+            </div>
+            <a href="${APP_PREFIX}/api/meeting/${ROOM_ID}/recording/${r.filename}" class="btn btn-sm btn-danger py-0" download>
+                <i class="fas fa-download me-1"></i> Download
             </a>
         </div>
     `).join('');
@@ -1171,11 +1861,7 @@ function copyInviteLink() {
     navigator.clipboard.writeText(url);
     alert('Meeting link copied to clipboard:\n' + url);
 }
-
-// Start Call on page load
-window.addEventListener('DOMContentLoaded', initCall);
 </script>
 
 </body>
 </html>
-

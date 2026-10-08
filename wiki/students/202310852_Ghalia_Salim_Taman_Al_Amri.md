@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 69.78
 semester_gpa: 72.5
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Ghalia Salim Taman Al-Amri

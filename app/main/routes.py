@@ -1,6 +1,7 @@
 """Main application routes"""
 
 import os
+import time
 from flask import render_template, request, jsonify, current_app, url_for
 from app.main import bp
 from app.scraper.university_scraper import UniversitySystemManager
@@ -1041,7 +1042,7 @@ def meetings_hub():
 
 @bp.route('/api/meetings/create', methods=['POST'])
 def api_create_meeting():
-    """Create a new advising video meeting room for one student or group of multiple students"""
+    """Create a new advising video meeting room for students or external guests with passcode and admission controls"""
     from app.meeting_engine import meeting_manager
     data = request.get_json() or {}
     
@@ -1053,6 +1054,38 @@ def api_create_meeting():
     student_name = data.get('student_name')
     advisor_name = data.get('advisor_name', 'Dr. Nasser Tabook')
     title = data.get('title')
+    
+    # Security, Waiting Room and Timer Controls
+    require_passcode = bool(data.get('require_passcode', False))
+    passcode = data.get('passcode')
+    if require_passcode and not passcode:
+        # Generate memorable 6-character DU PIN
+        import random
+        passcode = f"DU-{random.randint(1000, 9999)}"
+    elif not require_passcode:
+        passcode = None
+
+    require_admission = bool(data.get('require_admission', True))
+    duration_minutes = data.get('duration_minutes')
+    if duration_minutes is not None:
+        try:
+            duration_minutes = int(duration_minutes)
+            if duration_minutes <= 0:
+                duration_minutes = None
+        except (ValueError, TypeError):
+            duration_minutes = 30
+    else:
+        duration_minutes = 30
+
+    max_participants = data.get('max_participants')
+    if max_participants:
+        try:
+            max_participants = int(max_participants)
+        except (ValueError, TypeError):
+            max_participants = None
+
+    # External Invitees (non-student guests e.g. co-advisors, parents, observers)
+    external_invitees = data.get('external_invitees') or []
     
     target_students = []
     if student_ids:
@@ -1075,6 +1108,9 @@ def api_create_meeting():
             title = f"Group Advising Session ({len(target_students)} Students)"
         elif len(target_students) == 1:
             title = f"Advising Session - {target_students[0]['name']}"
+        elif external_invitees:
+            guest_names = ", ".join([g.get('name', 'Guest') for g in external_invitees[:2]])
+            title = f"Academic Consultation with {guest_names}"
         else:
             title = f"Advising Session - {student_name or 'Advisees'}"
         
@@ -1083,29 +1119,61 @@ def api_create_meeting():
         student_id=target_students[0]['id'] if target_students else single_id,
         student_name=target_students[0]['name'] if len(target_students) == 1 else student_name,
         target_students=target_students,
-        advisor_name=advisor_name
+        advisor_name=advisor_name,
+        passcode=passcode,
+        require_admission=require_admission,
+        duration_minutes=duration_minutes,
+        max_participants=max_participants,
+        external_invitees=external_invitees
     )
     
     meeting_url = url_for('main.meeting_room_view', room_id=room.room_id, _external=True)
+    advisor_url = url_for('main.meeting_room_view', room_id=room.room_id, role='advisor', _external=True)
     lan_url = meeting_url
+
+    # Formatted Invitation text
+    security_text = f"🔐 Passcode: {passcode}" if passcode else "🔓 Passcode: None (Open Link)"
+    admission_text = "🛡️ Waiting Room: Enabled (Host approval required to join)" if require_admission else "⚡ Admission: Direct entry"
+    duration_text = f"⏱️ Duration: {duration_minutes} Minutes" if duration_minutes else "⏱️ Duration: Unlimited"
+    
+    invitation_text = (
+        f"🏛️ Dhofar University Academic Advising - Virtual Meeting\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📌 Topic: {room.title}\n"
+        f"👤 Host: {room.advisor_name}\n"
+        f"{duration_text}\n"
+        f"{security_text}\n"
+        f"{admission_text}\n\n"
+        f"🔗 Join Link:\n{meeting_url}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"Please test your camera and microphone before entering."
+    )
     
     return jsonify({
         'status': 'success',
         'room_id': room.room_id,
         'meeting_url': meeting_url,
+        'advisor_url': advisor_url,
         'lan_url': lan_url,
         'title': room.title,
         'student_id': room.student_id,
         'student_name': room.student_name,
         'target_students': room.target_students,
         'target_count': len(room.target_students),
+        'external_invitees': room.external_invitees,
         'advisor_name': room.advisor_name,
-        'message': f"Meeting created successfully with {len(room.target_students)} student(s)"
+        'passcode': room.passcode,
+        'require_passcode': room.require_passcode,
+        'require_admission': room.require_admission,
+        'duration_minutes': room.duration_minutes,
+        'max_participants': room.max_participants,
+        'invitation_text': invitation_text,
+        'message': f"Meeting '{room.title}' created successfully!"
     })
 
 @bp.route('/meeting/<room_id>')
 def meeting_room_view(room_id):
-    """Google Meet style virtual meeting room interface supporting multiple students"""
+    """Google Meet style virtual meeting room interface supporting advisees and external guests"""
     from app.meeting_engine import meeting_manager
     room = meeting_manager.get_room(room_id)
     if not room:
@@ -1150,7 +1218,7 @@ def meeting_room_view(room_id):
     student_info = group_students[0]['student'] if group_students else None
 
     role = request.args.get('role', 'advisor' if 'advisor' in request.args else 'guest')
-    default_name = room.advisor_name if role == 'advisor' else (student_info.name if student_info else 'Student')
+    default_name = room.advisor_name if role == 'advisor' else (student_info.name if student_info else 'Student / Guest')
     user_name = request.args.get('name', default_name)
     
     return render_template(
@@ -1160,7 +1228,11 @@ def meeting_room_view(room_id):
         user_name=user_name,
         student=student_info,
         audit=student_audit,
-        group_students=group_students
+        group_students=group_students,
+        require_passcode=room.require_passcode,
+        require_admission=room.require_admission,
+        duration_minutes=room.duration_minutes,
+        remaining_seconds=room.get_remaining_seconds()
     )
 
 def _get_or_create_meeting_room(room_id):
@@ -1173,20 +1245,152 @@ def _get_or_create_meeting_room(room_id):
         )
     return room
 
+@bp.route('/api/meeting/<room_id>/knock', methods=['POST'])
+def api_meeting_knock(room_id):
+    """Waiting room knock request: validate passcode and request entry from host"""
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    name = data.get('name', 'Guest').strip()
+    role = data.get('role', 'guest')
+    passcode = data.get('passcode')
+    affiliation = data.get('affiliation', '')
+    
+    if not session_id:
+        return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
+
+    result = room.request_admission(session_id, name, role, passcode=passcode, affiliation=affiliation)
+    
+    # If waiting, alert the host via signal immediately
+    if result.get('status') == 'waiting':
+        room.add_signal(
+            sender_id=session_id,
+            sender_name=name,
+            recipient_id=None,
+            signal_type='knock-request',
+            payload={
+                'session_id': session_id,
+                'name': name,
+                'role': role,
+                'affiliation': affiliation,
+                'timestamp': time.time()
+            }
+        )
+
+    return jsonify(result)
+
+@bp.route('/api/meeting/<room_id>/knock-status')
+def api_meeting_knock_status(room_id):
+    """Check admission status for waiting participant"""
+    room = _get_or_create_meeting_room(room_id)
+    session_id = request.args.get('session_id')
+    if not session_id:
+        return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
+
+    status_data = room.check_admission_status(session_id)
+    return jsonify(status_data)
+
+@bp.route('/api/meeting/<room_id>/admit', methods=['POST'])
+def api_meeting_admit(room_id):
+    """Host approves a waiting participant to enter the call"""
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
+
+    room.admit_participant(session_id)
+    # Broadcast admission signal to the admitted user
+    room.add_signal(
+        sender_id='host',
+        sender_name=room.advisor_name,
+        recipient_id=session_id,
+        signal_type='knock-admitted',
+        payload={'session_id': session_id}
+    )
+    return jsonify({'status': 'success', 'message': 'Participant admitted'})
+
+@bp.route('/api/meeting/<room_id>/deny', methods=['POST'])
+def api_meeting_deny(room_id):
+    """Host denies entrance to a waiting participant"""
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
+
+    room.deny_participant(session_id)
+    # Broadcast rejection signal to the denied user
+    room.add_signal(
+        sender_id='host',
+        sender_name=room.advisor_name,
+        recipient_id=session_id,
+        signal_type='knock-denied',
+        payload={'session_id': session_id}
+    )
+    return jsonify({'status': 'success', 'message': 'Participant denied'})
+
+@bp.route('/api/meeting/<room_id>/waiting-list')
+def api_meeting_waiting_list(room_id):
+    """Host fetches pending entry requests"""
+    room = _get_or_create_meeting_room(room_id)
+    return jsonify({'status': 'success', 'waiting': room.get_waiting_list()})
+
+@bp.route('/api/meeting/<room_id>/end', methods=['POST'])
+def api_meeting_end(room_id):
+    """Host ends meeting for all participants"""
+    room = _get_or_create_meeting_room(room_id)
+    room.end_meeting()
+    # Notify everyone that meeting has ended
+    room.add_signal(
+        sender_id='host',
+        sender_name=room.advisor_name,
+        recipient_id=None,
+        signal_type='meeting-ended',
+        payload={'reason': 'Host has ended the session.'}
+    )
+    return jsonify({'status': 'success', 'message': 'Meeting ended for everyone'})
+
+@bp.route('/api/meeting/<room_id>/extend', methods=['POST'])
+def api_meeting_extend(room_id):
+    """Host extends the session duration"""
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    minutes = int(data.get('minutes', 15))
+    room.extend_duration(minutes)
+    
+    remaining = room.get_remaining_seconds()
+    # Notify peers of time extension
+    room.add_signal(
+        sender_id='host',
+        sender_name=room.advisor_name,
+        recipient_id=None,
+        signal_type='time-extended',
+        payload={'extended_by_minutes': minutes, 'remaining_seconds': remaining}
+    )
+    return jsonify({
+        'status': 'success',
+        'duration_minutes': room.duration_minutes,
+        'remaining_seconds': remaining
+    })
+
 @bp.route('/api/meeting/<room_id>/join', methods=['POST'])
 def api_meeting_join(room_id):
     """Register/heartbeat participant in room"""
     room = _get_or_create_meeting_room(room_id)
+    if room.is_ended:
+        return jsonify({'status': 'error', 'message': 'Meeting has ended'}), 403
         
     data = request.get_json() or {}
     session_id = data.get('session_id')
     name = data.get('name', 'Participant')
     role = data.get('role', 'guest')
+    affiliation = data.get('affiliation', '')
     
     if not session_id:
         return jsonify({'status': 'error', 'message': 'session_id is required'}), 400
         
-    participant = room.register_participant(session_id, name, role)
+    participant = room.register_participant(session_id, name, role, affiliation=affiliation)
     return jsonify({
         'status': 'success',
         'participant': participant,
@@ -1227,10 +1431,11 @@ def api_meeting_signal(room_id):
 
 @bp.route('/api/meeting/<room_id>/poll')
 def api_meeting_poll(room_id):
-    """Poll for pending WebRTC signals, chat messages, notes and files"""
+    """Poll for pending WebRTC signals, chat messages, notes, files, recordings, and timer status"""
     room = _get_or_create_meeting_room(room_id)
         
     session_id = request.args.get('session_id')
+    role = request.args.get('role', 'guest')
     since_chat_id = request.args.get('since_chat_id')
     known_notes_version = int(request.args.get('notes_version', 0))
     
@@ -1248,8 +1453,16 @@ def api_meeting_poll(room_id):
         'signals': signals,
         'chat_messages': messages,
         'participants': list(room.participants.values()),
-        'files': room.shared_files
+        'files': room.shared_files,
+        'recordings': room.recordings,
+        'is_ended': room.is_ended,
+        'remaining_seconds': room.get_remaining_seconds(),
+        'duration_minutes': room.duration_minutes
     }
+
+    # If advisor, send pending waiting room attendees
+    if role == 'advisor':
+        res['waiting_list'] = room.get_waiting_list()
     
     # Include notes only if updated
     if room.notes_version > known_notes_version:
@@ -1267,11 +1480,12 @@ def api_meeting_chat(room_id):
     sender = data.get('sender', 'Anonymous')
     role = data.get('role', 'guest')
     text = data.get('text', '').strip()
+    is_system = bool(data.get('is_system', False))
     
     if not text:
         return jsonify({'status': 'error', 'message': 'Message text is empty'}), 400
         
-    msg = room.add_chat_message(sender, role, text)
+    msg = room.add_chat_message(sender, role, text, is_system=is_system)
     return jsonify({'status': 'success', 'message': msg})
 
 @bp.route('/api/meeting/<room_id>/notes', methods=['POST'])
@@ -1313,6 +1527,62 @@ def api_meeting_download_file(room_id, filename):
         return jsonify({'status': 'error', 'message': 'File not found'}), 404
         
     return send_file(filepath, as_attachment=True)
+
+@bp.route('/api/meeting/<room_id>/upload-recording', methods=['POST'])
+def api_meeting_upload_recording(room_id):
+    """Upload and save session recording video file"""
+    room = _get_or_create_meeting_room(room_id)
+    if 'file' not in request.files:
+        return jsonify({'status': 'error', 'message': 'No recording file provided'}), 400
+
+    file = request.files['file']
+    recorded_by = request.form.get('recorded_by', 'Host')
+    rec_info = room.add_recording(file, recorded_by)
+    if not rec_info:
+        return jsonify({'status': 'error', 'message': 'Failed to save recording file'}), 400
+
+    # Add system notification in chat
+    room.add_chat_message(
+        sender='System',
+        role='system',
+        text=f'🎥 Session video recording saved ({rec_info["original_name"]}). Available in Documents tab.',
+        is_system=True
+    )
+    return jsonify({'status': 'success', 'recording': rec_info})
+
+@bp.route('/api/meeting/<room_id>/recording/<filename>')
+def api_meeting_download_recording(room_id, filename):
+    """Download or stream session video recording"""
+    room = _get_or_create_meeting_room(room_id)
+    from flask import send_file
+    filepath = room.get_recording_path(filename)
+    if not filepath:
+        return jsonify({'status': 'error', 'message': 'Recording file not found'}), 404
+
+    return send_file(filepath, as_attachment=True)
+
+@bp.route('/api/meeting/<room_id>/delete', methods=['POST', 'DELETE'])
+def api_meeting_delete(room_id):
+    """Permanently delete a registered virtual meeting room and its files"""
+    from app.meeting_engine import meeting_manager
+    meeting_manager.delete_room(room_id)
+    return jsonify({
+        'status': 'success',
+        'room_id': room_id,
+        'message': f'Meeting {room_id} has been permanently removed.'
+    })
+
+@bp.route('/api/meetings/clear-all', methods=['POST'])
+def api_meetings_clear_all():
+    """Permanently delete all registered virtual meetings and files"""
+    from app.meeting_engine import meeting_manager
+    count = meeting_manager.clear_all_rooms()
+    return jsonify({
+        'status': 'success',
+        'count': count,
+        'message': f'Successfully cleared {count} registered meeting room(s).'
+    })
+
 
 
 

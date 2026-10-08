@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 75.27
 semester_gpa: 75.0
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Omar Sobhy Ahmed Soliman

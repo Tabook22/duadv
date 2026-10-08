@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "MODERATE"
 cgpa: 71.38
 semester_gpa: 64.25
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Salim Hamid Salim Alsil Alghassni

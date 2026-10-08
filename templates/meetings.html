@@ -6,10 +6,10 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
     <div>
         <h2 class="fw-bold mb-1" style="color: #1e3a8a;">
-            <i class="fas fa-video text-primary me-2"></i> Virtual Advising Rooms
+            <i class="fas fa-video text-primary me-2"></i> Virtual Advising Conference Rooms
         </h2>
         <p class="text-muted mb-0">
-            Create instant video conference rooms (Google Meet style) with live cam, microphone, text chat, shared advising notes & file sharing.
+            Professional Google Meet style virtual conference platform with waiting room lobby, session recording, live cam & mic, document exchange, passcode access control & duration timer.
         </p>
     </div>
     <div class="mt-3 mt-md-0 d-flex gap-2">
@@ -26,7 +26,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="bg-primary-subtle text-primary p-3 rounded-circle me-3">
-                        <i class="fas fa-video fa-2x text-primary"></i>
+                        <i class="fas fa-bolt fa-2x text-primary"></i>
                     </div>
                     <div>
                         <h5 class="fw-bold mb-0">Instant Advising Call</h5>
@@ -34,10 +34,10 @@
                     </div>
                 </div>
                 <p class="text-secondary small">
-                    Generate an instant virtual advising room and share the invite link with any student via email, WhatsApp, or SIS message.
+                    Generate an instant virtual advising room with host admission controls and share the invite link with any student or guest.
                 </p>
                 <button class="btn btn-outline-primary w-100 btn-sm" onclick="startInstantMeeting()">
-                    <i class="fas fa-bolt me-1"></i> Start Instant Meeting Now
+                    <i class="fas fa-video me-1"></i> Start Instant Meeting Now
                 </button>
             </div>
         </div>
@@ -52,13 +52,13 @@
                     </div>
                     <div>
                         <h5 class="fw-bold mb-0">Advisee Pre-Linked Call</h5>
-                        <small class="text-muted">Connect with student dossier</small>
+                        <small class="text-muted">Degree audit integration</small>
                     </div>
                 </div>
                 <p class="text-secondary small">
-                    Pick an advisee from your student roster. The room automatically pulls the student's CGPA, academic standing, and graduation plan.
+                    Pick an advisee from your student roster. The room automatically pulls the student's CGPA, academic standing, and graduation degree audit.
                 </p>
-                <button class="btn btn-outline-success w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#newMeetingModal">
+                <button class="btn btn-outline-success w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#newMeetingModal" onclick="switchToAdviseeTab()">
                     <i class="fas fa-user-plus me-1"></i> Select Advisee Student
                 </button>
             </div>
@@ -66,35 +66,42 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm border-start border-4 border-warning bg-white">
+        <div class="card h-100 border-0 shadow-sm border-start border-4 border-info bg-white">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
-                    <div class="bg-warning-subtle text-warning p-3 rounded-circle me-3">
-                        <i class="fas fa-shield-alt fa-2x text-warning"></i>
+                    <div class="bg-info-subtle text-info p-3 rounded-circle me-3">
+                        <i class="fas fa-users-cog fa-2x text-info"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0">Strict Probation Advising</h5>
-                        <small class="text-muted">Mandatory counseling</small>
+                        <h5 class="fw-bold mb-0">External Guest Session</h5>
+                        <small class="text-muted">Non-student participants</small>
                     </div>
                 </div>
                 <p class="text-secondary small">
-                    Conduct mandatory Article 14 counseling sessions, record agreed recovery credit caps (max 12 credits), and co-sign notes.
+                    Invite co-advisors, department chairs, parents, external evaluators, or industry mentors with secure passcodes & knocking lobby.
                 </p>
-                <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-warning text-dark w-100 btn-sm">
-                    <i class="fas fa-exclamation-triangle me-1"></i> View Students at Risk Roster
-                </a>
+                <button class="btn btn-outline-info w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#newMeetingModal" onclick="switchToGuestTab()">
+                    <i class="fas fa-user-tie me-1"></i> Invite External Guests
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Active / Recent Meeting Rooms Table -->
-<div class="card border-0 shadow-sm">
+<div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark">
             <i class="fas fa-door-open text-primary me-2"></i> Active Advising Conference Rooms
         </h5>
-        <span class="badge bg-primary">{{ active_rooms|length }} Active</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary" id="activeRoomsBadge">{{ active_rooms|length }} Active</span>
+            {% if active_rooms and active_rooms|length > 0 %}
+            <button class="btn btn-outline-danger btn-sm py-1 px-2" onclick="clearAllMeetingRooms()" title="Remove all registered virtual meetings">
+                <i class="fas fa-trash-alt me-1"></i> Clear All Rooms
+            </button>
+            {% endif %}
+        </div>
     </div>
     <div class="card-body p-0">
         {% if active_rooms %}
@@ -102,48 +109,122 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-3">Room ID & Title</th>
-                        <th>Student Advisee</th>
-                        <th>Advisor</th>
-                        <th>Created</th>
-                        <th>In Call</th>
+                        <th class="ps-3">Room ID & Topic</th>
+                        <th>Invited Attendees</th>
+                        <th>Host / Advisor</th>
+                        <th>Access Controls</th>
+                        <th>Duration / Time</th>
+                        <th>Online</th>
                         <th class="text-end pe-3">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for r in active_rooms %}
-                    <tr>
+                    <tr id="room-row-{{ r.room_id }}" class="{{ 'table-secondary opacity-75' if r.is_ended else '' }}">
                         <td class="ps-3">
-                            <span class="fw-bold text-primary">{{ r.room_id }}</span>
-                            <div class="text-secondary small">{{ r.title }}</div>
+                            <span class="fw-bold text-primary font-monospace">{{ r.room_id }}</span>
+                            <div class="text-secondary small fw-semibold">{{ r.title }}</div>
+                            {% if r.is_ended %}
+                            <span class="badge bg-danger mt-1">Ended by Host</span>
+                            {% endif %}
                         </td>
                         <td>
-                            {% if r.student_id %}
+                            {% if r.target_students and r.target_students|length > 0 %}
+                                {% for s in r.target_students[:2] %}
+                                <div>
+                                    <a href="{{ url_for('main.student_detail', student_id=s.id) }}" class="fw-semibold text-decoration-none small">
+                                        {{ s.name }}
+                                    </a>
+                                    <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.7rem;">{{ s.id }}</span>
+                                </div>
+                                {% endfor %}
+                                {% if r.target_students|length > 2 %}
+                                <small class="text-muted">+{{ r.target_students|length - 2 }} more students</small>
+                                {% endif %}
+                            {% elif r.external_invitees and r.external_invitees|length > 0 %}
+                                {% for g in r.external_invitees %}
+                                <div>
+                                    <span class="fw-semibold small"><i class="fas fa-user-tag text-info me-1"></i>{{ g.name }}</span>
+                                    <span class="badge bg-info text-white" style="font-size: 0.65rem;">{{ g.role }}</span>
+                                </div>
+                                {% endfor %}
+                            {% elif r.student_id %}
                                 <a href="{{ url_for('main.student_detail', student_id=r.student_id) }}" class="fw-semibold text-decoration-none">
                                     {{ r.student_name }}
                                 </a>
                                 <span class="badge bg-light text-secondary border font-monospace ms-1">{{ r.student_id }}</span>
                             {% else %}
-                                <span class="text-muted">General Advisee Call</span>
+                                <span class="text-muted small">Open Session</span>
                             {% endif %}
                         </td>
-                        <td><span class="small">{{ r.advisor_name }}</span></td>
-                        <td><span class="text-muted small">{{ r.created_at }}</span></td>
+                        <td><span class="small fw-semibold">{{ r.advisor_name }}</span></td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                {% if r.require_passcode %}
+                                <span class="badge bg-warning text-dark border small" title="Passcode: {{ r.passcode }}">
+                                    <i class="fas fa-lock me-1"></i> PIN: {{ r.passcode }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-light text-secondary border small">
+                                    <i class="fas fa-lock-open me-1"></i> Open PIN
+                                </span>
+                                {% endif %}
+
+                                {% if r.require_admission %}
+                                <span class="badge bg-primary-subtle text-primary border small">
+                                    <i class="fas fa-shield-alt me-1"></i> Waiting Room
+                                </span>
+                                {% else %}
+                                <span class="badge bg-light text-secondary border small">
+                                    <i class="fas fa-bolt me-1"></i> Direct Entry
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small text-muted">{{ r.created_at }}</div>
+                            {% if r.duration_minutes %}
+                            <span class="badge bg-light text-dark border">
+                                <i class="fas fa-clock me-1 text-primary"></i> {{ r.duration_minutes }}m limit
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-muted border">Unlimited</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <span class="badge bg-{{ 'success' if r.participants_count > 0 else 'secondary' }}">
-                                <i class="fas fa-user me-1"></i> {{ r.participants_count }} online
+                                <i class="fas fa-user me-1"></i> {{ r.participants_count }} in call
                             </span>
+                            {% if r.recordings_count > 0 %}
+                            <div class="mt-1">
+                                <span class="badge bg-danger" style="font-size: 0.68rem;">
+                                    <i class="fas fa-film me-1"></i> {{ r.recordings_count }} REC
+                                </span>
+                            </div>
+                            {% endif %}
                         </td>
                         <td class="text-end pe-3">
                             <div class="btn-group">
+                                {% if not r.is_ended %}
                                 <a href="{{ url_for('main.meeting_room_view', room_id=r.room_id, role='advisor') }}" 
                                    class="btn btn-sm btn-primary">
-                                    <i class="fas fa-sign-in-alt me-1"></i> Enter as Advisor
+                                    <i class="fas fa-sign-in-alt me-1"></i> Enter as Host
                                 </a>
+                                {% endif %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        onclick="copyInviteLink('{{ url_for('main.meeting_room_view', room_id=r.room_id, _external=True) }}', '{{ r.student_name }}')"
-                                        title="Copy Student Invite Link">
+                                        onclick="copyInviteLink('{{ url_for('main.meeting_room_view', room_id=r.room_id, _external=True) }}', '{{ r.student_name }}', '{{ r.passcode or '' }}', {{ 'true' if r.require_admission else 'false' }})"
+                                        title="Copy Student/Guest Invitation">
                                     <i class="fas fa-copy"></i>
+                                </button>
+                                {% if not r.is_ended %}
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark" 
+                                        onclick="endMeetingRoom('{{ r.room_id }}')" title="End call for everyone">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteMeetingRoom('{{ r.room_id }}')" title="Delete and permanently remove this meeting">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         </td>
@@ -158,7 +239,7 @@
                 <i class="fas fa-video fa-3x text-muted opacity-50"></i>
             </div>
             <h5 class="text-secondary fw-semibold">No active meeting rooms right now</h5>
-            <p class="text-muted small mb-3">Click below to start an advising room and invite a student.</p>
+            <p class="text-muted small mb-3">Click below to start an advising room and invite a student or external guest.</p>
             <button class="btn btn-primary btn-sm" onclick="startInstantMeeting()">
                 <i class="fas fa-plus me-1"></i> Create Meeting Room
             </button>
@@ -169,91 +250,219 @@
 
 <!-- Modal: Start New Meeting -->
 <div class="modal fade" id="newMeetingModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-lg modal-dialog-centered">
         <div class="modal-content shadow border-0">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold">
-                    <i class="fas fa-video me-2"></i> Start Advising Virtual Room
+                    <i class="fas fa-video me-2"></i> Launch Virtual Advising Room (Google Meet Style)
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <form id="createMeetingForm">
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label fw-bold mb-0">Select Advisee Student(s)</label>
-                            <span class="badge bg-primary" id="selectedStudentsCount">0 Selected</span>
-                        </div>
-                        <p class="text-muted small mb-2">Check one or multiple students to invite them all into the same advising room.</p>
-                        
-                        <!-- Quick Group Filter Buttons -->
-                        <div class="d-flex flex-wrap gap-1 mb-2">
-                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(true)">Select All</button>
-                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(false)">Clear</button>
-                            <button type="button" class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('strict')">
-                                <i class="fas fa-exclamation-triangle me-1"></i>All Strict Probation
+                    <!-- Nav Tabs: Select Attendees Type -->
+                    <ul class="nav nav-pills nav-fill mb-3" id="attendeeTypeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold py-2" id="tab-advisees-btn" data-bs-toggle="pill" data-bs-target="#tab-advisees" type="button" role="tab">
+                                <i class="fas fa-user-graduate me-1"></i> Advisee Student(s)
                             </button>
-                            <button type="button" class="btn btn-xs btn-outline-warning text-dark py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('probation')">
-                                <i class="fas fa-exclamation-circle me-1"></i>All Probation
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-2" id="tab-guests-btn" data-bs-toggle="pill" data-bs-target="#tab-guests" type="button" role="tab">
+                                <i class="fas fa-users-cog me-1"></i> External Guests / Non-Students
                             </button>
-                        </div>
+                        </li>
+                    </ul>
 
-                        <!-- Search Advisees -->
-                        <div class="input-group input-group-sm mb-2">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            <input type="text" id="adviseeSearchFilter" class="form-control" placeholder="Search by student name or ID..." oninput="onAdviseeSearch(this.value)">
-                        </div>
-
-                        <!-- Scrollable Student Checkbox List -->
-                        <div class="border rounded p-2 bg-white" style="max-height: 220px; overflow-y: auto;" id="studentCheckList">
-                            {% for s in students %}
-                            {% set st = s.status or 'Normal / Good Standing' %}
-                            {% set is_strict = 'Strict' in st or 'Third' in st %}
-                            {% set is_prob = 'Probation' in st and 'Removal' not in st %}
-                            <div class="form-check advisee-check-row py-1 border-bottom border-light" 
-                                 data-standing="{{ 'strict' if is_strict else 'probation' if is_prob else 'good' }}"
-                                 data-search="{{ s.id }} {{ s.name|lower }}">
-                                <input class="form-check-input student-checkbox" type="checkbox" 
-                                       value="{{ s.id }}" id="stu_chk_{{ s.id }}" 
-                                       data-name="{{ s.name }}" 
-                                       data-standing="{{ st }}"
-                                       onchange="updateSelectedCount()">
-                                <label class="form-check-label d-flex justify-content-between align-items-center w-100 cursor-pointer" for="stu_chk_{{ s.id }}">
-                                    <div>
-                                        <strong class="text-primary font-monospace">{{ s.id }}</strong>
-                                        <span class="ms-1 fw-semibold text-dark">{{ s.name }}</span>
-                                    </div>
-                                    <span class="badge bg-{{ 'danger' if is_strict else 'warning text-dark' if is_prob else 'success' }} fs-8">
-                                        {{ st }}
-                                    </span>
-                                </label>
+                    <div class="tab-content mb-3" id="attendeeTabContent">
+                        <!-- Tab 1: Advisee Students -->
+                        <div class="tab-pane fade show active" id="tab-advisees" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold mb-0">Select Advisee Student(s)</label>
+                                <span class="badge bg-primary" id="selectedStudentsCount">0 Selected</span>
                             </div>
-                            {% endfor %}
+                            <p class="text-muted small mb-2">Check one student for 1-on-1 counseling, or multiple for a group cohort.</p>
+                            
+                            <!-- Quick Filter Buttons -->
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(true)">Select All</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(false)">Clear</button>
+                                <button type="button" class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('strict')">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>All Strict Probation
+                                </button>
+                                <button type="button" class="btn btn-xs btn-outline-warning text-dark py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('probation')">
+                                    <i class="fas fa-exclamation-circle me-1"></i>All Probation
+                                </button>
+                            </div>
+
+                            <!-- Search Advisees -->
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" id="adviseeSearchFilter" class="form-control" placeholder="Search by student name or ID..." oninput="onAdviseeSearch(this.value)">
+                            </div>
+
+                            <!-- Scrollable Student Checkbox List -->
+                            <div class="border rounded p-2 bg-white" style="max-height: 180px; overflow-y: auto;" id="studentCheckList">
+                                {% for s in students %}
+                                {% set st = s.status or 'Normal / Good Standing' %}
+                                {% set is_strict = 'Strict' in st or 'Third' in st %}
+                                {% set is_prob = 'Probation' in st and 'Removal' not in st %}
+                                <div class="form-check advisee-check-row py-1 border-bottom border-light" 
+                                     data-standing="{{ 'strict' if is_strict else 'probation' if is_prob else 'good' }}"
+                                     data-search="{{ s.id }} {{ s.name|lower }}">
+                                    <input class="form-check-input student-checkbox" type="checkbox" 
+                                           value="{{ s.id }}" id="stu_chk_{{ s.id }}" 
+                                           data-name="{{ s.name }}" 
+                                           data-standing="{{ st }}"
+                                           onchange="updateSelectedCount()">
+                                    <label class="form-check-label d-flex justify-content-between align-items-center w-100 cursor-pointer" for="stu_chk_{{ s.id }}">
+                                        <div>
+                                            <strong class="text-primary font-monospace">{{ s.id }}</strong>
+                                            <span class="ms-1 fw-semibold text-dark">{{ s.name }}</span>
+                                        </div>
+                                        <span class="badge bg-{{ 'danger' if is_strict else 'warning text-dark' if is_prob else 'success' }} fs-8">
+                                            {{ st }}
+                                        </span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: External Guests -->
+                        <div class="tab-pane fade" id="tab-guests" role="tabpanel">
+                            <label class="form-label fw-bold mb-1">Invite External Non-Student Participants</label>
+                            <p class="text-muted small mb-2">Add external collaborators such as Co-Advisors, Department Chair, Parents, or Industry Reviewers.</p>
+                            
+                            <div id="guestListContainer" class="mb-2">
+                                <div class="row g-2 mb-2 guest-entry-row">
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control form-control-sm guest-name" placeholder="Guest Full Name (e.g. Dr. Ahmed Al-Busaidi)">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select form-select-sm guest-role">
+                                            <option value="Co-Advisor">Co-Advisor</option>
+                                            <option value="Department Chair">Department Chair</option>
+                                            <option value="Parent / Guardian">Parent / Guardian</option>
+                                            <option value="External Evaluator">External Evaluator</option>
+                                            <option value="Industry Mentor">Industry Mentor</option>
+                                            <option value="Guest Observer">Guest Observer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeGuestRow(this)">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addGuestRow()">
+                                <i class="fas fa-user-plus me-1"></i> Add Another Guest
+                            </button>
                         </div>
                     </div>
 
+                    <!-- Meeting Details -->
                     <div class="mb-3">
                         <label for="meetingTitle" class="form-label fw-bold">Meeting Topic / Title</label>
                         <input type="text" class="form-control" id="meetingTitle" 
-                               placeholder="e.g. Fall 2026-2027 Group Advising & Registration Session" 
+                               placeholder="e.g. Academic Advising & Graduation Plan Review" 
                                value="Academic Advising Consultation">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="advisorName" class="form-label fw-bold">Advisor Name</label>
-                        <input type="text" class="form-control" id="advisorName" value="Dr. Nasser Tabook">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="advisorName" class="form-label fw-bold">Meeting Host / Advisor</label>
+                            <input type="text" class="form-control" id="advisorName" value="Dr. Nasser Tabook">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="meetingDuration" class="form-label fw-bold">Duration Control</label>
+                            <select class="form-select" id="meetingDuration">
+                                <option value="15">15 Minutes (Quick Status Check)</option>
+                                <option value="30" selected>30 Minutes (Standard Advising)</option>
+                                <option value="45">45 Minutes (In-Depth Degree Recovery)</option>
+                                <option value="60">60 Minutes (Comprehensive Probation Review)</option>
+                                <option value="90">90 Minutes (Department Panel)</option>
+                                <option value="0">Unlimited (No Time Limit)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Security, Admission & Capacity Control Box -->
+                    <div class="card bg-light border-0 p-3 mb-3">
+                        <h6 class="fw-bold mb-2 text-dark">
+                            <i class="fas fa-shield-alt text-primary me-2"></i> Security & Admission Settings
+                        </h6>
+                        
+                        <!-- Waiting Room Toggle -->
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="requireAdmissionToggle" checked>
+                            <label class="form-check-label fw-semibold" for="requireAdmissionToggle">
+                                Require Host Admission (Waiting Room / Knocking Lobby)
+                            </label>
+                            <small class="text-muted d-block" style="font-size: 0.8rem;">
+                                Participants cannot enter directly. They wait in a pre-meeting lobby until you admit them.
+                            </small>
+                        </div>
+
+                        <!-- Passcode Toggle -->
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="requirePasscodeToggle" onchange="togglePasscodeInput(this.checked)">
+                            <label class="form-check-label fw-semibold" for="requirePasscodeToggle">
+                                Protect with Meeting Passcode / Password
+                            </label>
+                            <small class="text-muted d-block" style="font-size: 0.8rem;">
+                                Restrict entry so only attendees with the meeting passcode can enter or knock.
+                            </small>
+                        </div>
+
+                        <!-- Passcode Input Field (Hidden until checked) -->
+                        <div id="passcodeContainer" class="mt-2" style="display: none;">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="fas fa-key text-warning"></i></span>
+                                <input type="text" id="meetingPasscode" class="form-control font-monospace" placeholder="Enter custom passcode or auto-generate">
+                                <button type="button" class="btn btn-outline-secondary" onclick="generateRandomPasscode()">
+                                    <i class="fas fa-random me-1"></i> Auto PIN
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Capacity Limit -->
+                        <div class="row align-items-center mt-2">
+                            <div class="col-auto">
+                                <label for="maxParticipants" class="small fw-semibold mb-0">Max Allowed Attendees:</label>
+                            </div>
+                            <div class="col-auto">
+                                <select class="form-select form-select-sm" id="maxParticipants">
+                                    <option value="">Unlimited</option>
+                                    <option value="2">2 (1-on-1 Private Session)</option>
+                                    <option value="5">Up to 5 Participants</option>
+                                    <option value="10">Up to 10 Participants</option>
+                                    <option value="25">Up to 25 Participants</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
                 <!-- Generated Invitation Area (Shown after creation) -->
                 <div id="inviteArea" class="mt-3 p-3 bg-light border rounded" style="display: none;">
-                    <h6 class="fw-bold text-success mb-2">
-                        <i class="fas fa-check-circle me-1"></i> Meeting Room Created!
-                    </h6>
-                    <p class="small text-muted mb-2">Share this invite link with the student:</p>
-                    
-                    <div class="mb-2">
-                        <label class="small text-muted fw-semibold">Local URL (This Computer):</label>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold text-success mb-0">
+                            <i class="fas fa-check-circle me-1"></i> Meeting Room Created Successfully!
+                        </h6>
+                        <span class="badge bg-primary font-monospace" id="generatedRoomBadge"></span>
+                    </div>
+
+                    <div class="card mb-3 border-0 bg-white shadow-sm p-3">
+                        <div class="small mb-1"><strong>Topic:</strong> <span id="inviteTopic"></span></div>
+                        <div class="small mb-1"><strong>Duration:</strong> <span id="inviteDuration"></span></div>
+                        <div class="small mb-1" id="invitePasscodeRow" style="display: none;">
+                            <strong>Passcode:</strong> <span class="badge bg-warning text-dark font-monospace" id="invitePasscode"></span>
+                        </div>
+                        <div class="small mb-2"><strong>Admission:</strong> <span id="inviteAdmission"></span></div>
+
+                        <label class="small text-muted fw-semibold">Student / Guest Meeting Link:</label>
                         <div class="input-group input-group-sm mb-2">
                             <input type="text" id="shareableLinkInput" class="form-control font-monospace" readonly>
                             <button class="btn btn-outline-primary" type="button" onclick="copyFromInput('shareableLinkInput')">
@@ -262,22 +471,23 @@
                         </div>
                     </div>
 
-                    <div class="mb-2" id="lanLinkContainer">
-                        <label class="small text-muted fw-semibold"><i class="fas fa-wifi me-1 text-primary"></i> Wi-Fi / Campus Network URL (For Student's Phone or Laptop):</label>
-                        <div class="input-group input-group-sm mb-2">
-                            <input type="text" id="shareableLanInput" class="form-control font-monospace text-primary" readonly>
-                            <button class="btn btn-primary" type="button" onclick="copyFromInput('shareableLanInput')">
-                                <i class="fas fa-copy me-1"></i> Copy
+                    <!-- Full formatted text block -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="small text-muted fw-bold mb-0">Full Invitation Message:</label>
+                            <button class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="copyFullInvite()">
+                                <i class="fas fa-clipboard me-1"></i> Copy Message
                             </button>
                         </div>
+                        <textarea id="fullInviteTextArea" class="form-control form-control-sm font-monospace text-muted" rows="4" readonly></textarea>
                     </div>
 
-                    <div class="d-flex gap-2 mt-3">
+                    <div class="d-flex gap-2">
                         <a id="enterRoomBtn" href="#" class="btn btn-primary btn-sm flex-grow-1">
-                            <i class="fas fa-sign-in-alt me-1"></i> Enter Meeting Room Now
+                            <i class="fas fa-sign-in-alt me-1"></i> Enter Meeting Room as Host
                         </a>
                         <button class="btn btn-outline-success btn-sm" onclick="shareWhatsApp()">
-                            <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                            <i class="fab fa-whatsapp me-1"></i> Share via WhatsApp
                         </button>
                     </div>
                 </div>
@@ -285,7 +495,7 @@
             <div class="modal-footer bg-light" id="createModalFooter">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitCreateMeeting()">
-                    <i class="fas fa-arrow-right me-1"></i> Create &amp; Get Link
+                    <i class="fas fa-check-circle me-1"></i> Launch Meeting &amp; Generate Link
                 </button>
             </div>
         </div>
@@ -297,6 +507,68 @@
 <script>
 let createdMeetingUrl = '';
 let studentTargetName = '';
+let fullInvitationText = '';
+
+function togglePasscodeInput(checked) {
+    const container = document.getElementById('passcodeContainer');
+    container.style.display = checked ? 'block' : 'none';
+    if (checked && !document.getElementById('meetingPasscode').value) {
+        generateRandomPasscode();
+    }
+}
+
+function generateRandomPasscode() {
+    const pin = 'DU-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('meetingPasscode').value = pin;
+}
+
+function switchToAdviseeTab() {
+    const btn = document.getElementById('tab-advisees-btn');
+    if (btn) {
+        const tab = new bootstrap.Tab(btn);
+        tab.show();
+    }
+}
+
+function switchToGuestTab() {
+    const btn = document.getElementById('tab-guests-btn');
+    if (btn) {
+        const tab = new bootstrap.Tab(btn);
+        tab.show();
+    }
+}
+
+function addGuestRow() {
+    const container = document.getElementById('guestListContainer');
+    const div = document.createElement('div');
+    div.className = 'row g-2 mb-2 guest-entry-row';
+    div.innerHTML = `
+        <div class="col-md-5">
+            <input type="text" class="form-control form-control-sm guest-name" placeholder="Guest Full Name">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select form-select-sm guest-role">
+                <option value="Co-Advisor">Co-Advisor</option>
+                <option value="Department Chair">Department Chair</option>
+                <option value="Parent / Guardian">Parent / Guardian</option>
+                <option value="External Evaluator">External Evaluator</option>
+                <option value="Industry Mentor">Industry Mentor</option>
+                <option value="Guest Observer">Guest Observer</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeGuestRow(this)">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function removeGuestRow(btn) {
+    const row = btn.closest('.guest-entry-row');
+    if (row) row.remove();
+}
 
 async function startInstantMeeting() {
     try {
@@ -306,7 +578,9 @@ async function startInstantMeeting() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 title: 'Instant Advising Meeting',
-                advisor_name: 'Dr. Nasser Tabook'
+                advisor_name: 'Dr. Nasser Tabook',
+                require_admission: true,
+                duration_minutes: 30
             })
         });
         const data = await res.json();
@@ -330,7 +604,6 @@ function updateSelectedCount() {
 
 function selectAllStudents(select) {
     document.querySelectorAll('.student-checkbox').forEach(cb => {
-        // Only select if parent row is visible
         if (cb.closest('.advisee-check-row').style.display !== 'none') {
             cb.checked = select;
         }
@@ -364,9 +637,26 @@ async function submitCreateMeeting() {
     const studentIds = checkedBoxes.map(cb => cb.value);
     const title = document.getElementById('meetingTitle').value.trim();
     const advisorName = document.getElementById('advisorName').value.trim();
-    
+    const durationMinutes = parseInt(document.getElementById('meetingDuration').value);
+    const requireAdmission = document.getElementById('requireAdmissionToggle').checked;
+    const requirePasscode = document.getElementById('requirePasscodeToggle').checked;
+    const passcode = requirePasscode ? document.getElementById('meetingPasscode').value.trim() : null;
+    const maxParticipants = document.getElementById('maxParticipants').value ? parseInt(document.getElementById('maxParticipants').value) : null;
+
+    // Collect external guests
+    const externalInvitees = [];
+    document.querySelectorAll('.guest-entry-row').forEach(row => {
+        const name = row.querySelector('.guest-name').value.trim();
+        const role = row.querySelector('.guest-role').value;
+        if (name) {
+            externalInvitees.push({ name: name, role: role });
+        }
+    });
+
     if (checkedBoxes.length > 0) {
         studentTargetName = checkedBoxes.length === 1 ? checkedBoxes[0].getAttribute('data-name') : `${checkedBoxes.length} Advisees`;
+    } else if (externalInvitees.length > 0) {
+        studentTargetName = externalInvitees[0].name;
     } else {
         studentTargetName = 'Advisees Group';
     }
@@ -379,17 +669,36 @@ async function submitCreateMeeting() {
             body: JSON.stringify({
                 student_ids: studentIds,
                 title: title,
-                advisor_name: advisorName
+                advisor_name: advisorName,
+                duration_minutes: durationMinutes,
+                require_admission: requireAdmission,
+                require_passcode: requirePasscode,
+                passcode: passcode,
+                max_participants: maxParticipants,
+                external_invitees: externalInvitees
             })
         });
         const data = await res.json();
         if (data.status === 'success') {
             createdMeetingUrl = data.meeting_url || data.lan_url;
-            document.getElementById('shareableLinkInput').value = data.meeting_url;
-            if (document.getElementById('shareableLanInput')) {
-                document.getElementById('shareableLanInput').value = data.meeting_url || data.lan_url;
+            fullInvitationText = data.invitation_text;
+
+            document.getElementById('generatedRoomBadge').innerText = data.room_id;
+            document.getElementById('inviteTopic').innerText = data.title;
+            document.getElementById('inviteDuration').innerText = data.duration_minutes ? `${data.duration_minutes} Minutes` : 'Unlimited';
+            document.getElementById('inviteAdmission').innerText = data.require_admission ? 'Waiting Room Lobby (Host approval required)' : 'Direct Entry';
+            
+            if (data.passcode) {
+                document.getElementById('invitePasscodeRow').style.display = 'block';
+                document.getElementById('invitePasscode').innerText = data.passcode;
+            } else {
+                document.getElementById('invitePasscodeRow').style.display = 'none';
             }
-            document.getElementById('enterRoomBtn').href = `${prefix}/meeting/${data.room_id}?role=advisor`;
+
+            document.getElementById('shareableLinkInput').value = data.meeting_url;
+            document.getElementById('fullInviteTextArea').value = data.invitation_text;
+            document.getElementById('enterRoomBtn').href = data.advisor_url || `${prefix}/meeting/${data.room_id}?role=advisor`;
+
             document.getElementById('inviteArea').style.display = 'block';
             document.getElementById('createModalFooter').style.display = 'none';
         } else {
@@ -407,18 +716,95 @@ function copyFromInput(inputId = 'shareableLinkInput') {
     alert('Meeting link copied to clipboard:\n' + input.value);
 }
 
-function copyInviteLink(url, studentName) {
-    const greeting = studentName ? `Dear ${studentName}, ` : '';
-    const text = `${greeting}Please join our academic advising video meeting using this link:\n${url}\n\nDr. Nasser Tabook - Dhofar University`;
-    navigator.clipboard.writeText(text);
-    alert('Invitation copied to clipboard:\n\n' + text);
+function copyFullInvite() {
+    const txt = document.getElementById('fullInviteTextArea').value;
+    navigator.clipboard.writeText(txt);
+    alert('Full invitation copied to clipboard:\n\n' + txt);
+}
+
+function copyInviteLink(url, studentName, passcode, requireAdmission) {
+    const greeting = studentName ? `Dear ${studentName},\n` : '';
+    let invite = `${greeting}Please join our Dhofar University Academic Advising video meeting:\n${url}\n`;
+    if (passcode) {
+        invite += `Passcode: ${passcode}\n`;
+    }
+    if (requireAdmission) {
+        invite += `Note: Host approval required upon arrival.\n`;
+    }
+    invite += `\nDr. Nasser Tabook - Dhofar University`;
+    navigator.clipboard.writeText(invite);
+    alert('Invitation copied to clipboard:\n\n' + invite);
+}
+
+async function endMeetingRoom(roomId) {
+    if (confirm(`Are you sure you want to end meeting room ${roomId} for all participants?`)) {
+        try {
+            const prefix = window.APP_PREFIX || '';
+            const res = await fetch(`${prefix}/api/meeting/${roomId}/end`, { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert('Error ending meeting: ' + data.message);
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+    }
+}
+
+async function deleteMeetingRoom(roomId) {
+    if (!confirm(`Are you sure you want to permanently delete virtual meeting room ${roomId}?`)) {
+        return;
+    }
+    try {
+        const prefix = window.APP_PREFIX || '';
+        const res = await fetch(`${prefix}/api/meeting/${roomId}/delete`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            const row = document.getElementById(`room-row-${roomId}`);
+            if (row) {
+                row.remove();
+                const remaining = document.querySelectorAll('tr[id^="room-row-"]').length;
+                const badge = document.getElementById('activeRoomsBadge');
+                if (badge) badge.innerText = `${remaining} Active`;
+                if (remaining === 0) window.location.reload();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert('Error deleting meeting: ' + data.message);
+        }
+    } catch (e) {
+        alert('Network error: ' + e.message);
+    }
+}
+
+async function clearAllMeetingRooms() {
+    if (!confirm("Are you sure you want to permanently remove ALL registered virtual meetings?")) {
+        return;
+    }
+    try {
+        const prefix = window.APP_PREFIX || '';
+        const res = await fetch(`${prefix}/api/meetings/clear-all`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            window.location.reload();
+        } else {
+            alert('Error clearing meetings: ' + data.message);
+        }
+    } catch (e) {
+        alert('Network error: ' + e.message);
+    }
 }
 
 function shareWhatsApp() {
-    const greeting = studentTargetName ? `Dear ${studentTargetName}, ` : '';
-    const text = encodeURIComponent(`${greeting}Please join our academic advising video meeting using this link: ${createdMeetingUrl}`);
+    const text = encodeURIComponent(fullInvitationText || `Please join our academic advising video meeting: ${createdMeetingUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 </script>
 {% endblock %}
-

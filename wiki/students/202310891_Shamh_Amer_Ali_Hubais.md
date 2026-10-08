@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "CRITICAL"
 cgpa: 66.22
 semester_gpa: 63.5
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Shamh Amer Ali Hubais

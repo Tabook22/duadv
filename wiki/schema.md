@@ -2,7 +2,7 @@
 title: Dhofar University Academic Advising Wiki Schema
 type: schema
 version: 1.0.0
-last_updated: 2026-10-07
+last_updated: 2026-10-08
 maintainer: LLM Agent & Dr. Nasser Tabook
 ---
 

@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 67.29
 semester_gpa: 80.0
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Abrar Saleh Awadh Bait Shajanah

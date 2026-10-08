@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "MODERATE"
 cgpa: 58.71
 semester_gpa: 49.8
-last_updated: "2026-10-07"
+last_updated: "2026-10-08"
 ---
 
 # Student Advising Dossier: Mohammed Bakhit Salem Al Maashani

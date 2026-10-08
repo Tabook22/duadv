@@ -1,7 +1,7 @@
 ---
 title: Dhofar University Academic Advising Wiki Index
 type: index
-last_compiled: "2026-10-07 01:35:32"
+last_compiled: "2026-10-08 18:57:08"
 ---
 
 # Dhofar University Academic Advising Wiki Index
