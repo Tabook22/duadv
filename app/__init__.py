@@ -32,6 +32,33 @@ def create_app(config_name=None):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     
+    # Context processor for global application settings and admin session state
+    @app.context_processor
+    def inject_app_context():
+        from flask import session
+        from app.settings_manager import get_settings
+        return {
+            'app_settings': get_settings(),
+            'is_admin_logged_in': session.get('is_admin', False),
+            'admin_username': session.get('admin_username', '')
+        }
+    
+    # Optional global login enforcement if admin configured require_login_for_portal
+    @app.before_request
+    def check_portal_access():
+        from flask import session, request, redirect, url_for
+        from app.settings_manager import get_settings
+        settings = get_settings()
+        if settings.get('admin', {}).get('require_login_for_portal', False):
+            if not session.get('is_admin'):
+                endpoint = request.endpoint or ''
+                if (endpoint.startswith('static') or 
+                    request.blueprint == 'auth' or 
+                    endpoint == 'main.about_page' or 
+                    'meeting' in endpoint):
+                    return None
+                return redirect(url_for('auth.login', next=request.url))
+    
     return app
 
 def setup_logging(app):

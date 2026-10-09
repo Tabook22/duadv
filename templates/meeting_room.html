@@ -1107,6 +1107,7 @@
             <div id="chatMessagesList"></div>
         </div>
         <div class="p-3 border-top bg-light">
+            {% if role == 'advisor' or app_settings.permissions.allow_guest_chat %}
             <form id="chatForm" onsubmit="sendChat(event)">
                 <div class="input-group">
                     <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Send a message to everyone..." autocomplete="off">
@@ -1115,6 +1116,11 @@
                     </button>
                 </div>
             </form>
+            {% else %}
+            <div class="text-center text-muted small p-2 bg-white rounded border">
+                <i class="fas fa-comment-slash me-1 text-secondary"></i> In-call chat has been restricted by the advisor.
+            </div>
+            {% endif %}
         </div>
     </div>
 

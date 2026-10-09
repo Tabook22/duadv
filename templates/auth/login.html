@@ -1,41 +1,75 @@
 {% extends "base.html" %}
 
-{% block title %}Supervisor Login - Dhofar University{% endblock %}
+{% block title %}Admin Sign In - {{ app_settings.branding.app_title }}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center py-5">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white text-center py-3">
-                <h4 class="mb-0"><i class="fas fa-user-shield me-2"></i>Supervisor Login</h4>
+    <div class="col-md-6 col-lg-5 col-xl-4">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1) !important;">
+            <div class="card-header text-center py-4 border-0" style="background: linear-gradient(135deg, #1e3a8a, #0284c7);">
+                <div class="avatar-badge mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.5rem; background: rgba(255,255,255,0.2); color: #fff; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h4 class="mb-1 text-white fw-bold"><i class="fas fa-user-shield me-2"></i>Supervisor Login & Admin Portal</h4>
+                <p class="text-white-50 small mb-0">{{ app_settings.branding.app_title }} &bull; {{ app_settings.branding.app_badge }}</p>
             </div>
-            <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('auth.login') }}">
+            
+            <div class="card-body p-4 p-md-4">
+                <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username / Staff ID</label>
+                        <label for="username" class="form-label text-light small fw-bold">
+                            <i class="fas fa-user me-1 text-primary"></i> Administrator Username
+                        </label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your staff ID" required>
+                            <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-user-circle"></i></span>
+                            <input type="text" class="form-control bg-dark text-white border-secondary shadow-none" id="username" name="username" placeholder="e.g. admin" required autofocus>
                         </div>
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
+                        <label for="password" class="form-label text-light small fw-bold d-flex justify-content-between">
+                            <span><i class="fas fa-key me-1 text-warning"></i> Password</span>
+                        </label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+                            <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control bg-dark text-white border-secondary shadow-none" id="password" name="password" placeholder="Enter password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" title="Toggle password visibility">
+                                <i class="fas fa-eye text-white-50"></i>
+                            </button>
                         </div>
                     </div>
+
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-sign-in-alt me-1"></i> Sign In
+                        <button type="submit" class="btn btn-primary py-2 fw-semibold rounded-3 shadow-sm">
+                            <i class="fas fa-arrow-right-to-bracket me-2"></i> Sign In to Control Panel
                         </button>
-                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-                            Back to Home
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary py-2 small rounded-3">
+                            <i class="fas fa-arrow-left me-1"></i> Return to Portal Home
                         </a>
                     </div>
                 </form>
+
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-center">
+                    <p class="text-muted small mb-0" style="font-size: 0.76rem;">
+                        <i class="fas fa-shield-alt text-info me-1"></i> Authorized faculty advising supervision only.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const pwdInput = document.getElementById('password');
+    if (toggleBtn && pwdInput) {
+        toggleBtn.addEventListener('click', function() {
+            const isPassword = pwdInput.getAttribute('type') === 'password';
+            pwdInput.setAttribute('type', isPassword ? 'text' : 'password');
+            this.querySelector('i').className = isPassword ? 'fas fa-eye-slash text-warning' : 'fas fa-eye text-white-50';
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,0 +1,44 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "scrypt:32768:8:1$bGxK1vRs0OaSYuNv$5dfe8e5cbebc67b66cb2c66ce11925fe50a7ffb90c8a88a59088bfab2ddd0615627d5bf8fe2d16e558345372a70c31c1fa018d6e897b93ba81ddfc603c773a7a",
+    "display_name": "Dr. Nasser Tabook",
+    "role_title": "Academic Advisor & Supervisor",
+    "avatar_initials": "NT",
+    "require_login_for_portal": false
+  },
+  "branding": {
+    "app_title": "Dhofar University",
+    "app_badge": "ADVISING",
+    "logo_icon": "fa-graduation-cap",
+    "logo_image_url": "",
+    "browser_tab_title": "Dhofar University - Student Management System",
+    "theme_color": "#2563eb"
+  },
+  "footer": {
+    "organization_line": "Dhofar University • College of Arts & Applied Sciences",
+    "tagline": "Student Management System • Advisee Analytics & WebRTC Hub",
+    "disclaimer": "This independent advising management platform is developed solely for educational mentoring.",
+    "copyright": "© 2026 Academic Advising Hub. All rights reserved."
+  },
+  "about": {
+    "app_name": "DU Advisee & Academic Advisory Suite",
+    "version": "v2.5.0",
+    "release_name": "Academic Nexus Edition",
+    "release_date": "October 2026",
+    "purpose_statement": "A dedicated, professional academic advising and analytics suite built for academic advisors to track student degree progress, monitor academic standing, automate transcript auditing, and facilitate secure virtual office consultations.",
+    "institutional_disclaimer": "Notice: This application is an independent educational tool designed solely for the benefit of the advisor to know the situation and status of his advisees at any given time. It does not belong to any educational institute.",
+    "advisor_name": "Dr. Nasser Tabook",
+    "advisor_role": "Assistant Professor & Academic Advisor",
+    "college": "College of Arts & Applied Sciences",
+    "department": "Computer Science & Mathematics"
+  },
+  "permissions": {
+    "require_advisor_admission": true,
+    "allow_guest_chat": true,
+    "allow_guest_notes_edit": false,
+    "allow_guest_video": true,
+    "allow_guest_audio": true,
+    "meeting_passcode": "1234"
+  }
+}

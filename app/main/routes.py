@@ -2,7 +2,7 @@
 
 import os
 import time
-from flask import render_template, request, jsonify, current_app, url_for
+from flask import render_template, request, jsonify, current_app, url_for, session, redirect, flash
 from app.main import bp
 from app.scraper.university_scraper import UniversitySystemManager
 from app.utils import save_students_to_file, load_students_from_file
@@ -1217,9 +1217,25 @@ def meeting_room_view(room_id):
     student_audit = group_students[0]['audit'] if group_students else None
     student_info = group_students[0]['student'] if group_students else None
 
-    role = request.args.get('role', 'advisor' if 'advisor' in request.args else 'guest')
+    from app.settings_manager import get_settings
+    settings = get_settings()
+    perms = settings.get('permissions', {})
+    
+    # Auto-detect role: if logged-in as admin and not explicitly visiting as guest, default to advisor
+    if session.get('is_admin') and 'role' not in request.args:
+        role = 'advisor'
+    else:
+        role = request.args.get('role', 'advisor' if 'advisor' in request.args else 'guest')
+        
     default_name = room.advisor_name if role == 'advisor' else (student_info.name if student_info else 'Student / Guest')
     user_name = request.args.get('name', default_name)
+    
+    # Sync room admission and passcode with global governance rules
+    if perms.get('meeting_passcode'):
+        room.require_passcode = True
+        room.passcode = perms.get('meeting_passcode')
+    if 'require_advisor_admission' in perms:
+        room.require_admission = perms.get('require_advisor_admission', True)
     
     return render_template(
         'meeting_room.html',
@@ -1719,6 +1735,183 @@ def api_meeting_save_notebook_to_student(room_id):
         'student_name': student_name,
         'saved_at': now_str
     })
+
+# ---------------------------------------------------------------------------
+# Admin Governance, Application Settings, and About Routes
+# ---------------------------------------------------------------------------
+
+@bp.route('/about')
+def about_page():
+    """Display dedicated About Application, versioning, and institutional disclaimer page"""
+    return render_template('about.html')
+
+@bp.route('/admin/settings')
+def admin_settings():
+    """Display the full Administrator Control Panel and Governance Center"""
+    from app.auth.utils import admin_required
+    if not session.get('is_admin'):
+        flash('Please sign in as administrator to access settings.', 'warning')
+        return redirect(url_for('auth.login', next=request.url))
+    return render_template('admin/settings.html')
+
+@bp.route('/admin/settings/branding', methods=['POST'])
+def admin_save_branding():
+    """Save application title, badge, icon, and browser tab title"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    from app.settings_manager import update_branding
+    app_title = request.form.get('app_title')
+    app_badge = request.form.get('app_badge')
+    logo_icon = request.form.get('logo_icon')
+    logo_image_url = request.form.get('logo_image_url')
+    browser_tab_title = request.form.get('browser_tab_title')
+    
+    success, msg = update_branding(
+        app_title=app_title,
+        app_badge=app_badge,
+        logo_icon=logo_icon,
+        logo_image_url=logo_image_url,
+        browser_tab_title=browser_tab_title
+    )
+    if success:
+        flash('Branding and logo settings updated successfully!', 'success')
+    else:
+        flash(f'Failed to update branding: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
+@bp.route('/admin/settings/footer', methods=['POST'])
+def admin_save_footer():
+    """Save footer organization line, tagline, disclaimer, and copyright"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    from app.settings_manager import update_footer
+    organization_line = request.form.get('organization_line')
+    tagline = request.form.get('tagline')
+    disclaimer = request.form.get('disclaimer')
+    copyright_text = request.form.get('copyright')
+    
+    success, msg = update_footer(
+        organization_line=organization_line,
+        tagline=tagline,
+        disclaimer=disclaimer,
+        copyright=copyright_text
+    )
+    if success:
+        flash('Footer content and educational disclaimers updated successfully!', 'success')
+    else:
+        flash(f'Failed to update footer: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
+@bp.route('/admin/settings/about', methods=['POST'])
+def admin_save_about():
+    """Save about application information, version, release, and scope"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    from app.settings_manager import update_about
+    app_name = request.form.get('app_name')
+    version = request.form.get('version')
+    release_name = request.form.get('release_name')
+    release_date = request.form.get('release_date')
+    purpose_statement = request.form.get('purpose_statement')
+    institutional_disclaimer = request.form.get('institutional_disclaimer')
+    advisor_name = request.form.get('advisor_name')
+    advisor_role = request.form.get('advisor_role')
+    college = request.form.get('college')
+    department = request.form.get('department')
+    
+    success, msg = update_about(
+        app_name=app_name,
+        version=version,
+        release_name=release_name,
+        release_date=release_date,
+        purpose_statement=purpose_statement,
+        institutional_disclaimer=institutional_disclaimer,
+        advisor_name=advisor_name,
+        advisor_role=advisor_role,
+        college=college,
+        department=department
+    )
+    if success:
+        flash('About Application and Release specifications updated successfully!', 'success')
+    else:
+        flash(f'Failed to update about info: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
+@bp.route('/admin/settings/permissions', methods=['POST'])
+def admin_save_permissions():
+    """Save access control, waiting room admission, chat, and notebook permissions"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    from app.settings_manager import update_permissions
+    require_advisor_admission = request.form.get('require_advisor_admission') == 'true'
+    allow_guest_chat = request.form.get('allow_guest_chat') == 'true'
+    allow_guest_notes_edit = request.form.get('allow_guest_notes_edit') == 'true'
+    allow_guest_video = request.form.get('allow_guest_video') == 'true'
+    allow_guest_audio = request.form.get('allow_guest_audio') == 'true'
+    meeting_passcode = request.form.get('meeting_passcode', '')
+    
+    success, msg = update_permissions(
+        require_advisor_admission=require_advisor_admission,
+        allow_guest_chat=allow_guest_chat,
+        allow_guest_notes_edit=allow_guest_notes_edit,
+        allow_guest_video=allow_guest_video,
+        allow_guest_audio=allow_guest_audio,
+        meeting_passcode=meeting_passcode
+    )
+    if success:
+        flash('Access control and participant permissions saved successfully!', 'success')
+    else:
+        flash(f'Failed to update permissions: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
+@bp.route('/admin/settings/security', methods=['POST'])
+def admin_save_security():
+    """Update administrator username, password, display profile, and portal protection"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+        
+    from app.settings_manager import update_admin_security
+    username = request.form.get('username')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    display_name = request.form.get('display_name')
+    role_title = request.form.get('role_title')
+    avatar_initials = request.form.get('avatar_initials')
+    require_login_for_portal = request.form.get('require_login_for_portal') == 'true'
+    
+    if new_password:
+        if new_password != confirm_password:
+            flash('New password and confirmation do not match.', 'danger')
+            return redirect(url_for('main.admin_settings'))
+        if len(new_password) < 4:
+            flash('Password must be at least 4 characters long.', 'warning')
+            return redirect(url_for('main.admin_settings'))
+            
+    success, msg = update_admin_security(
+        new_username=username,
+        new_password=new_password if new_password else None,
+        display_name=display_name,
+        role_title=role_title,
+        initials=avatar_initials,
+        require_login=require_login_for_portal
+    )
+    
+    if success:
+        session['admin_username'] = username
+        flash('Admin security credentials and profile updated successfully!', 'success')
+    else:
+        flash(f'Failed to update security credentials: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
 
 
 
