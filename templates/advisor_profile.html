@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.full_name }} - Academic Advisor & Faculty Profile{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <!-- Hero Profile Header -->
+    <div class="card bg-dark border-secondary border-opacity-25 shadow-lg rounded-4 overflow-hidden mb-4">
+        <div class="card-body p-4 p-md-5 position-relative" style="background: radial-gradient(circle at 50% 10%, rgba(37, 99, 235, 0.28), transparent 75%);">
+            <div class="row align-items-center gy-4">
+                <div class="col-md-auto text-center">
+                    {% if profile.avatar_url %}
+                        <img src="{{ profile.avatar_url }}" alt="{{ profile.full_name }}" class="rounded-circle shadow-lg border border-primary border-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <div class="avatar-badge mx-auto shadow-lg" style="width: 120px; height: 120px; font-size: 3rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 4px solid rgba(255,255,255,0.2);">
+                            {{ profile.avatar_initials }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md text-center text-md-start">
+                    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 px-3 py-1">
+                            <i class="fas fa-id-badge me-1"></i> Staff ID: {{ profile.staff_id }}
+                        </span>
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-1">
+                            <i class="fas fa-circle-check me-1"></i> Active Academic Advisor
+                        </span>
+                        {% if is_admin_logged_in %}
+                            <a href="{{ url_for('main.admin_settings') }}#tab-profile" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill">
+                                <i class="fas fa-pen-to-square me-1"></i> Edit Profile
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <h1 class="h2 fw-bold text-white mb-1">{{ profile.full_name }}</h1>
+                    <p class="text-info fs-6 mb-2 fw-medium">{{ profile.title }}</p>
+                    <p class="text-white-50 small mb-0">
+                        <i class="fas fa-university me-1 text-primary"></i> {{ profile.college }} &bull; 
+                        <i class="fas fa-laptop-code me-1 text-info"></i> {{ profile.department }}
+                    </p>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="col-lg-auto text-center text-lg-end">
+                    <div class="d-flex flex-wrap flex-lg-column gap-2 justify-content-center">
+                        <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-success px-4 py-2 rounded-3 shadow-sm">
+                            <i class="fas fa-video me-2"></i> Join Virtual Office
+                        </a>
+                        {% if profile.whatsapp %}
+                            {% set clean_wa = profile.whatsapp|replace(' ', '')|replace('+', '')|replace('-', '') %}
+                            <a href="https://wa.me/{{ clean_wa }}" target="_blank" rel="noopener" class="btn btn-outline-success px-4 py-2 rounded-3">
+                                <i class="fab fa-whatsapp me-2"></i> Chat on WhatsApp
+                            </a>
+                        {% endif %}
+                        {% if profile.email_primary %}
+                            <a href="mailto:{{ profile.email_primary }}" class="btn btn-outline-primary px-4 py-2 rounded-3">
+                                <i class="fas fa-envelope me-2"></i> Email Advisor
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Profile Content Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Left Column: Biography & Advising Mission -->
+        <div class="col-lg-8">
+            <!-- Biography Card -->
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h5 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-user text-primary me-2"></i> Biography & Introduction
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-light lead fs-6" style="line-height: 1.8; white-space: pre-line;">
+                        {{ profile.bio }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advising Mission & Philosophy Card -->
+            {% if profile.advising_mission %}
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h5 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-compass text-warning me-2"></i> Advising Philosophy & Student Mission
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <blockquote class="blockquote mb-0 border-start border-warning border-4 ps-3 py-1">
+                        <p class="text-white-50 fs-6 fst-italic mb-0" style="line-height: 1.7;">
+                            "{{ profile.advising_mission }}"
+                        </p>
+                    </blockquote>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Research Interests Card -->
+            {% if profile.research_interests %}
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h5 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-atom text-info me-2"></i> Research Interests & Academic Specializations
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for interest in profile.research_interests.split(',') %}
+                            <span class="badge bg-dark border border-secondary border-opacity-50 text-white px-3 py-2 fs-7 fw-normal">
+                                <i class="fas fa-tag text-info me-1"></i> {{ interest.strip() }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Contact Channels & Office Schedule -->
+        <div class="col-lg-4">
+            <!-- Contact Channels Card -->
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h5 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-address-book text-success me-2"></i> Communication & Office
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                        <!-- Primary Email -->
+                        {% if profile.email_primary %}
+                        <li class="d-flex align-items-start gap-3">
+                            <div class="icon-box icon-box-sm icon-box-primary mt-1">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">University Email</small>
+                                <a href="mailto:{{ profile.email_primary }}" class="text-white fw-medium text-decoration-none">
+                                    {{ profile.email_primary }}
+                                </a>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        <!-- Secondary Email -->
+                        {% if profile.email_secondary %}
+                        <li class="d-flex align-items-start gap-3">
+                            <div class="icon-box icon-box-sm icon-box-info mt-1">
+                                <i class="fas fa-at"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Personal / Alternative Email</small>
+                                <a href="mailto:{{ profile.email_secondary }}" class="text-white fw-medium text-decoration-none">
+                                    {{ profile.email_secondary }}
+                                </a>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        <!-- Office Phone -->
+                        {% if profile.phone_office %}
+                        <li class="d-flex align-items-start gap-3">
+                            <div class="icon-box icon-box-sm icon-box-secondary mt-1">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Office Phone</small>
+                                <a href="tel:{{ profile.phone_office }}" class="text-white fw-medium text-decoration-none">
+                                    {{ profile.phone_office }}
+                                </a>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        <!-- Mobile / WhatsApp Phone -->
+                        {% if profile.phone_mobile %}
+                        <li class="d-flex align-items-start gap-3">
+                            <div class="icon-box icon-box-sm icon-box-success mt-1">
+                                <i class="fas fa-mobile-screen-button"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Mobile & WhatsApp</small>
+                                <a href="tel:{{ profile.phone_mobile }}" class="text-white fw-medium text-decoration-none">
+                                    {{ profile.phone_mobile }}
+                                </a>
+                            </div>
+                        </li>
+                        {% endif %}
+
+                        <!-- Physical Office Location -->
+                        {% if profile.office_location %}
+                        <li class="d-flex align-items-start gap-3">
+                            <div class="icon-box icon-box-sm icon-box-warning mt-1">
+                                <i class="fas fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Physical Office</small>
+                                <span class="text-white fw-medium">{{ profile.office_location }}</span>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Office Hours Card -->
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h6 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-clock text-warning me-2"></i> Student Consultation Hours
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center gap-2 text-warning fw-bold mb-1">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Office Hours</span>
+                        </div>
+                        <p class="text-white-50 small mb-0" style="line-height: 1.5;">
+                            {{ profile.office_hours }}
+                        </p>
+                    </div>
+                    <small class="text-muted mt-2 d-block">
+                        Advisees may also request scheduled online sessions via the Virtual Office.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Professional Links & Online Presence -->
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
+                <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                    <h6 class="card-title mb-0 text-white fw-bold">
+                        <i class="fas fa-globe text-info me-2"></i> Online & Academic Links
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column gap-2">
+                        {% if profile.personal_website %}
+                            <a href="{{ profile.personal_website }}" target="_blank" rel="noopener" class="btn btn-outline-info text-start btn-sm py-2">
+                                <i class="fas fa-globe me-2"></i> Personal Website & Diary
+                            </a>
+                        {% endif %}
+                        {% if profile.linkedin_url %}
+                            <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary text-start btn-sm py-2">
+                                <i class="fab fa-linkedin me-2"></i> LinkedIn Profile
+                            </a>
+                        {% endif %}
+                        {% if profile.google_scholar_url %}
+                            <a href="{{ profile.google_scholar_url }}" target="_blank" rel="noopener" class="btn btn-outline-secondary text-start btn-sm py-2">
+                                <i class="fas fa-graduation-cap me-2"></i> Google Scholar / ORCID
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

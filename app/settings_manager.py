@@ -19,11 +19,34 @@ logger = logging.getLogger(__name__)
 DEFAULT_SETTINGS = {
     "admin": {
         "username": "admin",
+        "staff_id": "DU-ADV-01",
         "password_hash": generate_password_hash("admin123"),
         "display_name": "Dr. Nasser Tabook",
         "role_title": "Academic Advisor & Supervisor",
         "avatar_initials": "NT",
         "require_login_for_portal": False
+    },
+    "profile": {
+        "full_name": "Dr. Nasser Tabook",
+        "title": "Assistant Professor of Computer Science & Academic Advisor",
+        "staff_id": "DU-ADV-01",
+        "bio": "Welcome to my academic advising and faculty portal. I am Dr. Nasser Tabook, an educator, researcher, and academic mentor at Dhofar University. My mission is to provide proactive, comprehensive academic supervision, guiding undergraduate advisees through degree audits, curriculum planning, and personal academic excellence.",
+        "advising_mission": "Empowering students through structured guidance, clear graduation milestones, and dedicated one-on-one mentorship.",
+        "email_primary": "ntabook@du.edu.om",
+        "email_secondary": "nasser@nasserdiary.com",
+        "phone_office": "+968 2323 7000",
+        "phone_mobile": "+968 9900 0000",
+        "whatsapp": "+968 9900 0000",
+        "office_location": "College of Arts & Applied Sciences, Computer Science Department, Office 214",
+        "office_hours": "Sun / Tue / Thu: 10:00 AM – 12:00 PM & By Appointment",
+        "college": "College of Arts & Applied Sciences",
+        "department": "Department of Computer Science & Mathematics",
+        "research_interests": "Artificial Intelligence, Educational Technology, Learning Analytics, Software Engineering",
+        "personal_website": "https://nasserdiary.com",
+        "linkedin_url": "",
+        "google_scholar_url": "",
+        "avatar_url": "",
+        "avatar_initials": "NT"
     },
     "branding": {
         "app_title": "Dhofar University",
@@ -137,7 +160,7 @@ def verify_admin_credentials(username, password):
 
     return check_password_hash(stored_hash, password)
 
-def update_admin_security(new_username, new_password=None, display_name=None, role_title=None, initials=None, require_login=None):
+def update_admin_security(new_username, new_password=None, display_name=None, role_title=None, initials=None, require_login=None, staff_id=None):
     """Update admin username, password, display details and login policy."""
     settings = json.loads(json.dumps(get_settings()))
     admin_cfg = settings.setdefault('admin', {})
@@ -145,17 +168,26 @@ def update_admin_security(new_username, new_password=None, display_name=None, ro
     if new_username and new_username.strip():
         admin_cfg['username'] = new_username.strip()
     
+    if staff_id is not None:
+        admin_cfg['staff_id'] = staff_id.strip()
+        settings.setdefault('profile', {})['staff_id'] = staff_id.strip()
+
     if new_password and len(new_password) >= 4:
         admin_cfg['password_hash'] = generate_password_hash(new_password)
     
     if display_name is not None:
         admin_cfg['display_name'] = display_name.strip()
+        settings.setdefault('profile', {})['full_name'] = display_name.strip()
+        settings.setdefault('about', {})['advisor_name'] = display_name.strip()
         
     if role_title is not None:
         admin_cfg['role_title'] = role_title.strip()
+        settings.setdefault('profile', {})['title'] = role_title.strip()
+        settings.setdefault('about', {})['advisor_role'] = role_title.strip()
         
     if initials is not None:
         admin_cfg['avatar_initials'] = initials.strip()
+        settings.setdefault('profile', {})['avatar_initials'] = initials.strip()
         
     if require_login is not None:
         admin_cfg['require_login_for_portal'] = bool(require_login)
@@ -245,3 +277,66 @@ def update_permissions(require_advisor_admission=None, allow_guest_chat=None, al
         perms['meeting_passcode'] = meeting_passcode.strip()
 
     return save_settings(settings)
+
+def update_advisor_profile(
+    full_name=None, title=None, staff_id=None, bio=None, advising_mission=None,
+    email_primary=None, email_secondary=None, phone_office=None, phone_mobile=None,
+    whatsapp=None, office_location=None, office_hours=None, college=None,
+    department=None, research_interests=None, personal_website=None,
+    linkedin_url=None, google_scholar_url=None, avatar_url=None, avatar_initials=None
+):
+    """Update full advisor public profile, bio, and contact information."""
+    settings = json.loads(json.dumps(get_settings()))
+    profile = settings.setdefault('profile', {})
+
+    if full_name is not None:
+        profile['full_name'] = full_name.strip()
+        settings.setdefault('admin', {})['display_name'] = full_name.strip()
+        settings.setdefault('about', {})['advisor_name'] = full_name.strip()
+    if title is not None:
+        profile['title'] = title.strip()
+        settings.setdefault('admin', {})['role_title'] = title.strip()
+        settings.setdefault('about', {})['advisor_role'] = title.strip()
+    if staff_id is not None:
+        profile['staff_id'] = staff_id.strip()
+        settings.setdefault('admin', {})['staff_id'] = staff_id.strip()
+    if bio is not None:
+        profile['bio'] = bio.strip()
+    if advising_mission is not None:
+        profile['advising_mission'] = advising_mission.strip()
+    if email_primary is not None:
+        profile['email_primary'] = email_primary.strip()
+    if email_secondary is not None:
+        profile['email_secondary'] = email_secondary.strip()
+    if phone_office is not None:
+        profile['phone_office'] = phone_office.strip()
+    if phone_mobile is not None:
+        profile['phone_mobile'] = phone_mobile.strip()
+    if whatsapp is not None:
+        profile['whatsapp'] = whatsapp.strip()
+    if office_location is not None:
+        profile['office_location'] = office_location.strip()
+    if office_hours is not None:
+        profile['office_hours'] = office_hours.strip()
+    if college is not None:
+        profile['college'] = college.strip()
+        settings.setdefault('about', {})['college'] = college.strip()
+    if department is not None:
+        profile['department'] = department.strip()
+        settings.setdefault('about', {})['department'] = department.strip()
+    if research_interests is not None:
+        profile['research_interests'] = research_interests.strip()
+    if personal_website is not None:
+        profile['personal_website'] = personal_website.strip()
+    if linkedin_url is not None:
+        profile['linkedin_url'] = linkedin_url.strip()
+    if google_scholar_url is not None:
+        profile['google_scholar_url'] = google_scholar_url.strip()
+    if avatar_url is not None:
+        profile['avatar_url'] = avatar_url.strip()
+    if avatar_initials is not None:
+        profile['avatar_initials'] = avatar_initials.strip()
+        settings.setdefault('admin', {})['avatar_initials'] = avatar_initials.strip()
+
+    return save_settings(settings)
+

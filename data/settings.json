@@ -1,11 +1,34 @@
 {
   "admin": {
     "username": "admin",
+    "staff_id": "DU-FAC-2026",
     "password_hash": "scrypt:32768:8:1$bGxK1vRs0OaSYuNv$5dfe8e5cbebc67b66cb2c66ce11925fe50a7ffb90c8a88a59088bfab2ddd0615627d5bf8fe2d16e558345372a70c31c1fa018d6e897b93ba81ddfc603c773a7a",
     "display_name": "Dr. Nasser Tabook",
-    "role_title": "Academic Advisor & Supervisor",
+    "role_title": "Assistant Professor of Computer Science",
     "avatar_initials": "NT",
     "require_login_for_portal": false
+  },
+  "profile": {
+    "full_name": "Dr. Nasser Tabook",
+    "title": "Assistant Professor of Computer Science",
+    "staff_id": "DU-FAC-2026",
+    "bio": "I am an academic advisor dedicated to student success and academic excellence.",
+    "advising_mission": "Guiding advisees to achieve degree completion with high academic standing.",
+    "email_primary": "ntabook@du.edu.om",
+    "email_secondary": "nasser@nasserdiary.com",
+    "phone_office": "+968 2323 7000",
+    "phone_mobile": "+968 9911 2233",
+    "whatsapp": "+968 9911 2233",
+    "office_location": "College of Arts & Applied Sciences, Office 214",
+    "office_hours": "Sun / Tue / Thu 10:00 AM - 12:00 PM",
+    "college": "College of Arts & Applied Sciences",
+    "department": "Computer Science Department",
+    "research_interests": "AI, Educational Data Mining, Software Systems",
+    "personal_website": "https://nasserdiary.com",
+    "linkedin_url": "https://linkedin.com/in/nasser-tabook",
+    "google_scholar_url": "",
+    "avatar_url": "",
+    "avatar_initials": "NT"
   },
   "branding": {
     "app_title": "Dhofar University",
@@ -29,9 +52,9 @@
     "purpose_statement": "A dedicated, professional academic advising and analytics suite built for academic advisors to track student degree progress, monitor academic standing, automate transcript auditing, and facilitate secure virtual office consultations.",
     "institutional_disclaimer": "Notice: This application is an independent educational tool designed solely for the benefit of the advisor to know the situation and status of his advisees at any given time. It does not belong to any educational institute.",
     "advisor_name": "Dr. Nasser Tabook",
-    "advisor_role": "Assistant Professor & Academic Advisor",
+    "advisor_role": "Assistant Professor of Computer Science",
     "college": "College of Arts & Applied Sciences",
-    "department": "Computer Science & Mathematics"
+    "department": "Computer Science Department"
   },
   "permissions": {
     "require_advisor_admission": true,

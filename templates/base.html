@@ -79,6 +79,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.advisor_profile_view' %}active{% endif %}" href="{{ url_for('main.advisor_profile_view') }}">
+                                <i class="fas fa-user-tie text-info"></i>
+                                <span>Advisor</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.about_page' %}active{% endif %}" href="{{ url_for('main.about_page') }}">
                                 <i class="fas fa-circle-question text-info"></i>
                                 <span>About</span>
@@ -94,11 +100,13 @@
                         
                         <!-- Advisor / Admin Account Badge & Actions -->
                         <div class="d-flex align-items-center ms-2 text-white-50 border-start border-white border-opacity-20 ps-3 gap-2">
-                            <div class="avatar-badge avatar-sm">{{ app_settings.admin.avatar_initials }}</div>
-                            <div class="d-none d-xl-flex flex-column" style="line-height: 1.1;">
-                                <span class="text-white small fw-bold">{{ app_settings.admin.display_name }}</span>
-                                <span style="font-size: 0.68rem; color: #93c5fd;">{{ app_settings.admin.role_title }}</span>
-                            </div>
+                            <a href="{{ url_for('main.advisor_profile_view') }}" class="d-flex align-items-center text-decoration-none gap-2" title="View Advisor Profile & Biography">
+                                <div class="avatar-badge avatar-sm">{{ app_settings.profile.avatar_initials or app_settings.admin.avatar_initials }}</div>
+                                <div class="d-none d-xl-flex flex-column" style="line-height: 1.1;">
+                                    <span class="text-white small fw-bold">{{ app_settings.profile.full_name or app_settings.admin.display_name }}</span>
+                                    <span style="font-size: 0.68rem; color: #93c5fd;">{{ app_settings.profile.title or app_settings.admin.role_title }}</span>
+                                </div>
+                            </a>
                             
                             {% if is_admin_logged_in %}
                                 <a href="{{ url_for('main.admin_settings') }}" class="btn btn-sm btn-outline-light ms-1" title="Admin Settings & Governance">
@@ -173,6 +181,7 @@
                         <a href="{{ url_for('main.students') }}"><i class="fas fa-users me-1"></i> Advisees</a>
                         <a href="{{ url_for('main.policies_library') }}"><i class="fas fa-book me-1"></i> Bylaws</a>
                         <a href="{{ url_for('main.meetings_hub') }}"><i class="fas fa-headset me-1"></i> Virtual Office</a>
+                        <a href="{{ url_for('main.advisor_profile_view') }}"><i class="fas fa-user-tie me-1"></i> Advisor Profile</a>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modalAboutApp" class="text-info"><i class="fas fa-circle-question me-1"></i> About</a>
                         {% if is_admin_logged_in %}
                             <a href="{{ url_for('main.admin_settings') }}" class="text-warning"><i class="fas fa-sliders me-1"></i> Admin Settings</a>

@@ -1872,6 +1872,73 @@ def admin_save_permissions():
         flash(f'Failed to update permissions: {msg}', 'danger')
     return redirect(url_for('main.admin_settings'))
 
+@bp.route('/advisor')
+@bp.route('/profile')
+def advisor_profile_view():
+    """Display dedicated faculty advisor public profile, biography, and contact channels"""
+    from app.settings_manager import get_settings
+    settings = get_settings()
+    profile = settings.get('profile', {})
+    return render_template('advisor_profile.html', profile=profile)
+
+@bp.route('/admin/settings/profile', methods=['POST'])
+def admin_save_profile():
+    """Save full advisor public profile, biography, contact information, and office hours"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    from app.settings_manager import update_advisor_profile
+    full_name = request.form.get('full_name')
+    title = request.form.get('title')
+    staff_id = request.form.get('staff_id')
+    bio = request.form.get('bio')
+    advising_mission = request.form.get('advising_mission')
+    email_primary = request.form.get('email_primary')
+    email_secondary = request.form.get('email_secondary')
+    phone_office = request.form.get('phone_office')
+    phone_mobile = request.form.get('phone_mobile')
+    whatsapp = request.form.get('whatsapp')
+    office_location = request.form.get('office_location')
+    office_hours = request.form.get('office_hours')
+    college = request.form.get('college')
+    department = request.form.get('department')
+    research_interests = request.form.get('research_interests')
+    personal_website = request.form.get('personal_website')
+    linkedin_url = request.form.get('linkedin_url')
+    google_scholar_url = request.form.get('google_scholar_url')
+    avatar_url = request.form.get('avatar_url')
+    avatar_initials = request.form.get('avatar_initials')
+
+    success, msg = update_advisor_profile(
+        full_name=full_name,
+        title=title,
+        staff_id=staff_id,
+        bio=bio,
+        advising_mission=advising_mission,
+        email_primary=email_primary,
+        email_secondary=email_secondary,
+        phone_office=phone_office,
+        phone_mobile=phone_mobile,
+        whatsapp=whatsapp,
+        office_location=office_location,
+        office_hours=office_hours,
+        college=college,
+        department=department,
+        research_interests=research_interests,
+        personal_website=personal_website,
+        linkedin_url=linkedin_url,
+        google_scholar_url=google_scholar_url,
+        avatar_url=avatar_url,
+        avatar_initials=avatar_initials
+    )
+
+    if success:
+        flash('Advisor biography, contact channels, and profile updated successfully!', 'success')
+    else:
+        flash(f'Failed to update profile: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings'))
+
 @bp.route('/admin/settings/security', methods=['POST'])
 def admin_save_security():
     """Update administrator username, password, display profile, and portal protection"""
@@ -1881,6 +1948,7 @@ def admin_save_security():
         
     from app.settings_manager import update_admin_security
     username = request.form.get('username')
+    staff_id = request.form.get('staff_id')
     new_password = request.form.get('new_password')
     confirm_password = request.form.get('confirm_password')
     display_name = request.form.get('display_name')
@@ -1902,7 +1970,8 @@ def admin_save_security():
         display_name=display_name,
         role_title=role_title,
         initials=avatar_initials,
-        require_login=require_login_for_portal
+        require_login=require_login_for_portal,
+        staff_id=staff_id
     )
     
     if success:

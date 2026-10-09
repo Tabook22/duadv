@@ -111,3 +111,54 @@ def test_admin_save_permissions_post(client):
     }, follow_redirects=True)
     assert response.status_code == 200
     assert b"Access control and participant permissions saved successfully" in response.data
+
+def test_advisor_profile_view_route(client):
+    response = client.get('/advisor')
+    assert response.status_code == 200
+    assert b"Dr. Nasser Tabook" in response.data
+    assert b"Biography &amp; Introduction" in response.data or b"Biography & Introduction" in response.data
+    assert b"Staff ID" in response.data
+
+    # Test alias route
+    profile_resp = client.get('/profile')
+    assert profile_resp.status_code == 200
+
+def test_admin_save_profile_post(client):
+    with client.session_transaction() as sess:
+        sess['is_admin'] = True
+        sess['admin_username'] = 'admin'
+
+    response = client.post('/admin/settings/profile', data={
+        'full_name': 'Dr. Nasser Tabook',
+        'title': 'Assistant Professor of Computer Science',
+        'staff_id': 'DU-FAC-2026',
+        'bio': 'I am an academic advisor dedicated to student success and academic excellence.',
+        'advising_mission': 'Guiding advisees to achieve degree completion with high academic standing.',
+        'email_primary': 'ntabook@du.edu.om',
+        'email_secondary': 'nasser@nasserdiary.com',
+        'phone_office': '+968 2323 7000',
+        'phone_mobile': '+968 9911 2233',
+        'whatsapp': '+968 9911 2233',
+        'office_location': 'College of Arts & Applied Sciences, Office 214',
+        'office_hours': 'Sun / Tue / Thu 10:00 AM - 12:00 PM',
+        'college': 'College of Arts & Applied Sciences',
+        'department': 'Computer Science Department',
+        'research_interests': 'AI, Educational Data Mining, Software Systems',
+        'personal_website': 'https://nasserdiary.com',
+        'linkedin_url': 'https://linkedin.com/in/nasser-tabook',
+        'google_scholar_url': '',
+        'avatar_url': '',
+        'avatar_initials': 'NT'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Advisor biography, contact channels, and profile updated successfully" in response.data
+
+    # Verify that the updated information is visible on the public advisor profile page
+    pub_resp = client.get('/advisor')
+    assert pub_resp.status_code == 200
+    assert b"DU-FAC-2026" in pub_resp.data
+    assert b"I am an academic advisor dedicated to student success" in pub_resp.data
+    assert b"nasser@nasserdiary.com" in pub_resp.data
+    assert b"Office 214" in pub_resp.data
+

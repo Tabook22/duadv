@@ -54,6 +54,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 py-2 rounded-3" id="tab-profile-btn" data-bs-toggle="pill" data-bs-target="#tab-profile" type="button" role="tab">
+                <i class="fas fa-user-tie me-2 text-info"></i> Advisor Bio & Contacts
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-security-btn" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
                 <i class="fas fa-lock me-2 text-danger"></i> Admin Credentials
             </button>
@@ -481,7 +486,210 @@
             </div>
         </div>
 
-        <!-- 5. ADMIN CREDENTIALS & SECURITY -->
+        <!-- 5. ADVISOR BIOGRAPHY & PUBLIC PROFILE -->
+        <div class="tab-pane fade" id="tab-profile" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
+                        <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 text-white fw-bold">
+                                <i class="fas fa-user-tie text-info me-2"></i> Faculty Advisor Biography & Public Profile
+                            </h5>
+                            <a href="{{ url_for('main.advisor_profile_view') }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-external-link-alt me-1"></i> Preview Public Profile
+                            </a>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="POST" action="{{ url_for('main.admin_save_profile') }}">
+                                <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
+                                    <i class="fas fa-id-card text-primary me-2"></i> 1. Academic Identity & Staff ID
+                                </h6>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Full Name (with Academic Title)</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="full_name" value="{{ app_settings.profile.full_name or app_settings.admin.display_name }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Academic Role / Designation</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="title" value="{{ app_settings.profile.title or app_settings.admin.role_title }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Staff / Faculty ID</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="staff_id" value="{{ app_settings.profile.staff_id or app_settings.admin.staff_id }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Avatar Initials</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="avatar_initials" value="{{ app_settings.profile.avatar_initials or app_settings.admin.avatar_initials }}" maxlength="3" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Profile Photo URL (Optional)</label>
+                                        <input type="url" class="form-control bg-dark text-white border-secondary" name="avatar_url" value="{{ app_settings.profile.avatar_url }}" placeholder="https://.../photo.jpg">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">College / Faculty</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="college" value="{{ app_settings.profile.college or app_settings.about.college }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Department</label>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="department" value="{{ app_settings.profile.department or app_settings.about.department }}" required>
+                                    </div>
+                                </div>
+
+                                <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
+                                    <i class="fas fa-bullhorn text-warning me-2"></i> 2. Biography & Introduction ("Tell the World About Yourself")
+                                </h6>
+                                <div class="mb-3">
+                                    <label class="form-label text-light small fw-bold">Personal Biography & Academic Introduction</label>
+                                    <textarea class="form-control bg-dark text-white border-secondary" name="bio" rows="4" required>{{ app_settings.profile.bio }}</textarea>
+                                    <div class="form-text text-muted">Write about your background, career experience, advising achievements, and personal message to students.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-light small fw-bold">Advising Philosophy & Mentorship Mission</label>
+                                    <textarea class="form-control bg-dark text-white border-secondary" name="advising_mission" rows="2">{{ app_settings.profile.advising_mission }}</textarea>
+                                    <div class="form-text text-muted">A guiding statement on how you support and guide advisees through their degree progress.</div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label text-light small fw-bold">Research Interests & Expertise (Comma-separated)</label>
+                                    <input type="text" class="form-control bg-dark text-white border-secondary" name="research_interests" value="{{ app_settings.profile.research_interests }}">
+                                    <div class="form-text text-muted">e.g. Artificial Intelligence, Data Science, Educational Technology, Software Engineering</div>
+                                </div>
+
+                                <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
+                                    <i class="fas fa-address-book text-success me-2"></i> 3. Communication, Phone Numbers & Office Schedule
+                                </h6>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Official University Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-primary"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" class="form-control bg-dark text-white border-secondary" name="email_primary" value="{{ app_settings.profile.email_primary }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Personal / Secondary Email</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-info"><i class="fas fa-at"></i></span>
+                                            <input type="email" class="form-control bg-dark text-white border-secondary" name="email_secondary" value="{{ app_settings.profile.email_secondary }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Office Telephone</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-phone"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="phone_office" value="{{ app_settings.profile.phone_office }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Personal Mobile Phone</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-success"><i class="fas fa-mobile-screen"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="phone_mobile" value="{{ app_settings.profile.phone_mobile }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">WhatsApp Direct Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-success"><i class="fab fa-whatsapp"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="whatsapp" value="{{ app_settings.profile.whatsapp }}" placeholder="+968 ...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Physical Office Location & Room Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-location-dot"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="office_location" value="{{ app_settings.profile.office_location }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Office Consultation Hours</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-clock"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="office_hours" value="{{ app_settings.profile.office_hours }}">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
+                                    <i class="fas fa-globe text-info me-2"></i> 4. Professional & Social Online Profiles
+                                </h6>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Personal Website / Blog</label>
+                                        <input type="url" class="form-control bg-dark text-white border-secondary" name="personal_website" value="{{ app_settings.profile.personal_website }}" placeholder="https://nasserdiary.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">LinkedIn Profile URL</label>
+                                        <input type="url" class="form-control bg-dark text-white border-secondary" name="linkedin_url" value="{{ app_settings.profile.linkedin_url }}" placeholder="https://linkedin.com/in/...">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-light small fw-bold">Google Scholar / ORCID</label>
+                                        <input type="url" class="form-control bg-dark text-white border-secondary" name="google_scholar_url" value="{{ app_settings.profile.google_scholar_url }}" placeholder="https://scholar.google.com/...">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-info px-4 fw-bold text-white">
+                                    <i class="fas fa-check me-1"></i> Save Advisor Profile & Biography
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Advisor Profile Preview Column -->
+                <div class="col-lg-4">
+                    <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 sticky-top" style="top: 20px;">
+                        <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                            <h6 class="card-title mb-0 text-white fw-bold">
+                                <i class="fas fa-eye text-info me-2"></i> Live Advisor Card Preview
+                            </h6>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                            <div class="avatar-badge mx-auto mb-3 shadow" style="width: 76px; height: 76px; font-size: 1.8rem; background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid rgba(255,255,255,0.2);">
+                                {{ app_settings.profile.avatar_initials or app_settings.admin.avatar_initials }}
+                            </div>
+                            <h5 class="text-white fw-bold mb-1">{{ app_settings.profile.full_name or app_settings.admin.display_name }}</h5>
+                            <div class="badge bg-primary bg-opacity-25 text-primary mb-2">{{ app_settings.profile.title or app_settings.admin.role_title }}</div>
+                            <div class="badge bg-secondary bg-opacity-25 text-white-50 mb-3 d-block mx-auto" style="width: fit-content;">
+                                Staff ID: {{ app_settings.profile.staff_id or app_settings.admin.staff_id }}
+                            </div>
+
+                            <p class="text-white-50 small mb-3 text-start" style="font-size: 0.78rem; line-height: 1.5; max-height: 120px; overflow-y: auto;">
+                                {{ app_settings.profile.bio }}
+                            </p>
+
+                            <div class="list-group list-group-flush text-start small border-top border-secondary border-opacity-25 pt-2 mb-3">
+                                <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
+                                    <span><i class="fas fa-envelope text-primary me-2"></i> Email:</span>
+                                    <span class="text-white small">{{ app_settings.profile.email_primary }}</span>
+                                </div>
+                                <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
+                                    <span><i class="fab fa-whatsapp text-success me-2"></i> WhatsApp:</span>
+                                    <span class="text-white small">{{ app_settings.profile.whatsapp }}</span>
+                                </div>
+                                <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
+                                    <span><i class="fas fa-location-dot text-warning me-2"></i> Office:</span>
+                                    <span class="text-white small">{{ app_settings.profile.office_location }}</span>
+                                </div>
+                            </div>
+
+                            <a href="{{ url_for('main.advisor_profile_view') }}" target="_blank" class="btn btn-outline-info btn-sm w-100">
+                                <i class="fas fa-arrow-up-right-from-square me-1"></i> Open Public Profile Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. ADMIN CREDENTIALS & SECURITY -->
         <div class="tab-pane fade" id="tab-security" role="tabpanel">
             <div class="row g-4">
                 <div class="col-lg-7">
@@ -493,13 +701,23 @@
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_security') }}">
-                                <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Administrator Username</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-user-shield"></i></span>
-                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="username" value="{{ app_settings.admin.username }}" required>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Administrator Username (Login ID)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-user-shield"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="username" value="{{ app_settings.admin.username }}" required>
+                                        </div>
+                                        <div class="form-text text-muted">Used to sign in to this admin control panel.</div>
                                     </div>
-                                    <div class="form-text text-muted">Used to sign in to this admin control panel.</div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light small fw-bold">Faculty / Staff ID</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-id-card"></i></span>
+                                            <input type="text" class="form-control bg-dark text-white border-secondary" name="staff_id" value="{{ app_settings.profile.staff_id or app_settings.admin.staff_id }}" required>
+                                        </div>
+                                        <div class="form-text text-muted">Official academic or faculty staff identifier.</div>
+                                    </div>
                                 </div>
 
                                 <div class="row g-3 mb-3">
