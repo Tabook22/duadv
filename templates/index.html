@@ -1,37 +1,76 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Dhofar University Student Management{% endblock %}
+{% block title %}Home - Dhofar University Advising Portal{% endblock %}
 
 {% block content %}
-<div class="hero-section text-center py-5">
-    <h1 class="display-4 mb-4">Student Management System</h1>
-    <p class="lead mb-4">Manage your advisee transcripts and study plans efficiently</p>
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">University System Login</h5>
+<!-- Modern Hero Banner with Illustrative Elements -->
+<div class="hero-portal-banner">
+    <div class="row align-items-center">
+        <div class="col-lg-7 text-center text-lg-start mb-4 mb-lg-0">
+            <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 border border-white border-opacity-20 px-3 py-1 rounded-pill mb-3">
+                <span class="pulse-dot success"></span>
+                <span class="small fw-semibold text-white">Dhofar University SIS Gateway Active</span>
+            </div>
+            <h1 class="display-5 fw-bold mb-2 text-white">
+                Academic Advising &amp; Student Success Portal
+            </h1>
+            <p class="lead text-white-50 mb-4" style="max-width: 620px;">
+                Intelligent advisee roster management, transcript analysis, automated degree audits, and interactive HD virtual office hours for Dhofar University faculty.
+            </p>
+            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-start">
+                <a href="{{ url_for('main.students') }}" class="btn btn-light text-primary fw-bold shadow-sm px-3 py-2">
+                    <i class="fas fa-users-viewfinder me-1"></i> Browse Advisees
+                </a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light px-3 py-2">
+                    <i class="fas fa-chart-line me-1"></i> Performance KPIs
+                </a>
+                <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-success fw-bold shadow-sm px-3 py-2">
+                    <i class="fas fa-video me-1"></i> Launch Virtual Office
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <!-- Modern SIS Sync Card -->
+            <div class="card border-0 shadow-lg text-dark">
+                <div class="card-header bg-white border-bottom py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="icon-box icon-box-sm icon-box-primary">
+                                <i class="fas fa-arrows-rotate"></i>
+                            </div>
+                            <h6 class="mb-0 fw-bold text-dark">University SIS Sync Portal</h6>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+                            Oracle APEX
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
                     <form id="syncForm">
                         <div class="mb-3">
-                            <label for="username" class="form-label text-start d-block">Username / Advisor ID</label>
+                            <label for="username" class="form-label small fw-bold text-secondary mb-1">
+                                <i class="fas fa-id-badge text-primary me-1"></i> Advisor Staff ID
+                            </label>
                             <input type="text" class="form-control" id="username" placeholder="e.g. 001097" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label text-start d-block">Password</label>
-                            <input type="password" class="form-control" id="password" required>
+                            <label for="password" class="form-label small fw-bold text-secondary mb-1">
+                                <i class="fas fa-key text-primary me-1"></i> Portal Password
+                            </label>
+                            <input type="password" class="form-control" id="password" placeholder="••••••••" required>
                         </div>
-                        <div class="mb-3 form-check text-start">
-                            <input type="checkbox" class="form-check-input" id="downloadTranscripts" checked>
-                            <label class="form-check-label text-muted" for="downloadTranscripts">
-                                <i class="fas fa-file-pdf text-danger me-1"></i> Also download student transcripts as PDF
+                        <div class="mb-3 form-check p-2 bg-light rounded border">
+                            <input type="checkbox" class="form-check-input ms-1" id="downloadTranscripts" checked>
+                            <label class="form-check-label small text-secondary ms-2" for="downloadTranscripts">
+                                <i class="fas fa-file-pdf text-danger me-1"></i> Download and parse student transcripts (PDF)
                             </label>
                         </div>
-                        <button type="submit" id="syncSubmitBtn" class="btn btn-primary w-100 py-2 fw-semibold">
-                            <i class="fas fa-sync-alt me-2"></i> Sync Students & Transcripts
+                        <button type="submit" id="syncSubmitBtn" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                            <i class="fas fa-cloud-arrow-down me-2"></i> Sync Advisees &amp; Transcripts
                         </button>
                     </form>
 
-                    <!-- Real-Time Synchronization Progress Card -->
+                    <!-- Real-Time Synchronization Progress Container -->
                     <div id="syncProgressContainer" class="mt-4 text-start" style="display: none;">
                         <div class="card border border-primary-subtle bg-light shadow-sm">
                             <div class="card-body p-3">
@@ -44,7 +83,7 @@
                                     <span id="syncPercentText" class="badge bg-dark fw-bold">0%</span>
                                 </div>
 
-                                <div class="progress mb-2" style="height: 12px; background-color: #e9ecef; border-radius: 6px; overflow: hidden;">
+                                <div class="progress mb-2" style="height: 10px; background-color: #e2e8f0; border-radius: 6px; overflow: hidden;">
                                     <div id="syncProgressBar" 
                                          class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
                                          role="progressbar" 
@@ -56,7 +95,7 @@
                                 </div>
 
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <small id="syncStatusDetail" class="text-secondary text-truncate" style="max-width: 85%;">
+                                    <small id="syncStatusDetail" class="text-secondary text-truncate" style="max-width: 82%;">
                                         Preparing headless automation pipeline...
                                     </small>
                                     <button class="btn btn-link btn-sm p-0 text-decoration-none text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#syncLogsCollapse" aria-expanded="false" title="Toggle detailed activity log">
@@ -65,8 +104,8 @@
                                 </div>
 
                                 <!-- Collapsible Detailed Live Activity Log -->
-                                <div class="collapse show mt-3" id="syncLogsCollapse">
-                                    <div class="bg-white border rounded p-2" style="max-height: 160px; overflow-y: auto; font-family: monospace; font-size: 0.75rem;">
+                                <div class="collapse show mt-2" id="syncLogsCollapse">
+                                    <div class="bg-white border rounded p-2" style="max-height: 140px; overflow-y: auto; font-family: monospace; font-size: 0.72rem;">
                                         <ul id="syncLogsList" class="list-unstyled mb-0 text-secondary">
                                             <li class="text-muted"><i class="fas fa-chevron-right me-1 text-primary"></i> Ready to connect</li>
                                         </ul>
@@ -81,35 +120,111 @@
     </div>
 </div>
 
-<div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                <h5>Manage Students</h5>
-                <p>View and manage your advisee list</p>
-                <a href="{{ url_for('main.students') }}" class="btn btn-outline-primary">View Students</a>
+<!-- Four Illustrative Feature Action Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="action-card">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box icon-box-lg icon-box-primary">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold">Roster</span>
+                </div>
+                <h5 class="fw-bold mb-2">Advisee Directory</h5>
+                <p class="text-muted small mb-3">
+                    Complete student roster with CGPA tracking, major distribution, and instant academic status filters.
+                </p>
             </div>
+            <a href="{{ url_for('main.students') }}" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+                <i class="fas fa-users me-1"></i> View Advisees
+            </a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
-                <h5>Academic Progress</h5>
-                <p>Track student academic progress</p>
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">View Dashboard</a>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="action-card">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box icon-box-lg icon-box-success">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="badge bg-success-subtle text-success fw-semibold">Analytics</span>
+                </div>
+                <h5 class="fw-bold mb-2">Supervisor Dashboard</h5>
+                <p class="text-muted small mb-3">
+                    KPI intelligence, standing breakdown, CGPA distribution, and quick student search without reloads.
+                </p>
             </div>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success btn-sm w-100 fw-semibold">
+                <i class="fas fa-gauge-high me-1"></i> Open Dashboard
+            </a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
-                <h5>Download Transcripts</h5>
-                <p>Download all advisee PDFs in a ZIP</p>
-                <a href="{{ url_for('main.download_transcripts_zip') }}" class="btn btn-outline-danger">Download ZIP</a>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="action-card">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box icon-box-lg icon-box-purple">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <span class="badge bg-purple-subtle text-purple fw-semibold" style="color: #7c3aed; background: #ede9fe;">WebRTC</span>
+                </div>
+                <h5 class="fw-bold mb-2">Virtual Office Hub</h5>
+                <p class="text-muted small mb-3">
+                    Host face-to-face advising video calls with advisees, copy instant invite links, and review records live.
+                </p>
             </div>
+            <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-outline-dark btn-sm w-100 fw-semibold">
+                <i class="fas fa-headset me-1"></i> Virtual Office
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="action-card">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box icon-box-lg icon-box-danger">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <span class="badge bg-danger-subtle text-danger fw-semibold">Urgent</span>
+                </div>
+                <h5 class="fw-bold mb-2">Students at Risk</h5>
+                <p class="text-muted small mb-3">
+                    Immediate intervention for students on 1st, 2nd, or Strict probation, with 12-credit cap safeguards.
+                </p>
+            </div>
+            <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-danger btn-sm w-100 fw-semibold">
+                <i class="fas fa-triangle-exclamation me-1"></i> View At-Risk List
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Quick Utility Strip -->
+<div class="card border-0 shadow-sm p-3 mb-4 bg-white">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="icon-box icon-box-md icon-box-info">
+                <i class="fas fa-file-zipper"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold">Bulk Transcript Archive</h6>
+                <small class="text-muted">Export all downloaded advisee transcript PDFs in a single compressed ZIP file</small>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('main.section_schedule_view') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-calendar-days me-1"></i> Course Schedule
+            </a>
+            <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-book me-1"></i> Policy Library
+            </a>
+            <a href="{{ url_for('main.download_transcripts_zip') }}" class="btn btn-danger btn-sm">
+                <i class="fas fa-download me-1"></i> Download All PDFs (.ZIP)
+            </a>
         </div>
     </div>
 </div>
@@ -247,7 +362,7 @@ document.getElementById('syncForm').addEventListener('submit', async (e) => {
         alert('Synchronization Error: ' + error.message);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Sync Students & Transcripts';
+        submitBtn.innerHTML = '<i class="fas fa-cloud-arrow-down me-2"></i> Sync Advisees & Transcripts';
     }
 });
 </script>

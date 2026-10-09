@@ -3,29 +3,36 @@
 {% block title %}Student Details - {{ student.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
-    <div>
-        <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-secondary mb-2">
-            <i class="fas fa-arrow-left me-1"></i> Back to Advisees
-        </a>
-        <h2 class="fw-bold mb-1" style="color: #1e3a8a;">{{ student.name }}</h2>
-        <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary fs-6 font-monospace">ID: {{ student.id }}</span>
-            <span class="badge bg-secondary fs-6">{{ audit.program_title }}</span>
-            <span class="badge bg-light text-dark border">{{ audit.degree_type }} ({{ audit.total_plan_credits }} Credits)</span>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-3">
+    <div class="d-flex align-items-center gap-3">
+        {% set initials = (student.name.split()[0][0] + (student.name.split()[-1][0] if student.name.split()|length > 1 else ''))|upper if student.name else 'DU' %}
+        <div class="avatar-badge avatar-lg shadow-sm">
+            {{ initials }}
+        </div>
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;">
+                    <i class="fas fa-arrow-left me-1"></i> Advisees
+                </a>
+                <span class="badge bg-primary fs-7 font-monospace">ID: {{ student.id }}</span>
+                <span class="badge bg-secondary fs-7">{{ audit.program_title }}</span>
+                <span class="badge bg-light text-dark border fs-7">{{ audit.degree_type }} ({{ audit.total_plan_credits }} Credits)</span>
+            </div>
+            <h2 class="fw-bold mb-0 text-dark">{{ student.name }}</h2>
         </div>
     </div>
+    <div class="d-flex flex-wrap gap-2">
         <button type="button" class="btn btn-success fw-bold text-white shadow-sm" onclick="startStudentMeeting('{{ student.id }}', '{{ student.name }}')">
             <i class="fas fa-video me-1"></i> Meet with Student
         </button>
         <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-warning fw-bold text-dark shadow-sm">
-            <i class="fas fa-print me-1"></i> Official Advising Action Plan
+            <i class="fas fa-print me-1"></i> Advising Action Plan
         </a>
         <a href="{{ url_for('main.karpathy_wiki', page='students/' ~ student.id ~ '_' ~ student.name|replace(' ', '_')|replace('/', '_')|replace('-', '_') ~ '.md') }}" class="btn btn-outline-primary shadow-sm">
-            <i class="fas fa-brain me-1"></i> 🧠 Advising Wiki Dossier
+            <i class="fas fa-brain me-1"></i> Advising Wiki Dossier
         </a>
         <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
-            <i class="fas fa-file-pdf me-1"></i> View Transcript PDF
+            <i class="fas fa-file-pdf me-1"></i> Transcript PDF
         </a>
     </div>
 </div>

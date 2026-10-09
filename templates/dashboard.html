@@ -1,200 +1,285 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Dhofar University{% endblock %}
+{% block title %}Supervisor Dashboard - Dhofar University{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Supervisor Dashboard</h2>
+<!-- Top Header & Context Strip -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div>
-        <span class="badge bg-primary fs-6">{{ student_count }} Students</span>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge bg-primary px-2.5 py-1">
+                <i class="fas fa-university me-1"></i> Dhofar University
+            </span>
+            <span class="badge bg-light text-dark border">
+                <i class="far fa-calendar-alt text-primary me-1"></i> Academic Year 2026-2027
+            </span>
+        </div>
+        <h2 class="fw-bold mb-0 text-dark">
+            <i class="fas fa-chart-pie text-primary me-2"></i>Supervisor Advising Dashboard
+        </h2>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger btn-sm shadow-sm">
+            <i class="fas fa-triangle-exclamation me-1"></i> Students at Risk ({{ strict_count + probation_count }})
+        </a>
+        <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-success btn-sm shadow-sm">
+            <i class="fas fa-video me-1"></i> Office Hours Hub
+        </a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrows-rotate me-1"></i> Sync Roster
+        </a>
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Total Advisees</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ student_count }}</h2>
-                        <small class="text-white-50">All registered students</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-users fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="{{ url_for('main.students') }}" class="text-white text-decoration-none small">
-                    View list &rarr;
+<!-- Four Elevated Stat Metric Widgets -->
+<div class="row g-3 mb-4">
+    <!-- Total Advisees -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-widget stat-widget-primary">
+            <i class="fas fa-users-rectangle stat-bg-icon"></i>
+            <div class="stat-label">Total Advisees</div>
+            <div class="stat-value">{{ student_count }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <span class="small text-white-50">Active registered cohort</span>
+                <a href="{{ url_for('main.students') }}" class="text-white text-decoration-none small fw-semibold">
+                    View roster &rarr;
                 </a>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-white bg-success shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Good Standing</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ good_standing_count + cleared_count }}</h2>
-                        <small class="text-white-50">{{ cleared_count }} cleared probation</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-check-circle fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="{{ url_for('main.students') }}" class="text-white text-decoration-none small">
-                    Normal standing &rarr;
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3">
-        <div class="card text-dark bg-warning shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-muted">On Probation</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ probation_count }}</h2>
-                        <small class="text-muted">Requires academic advising</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-exclamation-circle fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="{{ url_for('main.students') }}" class="text-dark fw-semibold text-decoration-none small">
-                    Review probations &rarr;
-                </a>
+    <!-- Good Standing -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-widget stat-widget-success">
+            <i class="fas fa-circle-check stat-bg-icon"></i>
+            <div class="stat-label">Good Standing &amp; Cleared</div>
+            <div class="stat-value">{{ good_standing_count + cleared_count }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <span class="small text-white-50">
+                    {% if student_count > 0 %}
+                        {{ ((good_standing_count + cleared_count) / student_count * 100)|round(1) }}% of cohort
+                    {% else %}
+                        0%
+                    {% endif %}
+                </span>
+                <span class="badge bg-white bg-opacity-20 text-white small">
+                    <i class="fas fa-arrow-trend-up me-1"></i>CGPA &ge; 65%
+                </span>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-white bg-danger shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Strict Probation</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ strict_count }}</h2>
-                        <small class="text-white-50">Critical attention required</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
-                    </div>
-                </div>
+    <!-- On Academic Probation -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-widget stat-widget-warning">
+            <i class="fas fa-triangle-exclamation stat-bg-icon"></i>
+            <div class="stat-label">Academic Probation</div>
+            <div class="stat-value">{{ probation_count }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark border-opacity-10">
+                <span class="small text-dark-emphasis">12-credit cap enforced</span>
+                <span class="badge bg-dark bg-opacity-15 text-dark small">
+                    Article 14 Warning
+                </span>
             </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="{{ url_for('main.students') }}" class="text-white text-decoration-none small">
-                    Urgent action needed &rarr;
+        </div>
+    </div>
+    
+    <!-- Strict Probation -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-widget stat-widget-danger">
+            <i class="fas fa-shield-cat stat-bg-icon"></i>
+            <div class="stat-label">Strict Probation</div>
+            <div class="stat-value">{{ strict_count }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <span class="small text-white-50">Dismissal threshold</span>
+                <a href="{{ url_for('main.students_at_risk') }}" class="text-white text-decoration-none small fw-semibold">
+                    Intervene now &rarr;
                 </a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0"><i class="fas fa-user-friends text-primary me-2"></i>Advisees Overview</h5>
-                <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-primary">View All Advisees ({{ student_count }})</a>
+<!-- Cohort Academic Health Visual Bar -->
+{% if student_count > 0 %}
+<div class="card border-0 shadow-sm p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-heart-pulse text-danger"></i>
+            <strong class="text-dark small text-uppercase" style="letter-spacing: 0.5px;">Cohort Health Distribution</strong>
+        </div>
+        <div class="d-flex gap-3 small">
+            <span><span class="pulse-dot success"></span> Good Standing: <strong>{{ good_standing_count + cleared_count }}</strong></span>
+            <span><span class="pulse-dot warning"></span> Probation: <strong>{{ probation_count }}</strong></span>
+            <span><span class="pulse-dot danger"></span> Strict: <strong>{{ strict_count }}</strong></span>
+        </div>
+    </div>
+    {% set good_pct = ((good_standing_count + cleared_count) / student_count * 100)|round(1) %}
+    {% set prob_pct = (probation_count / student_count * 100)|round(1) %}
+    {% set strict_pct = (strict_count / student_count * 100)|round(1) %}
+    <div class="progress" style="height: 10px; border-radius: 6px; overflow: hidden; background-color: #f1f5f9;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ good_pct }}%;" title="Good Standing: {{ good_pct }}%"></div>
+        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ prob_pct }}%;" title="Probation: {{ prob_pct }}%"></div>
+        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ strict_pct }}%;" title="Strict: {{ strict_pct }}%"></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Advisees Overview Card with Live Search & Filter -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <div class="row align-items-center gy-2">
+            <div class="col-md-5">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="icon-box icon-box-sm icon-box-primary">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Advisee Cohort Overview</h6>
+                        <small class="text-muted">Showing <span id="filteredStudentCount">{{ student_count }}</span> advisees</small>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                {% if students %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Name</th>
-                                    <th>Program</th>
-                                    <th>Status / Standing</th>
-                                    <th title="Cumulative GPA - Graduation Requirement >= 65.0%">CGPA</th>
-                                    <th title="Latest Semester GPA - Probation Metric">SGPA</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                {% set st = student.status or 'Normal / Good Standing' %}
-                                <tr>
-                                    <td class="fw-bold text-primary">{{ student.id }}</td>
-                                    <td class="fw-semibold">{{ student.name }}</td>
-                                    <td><span class="small">{{ student.program or 'N/A' }}</span></td>
-                                    <td>
-                                        {% if 'Strict' in st or 'Third' in st %}
-                                            <span class="badge bg-danger text-white px-2 py-1 shadow-sm">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>{{ st }}
-                                            </span>
-                                        {% elif 'Second Probation' in st %}
-                                            <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: #fd7e14;">
-                                                <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
-                                            </span>
-                                        {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
-                                            <span class="badge bg-warning text-dark px-2 py-1 shadow-sm">
-                                                <i class="fas fa-exclamation-circle me-1"></i>{{ st }}
-                                            </span>
-                                        {% elif 'Removal' in st %}
-                                            <span class="badge bg-info text-dark px-2 py-1 shadow-sm">
-                                                <i class="fas fa-shield-alt me-1"></i>{{ st }}
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-success text-white px-2 py-1 shadow-sm">
-                                                <i class="fas fa-check-circle me-1"></i>{{ st }}
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
-                                        {% if cgpa_val %}
-                                            <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning text-dark' if cgpa_val >= 65.0 else 'danger' }}">
-                                                {{ "%.2f"|format(cgpa_val) }}%
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted small">N/A</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if student.semester_gpa is not none %}
-                                            <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }}">
-                                                {{ "%.2f"|format(student.semester_gpa) }}%
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted small">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('main.student_detail', student_id=student.id) }}" 
-                                               class="btn btn-outline-primary">
-                                                <i class="fas fa-user me-1"></i> Profile
-                                            </a>
-                                            <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
-                                               target="_blank" class="btn btn-outline-danger">
-                                                <i class="fas fa-file-pdf me-1"></i> PDF
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <div class="col-md-7">
+                <div class="d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+                    <!-- Quick Live Search Input -->
+                    <div class="du-search-bar" style="min-width: 240px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="dashboardSearchInput" class="form-control form-control-sm" placeholder="Search by name, ID, or program..." onkeyup="filterDashboardTable()">
                     </div>
-                {% else %}
-                    <div class="p-4 text-center">
-                        <p class="text-muted mb-0">No student data available. Please sync with university system.</p>
-                    </div>
-                {% endif %}
+                    <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-arrow-up-right-from-square me-1"></i> Full Directory
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="card-body p-0">
+        {% if students %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="dashboardAdviseeTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Program / Major</th>
+                            <th>Status / Standing</th>
+                            <th title="Cumulative GPA - Graduation Requirement >= 65.0%">CGPA</th>
+                            <th title="Latest Semester GPA - Probation Metric">SGPA</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        {% set st = student.status or 'Normal / Good Standing' %}
+                        {% set initials = (student.name.split()[0][0] + (student.name.split()[-1][0] if student.name.split()|length > 1 else ''))|upper if student.name else 'DU' %}
+                        <tr class="dashboard-student-row">
+                            <td class="text-center">
+                                <div class="avatar-badge avatar-sm">
+                                    {{ initials }}
+                                </div>
+                            </td>
+                            <td class="fw-bold font-monospace text-primary">{{ student.id }}</td>
+                            <td class="fw-semibold text-dark">{{ student.name }}</td>
+                            <td>
+                                <span class="small text-secondary">{{ student.program or 'Computer Science' }}</span>
+                            </td>
+                            <td>
+                                {% if 'Strict' in st or 'Third' in st %}
+                                    <span class="du-status-pill du-status-strict">
+                                        <i class="fas fa-triangle-exclamation"></i>{{ st }}
+                                    </span>
+                                {% elif 'Second Probation' in st %}
+                                    <span class="du-status-pill du-status-second">
+                                        <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                    </span>
+                                {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
+                                    <span class="du-status-pill du-status-first">
+                                        <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                    </span>
+                                {% elif 'Removal' in st %}
+                                    <span class="du-status-pill du-status-cleared">
+                                        <i class="fas fa-shield-halved"></i>{{ st }}
+                                    </span>
+                                {% else %}
+                                    <span class="du-status-pill du-status-good">
+                                        <i class="fas fa-circle-check"></i>{{ st }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
+                                {% if cgpa_val %}
+                                    <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning text-dark' if cgpa_val >= 65.0 else 'danger' }}">
+                                        {{ "%.2f"|format(cgpa_val) }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if student.semester_gpa is not none %}
+                                    <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }}">
+                                        {{ "%.2f"|format(student.semester_gpa) }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('main.student_detail', student_id=student.id) }}" 
+                                       class="btn btn-outline-primary" title="View Student Academic Profile">
+                                        <i class="fas fa-id-card me-1"></i> Profile
+                                    </a>
+                                    <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
+                                       target="_blank" class="btn btn-outline-danger" title="Open Official PDF Transcript">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center">
+                <div class="icon-box icon-box-xl icon-box-primary mb-3">
+                    <i class="fas fa-user-group"></i>
+                </div>
+                <h5 class="fw-bold">No Advisees In Local Database</h5>
+                <p class="text-muted small mb-3">Sync with the university SIS or import student transcripts to populate your cohort.</p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrows-rotate me-1"></i> Go to Sync Gateway
+                </a>
+            </div>
+        {% endif %}
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterDashboardTable() {
+    const query = document.getElementById('dashboardSearchInput').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.dashboard-student-row');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        if (text.includes(query)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    const countEl = document.getElementById('filteredStudentCount');
+    if (countEl) countEl.innerText = visibleCount;
+}
+</script>
 {% endblock %}

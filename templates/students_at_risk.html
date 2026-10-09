@@ -29,81 +29,49 @@
 <!-- Summary Metric Cards -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card text-white bg-danger shadow-sm h-100 border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Strict Probation</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.strict }}</h2>
-                        <small class="text-white-50">Critical dismissal warning</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-skull-crossbones fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="#section-strict" class="text-white text-decoration-none small">Scroll to list &darr;</a>
+        <div class="stat-widget stat-widget-danger">
+            <i class="fas fa-triangle-exclamation stat-bg-icon"></i>
+            <div class="stat-label">Strict Probation</div>
+            <div class="stat-value">{{ breakdown.counts.strict }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <small class="text-white-50">Critical dismissal warning</small>
+                <a href="#section-strict" class="text-white text-decoration-none small fw-semibold">Scroll &darr;</a>
             </div>
         </div>
     </div>
     
     <div class="col-md-3">
-        <div class="card text-white shadow-sm h-100 border-0" style="background-color: #fd7e14;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Second Probation</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.second }}</h2>
-                        <small class="text-white-50">Consecutive warning term</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-exclamation-circle fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="#section-second" class="text-white text-decoration-none small">Scroll to list &darr;</a>
+        <div class="stat-widget" style="background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);">
+            <i class="fas fa-circle-exclamation stat-bg-icon"></i>
+            <div class="stat-label">Second Probation</div>
+            <div class="stat-value">{{ breakdown.counts.second }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <small class="text-white-50">Consecutive warning term</small>
+                <a href="#section-second" class="text-white text-decoration-none small fw-semibold">Scroll &darr;</a>
             </div>
         </div>
     </div>
     
     <div class="col-md-3">
-        <div class="card text-dark bg-warning shadow-sm h-100 border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-muted">First Probation</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.first }}</h2>
-                        <small class="text-muted">Initial probation advising</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-exclamation fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="#section-first" class="text-dark fw-semibold text-decoration-none small">Scroll to list &darr;</a>
+        <div class="stat-widget stat-widget-warning">
+            <i class="fas fa-bell stat-bg-icon"></i>
+            <div class="stat-label">First Probation</div>
+            <div class="stat-value">{{ breakdown.counts.first }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark border-opacity-10">
+                <small class="text-dark-emphasis">Initial probation advising</small>
+                <a href="#section-first" class="text-dark text-decoration-none small fw-semibold">Scroll &darr;</a>
             </div>
         </div>
     </div>
     
     <div class="col-md-3">
-        <div class="card text-white bg-dark shadow-sm h-100 border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2 text-white-50">Total At-Risk</h6>
-                        <h2 class="card-title mb-0 fw-bold">{{ breakdown.counts.total }}</h2>
-                        <small class="text-white-50">of {{ breakdown.total_advisees }} total advisees</small>
-                    </div>
-                    <div>
-                        <i class="fas fa-user-shield fa-3x opacity-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer bg-transparent border-0 pt-0">
-                <span class="text-white-50 small">{{ ((breakdown.counts.total / breakdown.total_advisees) * 100)|round(1) if breakdown.total_advisees > 0 else 0 }}% of student roster</span>
+        <div class="stat-widget" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
+            <i class="fas fa-shield-halved stat-bg-icon"></i>
+            <div class="stat-label">Total At-Risk</div>
+            <div class="stat-value">{{ breakdown.counts.total }}</div>
+            <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
+                <small class="text-white-50">of {{ breakdown.total_advisees }} total advisees</small>
+                <span class="text-white small fw-bold">{{ ((breakdown.counts.total / breakdown.total_advisees) * 100)|round(1) if breakdown.total_advisees > 0 else 0 }}%</span>
             </div>
         </div>
     </div>
