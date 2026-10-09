@@ -255,6 +255,170 @@
             display: flex;
         }
 
+        /* ========================================================================= */
+        /* Advisor Multi-Page Interactive Notebook & Whiteboard                      */
+        /* ========================================================================= */
+        .side-panel.panel-notebook {
+            width: 560px;
+            max-width: 95vw;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .side-panel.panel-notebook.expanded {
+            width: 880px;
+        }
+
+        .notebook-toolbar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 12px;
+        }
+
+        .notebook-tool-btn {
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #334155;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .notebook-tool-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .notebook-tool-btn.active {
+            background: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+            box-shadow: 0 1px 4px rgba(30, 58, 138, 0.25);
+        }
+
+        .color-swatch-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #cbd5e1;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.15s ease;
+        }
+
+        .color-swatch-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .color-swatch-btn.active {
+            box-shadow: 0 0 0 2px #1e3a8a, 0 2px 6px rgba(0,0,0,0.2) !important;
+            transform: scale(1.18);
+        }
+
+        .paper-swatch-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.15s ease;
+        }
+
+        .paper-swatch-btn.active {
+            border: 2px solid #1e3a8a !important;
+            box-shadow: 0 0 0 1px #1e3a8a;
+        }
+
+        /* Paper Patterns */
+        .notebook-paper-viewport {
+            position: relative;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 380px;
+            background-color: #ffffff;
+            transition: background-color 0.2s ease;
+        }
+
+        .paper-lined {
+            background-image: 
+                linear-gradient(90deg, transparent 48px, rgba(239, 68, 68, 0.5) 48px, rgba(239, 68, 68, 0.5) 50px, transparent 50px),
+                linear-gradient(rgba(148, 163, 184, 0.35) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 28px;
+            background-position: 0 0, 0 14px;
+        }
+
+        .paper-blank {
+            background-image: none !important;
+        }
+
+        .paper-dot {
+            background-image: radial-gradient(rgba(100, 116, 139, 0.45) 1.5px, transparent 1.5px) !important;
+            background-size: 20px 20px !important;
+        }
+
+        .paper-tabular {
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.25) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.25) 1px, transparent 1px) !important;
+            background-size: 24px 24px !important;
+        }
+
+        /* Dark paper adjustments */
+        .paper-theme-dark.paper-lined {
+            background-image: 
+                linear-gradient(90deg, transparent 48px, rgba(239, 68, 68, 0.6) 48px, rgba(239, 68, 68, 0.6) 50px, transparent 50px),
+                linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+        }
+
+        .paper-theme-dark.paper-dot {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px) !important;
+        }
+
+        .paper-theme-dark.paper-tabular {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px) !important;
+        }
+
+        .notebook-canvas-layer {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            touch-action: none;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .notebook-notes-layer {
+            border-top: 1px dashed rgba(148, 163, 184, 0.4);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        .paper-theme-dark .notebook-notes-layer {
+            background: rgba(15, 23, 42, 0.75);
+            border-top-color: rgba(255, 255, 255, 0.15);
+            color: #f8fafc;
+        }
+
+        .paper-theme-dark .notebook-notes-layer textarea {
+            background: #0f172a;
+            color: #f8fafc;
+            border-color: #334155;
+        }
+
         .panel-header {
             padding: 16px 20px;
             display: flex;
@@ -794,8 +958,10 @@
                 <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="endCallForAll()" title="End call for everyone">
                     <i class="fas fa-power-off me-1"></i> End Call
                 </button>
+                <button class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2" onclick="toggleNotebookPanel()" title="Open Interactive Advising Notebook & Whiteboard">
+                    <i class="fas fa-book-open me-1"></i> Notebook
+                </button>
                 {% endif %}
-
                 <button class="btn btn-sm btn-outline-light" onclick="copyInviteLink()" title="Copy invite link">
                     <i class="fas fa-link me-1"></i> Copy Link
                 </button>
@@ -889,6 +1055,9 @@
                 </button>
                 {% endif %}
 
+                <button class="dock-btn text-warning" id="btnNotebook" onclick="toggleNotebookPanel()" title="Advisor Multi-Page Notebook & Whiteboard">
+                    <i class="fas fa-book-open"></i>
+                </button>
                 <button class="dock-btn" onclick="togglePanel('notes')" title="Shared Advising Notes">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -963,6 +1132,192 @@
         </div>
         <div class="panel-content p-2 d-flex flex-column">
             <textarea id="notesArea" class="form-control flex-grow-1 font-monospace" style="resize: none; font-size: 0.85rem;" oninput="onNotesChanged()"></textarea>
+        </div>
+    </div>
+
+    <!-- Side Panel 2.5: Advisor Multi-Page Interactive Notebook & Whiteboard -->
+    <div class="side-panel panel-notebook" id="panelNotebook">
+        <!-- Notebook Header -->
+        <div class="panel-header py-2 px-3 bg-light border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-book-open text-warning fs-5"></i>
+                <div>
+                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Advisor Notebook &amp; Whiteboard</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Multi-page sketchpad, notes &amp; student records</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="btnNotebookExpand" onclick="toggleNotebookExpand()" title="Expand / Contract Workspace">
+                    <i class="fas fa-expand-alt" id="expandNotebookIcon"></i>
+                </button>
+                <button type="button" class="btn-close ms-2" onclick="closePanels()" title="Close notebook"></button>
+            </div>
+        </div>
+
+        <!-- 1. Page Navigation & Management Toolbar -->
+        <div class="notebook-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom py-1.5 px-3 bg-white">
+            <!-- Left: Page Switcher -->
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="notebook-tool-btn" onclick="prevNotebookPage()" title="Previous Page">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="badge bg-light text-dark border px-2 py-1 font-monospace" id="nbPageCounter" style="font-size: 0.78rem;">
+                    Page 1 / 1
+                </span>
+                <button type="button" class="notebook-tool-btn" onclick="nextNotebookPage()" title="Next Page">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-primary py-0 px-2 fw-semibold ms-1" onclick="addNotebookPage()" title="Add New Blank Page" style="font-size: 0.75rem;">
+                    <i class="fas fa-plus me-1"></i> New Page
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1.5" onclick="deleteCurrentNotebookPage()" title="Delete Current Page" style="font-size: 0.75rem;">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+
+            <!-- Right: Facility Mode Toggle (Split, Draw Only, Type Only) -->
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="notebook-tool-btn active" id="btnModeSplit" onclick="setNotebookMode('split')" title="Canvas + Typed Notes Split">
+                    <i class="fas fa-columns me-1"></i> Split
+                </button>
+                <button type="button" class="notebook-tool-btn" id="btnModeDraw" onclick="setNotebookMode('draw')" title="Freehand Drawing Canvas Only">
+                    <i class="fas fa-pen-fancy me-1"></i> Draw Only
+                </button>
+                <button type="button" class="notebook-tool-btn" id="btnModeText" onclick="setNotebookMode('text')" title="Typing & Structured Notes Only">
+                    <i class="fas fa-keyboard me-1"></i> Type Only
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Paper Pattern & Color Setup Strip -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-1.5 bg-light border-bottom" style="font-size: 0.8rem;">
+            <!-- Pattern Type Selector -->
+            <div class="d-flex align-items-center gap-1">
+                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">PATTERN:</span>
+                <button type="button" class="notebook-tool-btn active" id="btnPatLined" onclick="setPaperPattern('lined')" title="Ruled Notebook Lines">
+                    <i class="fas fa-align-justify me-1 text-primary"></i> Lined
+                </button>
+                <button type="button" class="notebook-tool-btn" id="btnPatBlank" onclick="setPaperPattern('blank')" title="Plain Blank Sheet">
+                    <i class="far fa-file me-1"></i> Blank
+                </button>
+                <button type="button" class="notebook-tool-btn" id="btnPatDot" onclick="setPaperPattern('dot')" title="Bullet Journal Dot Grid">
+                    <i class="fas fa-braille me-1 text-secondary"></i> Dot Grid
+                </button>
+                <button type="button" class="notebook-tool-btn" id="btnPatTabular" onclick="setPaperPattern('tabular')" title="Tabular Math / Graph Grid">
+                    <i class="fas fa-table-cells me-1 text-success"></i> Tabular
+                </button>
+            </div>
+
+            <!-- Paper Color Palette Swatches -->
+            <div class="d-flex align-items-center gap-1.5">
+                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">COLOR:</span>
+                <button type="button" class="paper-swatch-btn active" id="swatchColorWhite" style="background-color: #ffffff;" onclick="setPaperColor('#ffffff')" title="Classic White"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorIvory" style="background-color: #fffdf0;" onclick="setPaperColor('#fffdf0')" title="Warm Ivory Cream"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorYellow" style="background-color: #fef9c3;" onclick="setPaperColor('#fef9c3')" title="Legal Pad Yellow"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorMint" style="background-color: #f0fdf4;" onclick="setPaperColor('#f0fdf4')" title="Soft Mint Green"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorBlue" style="background-color: #eff6ff;" onclick="setPaperColor('#eff6ff')" title="Sky Blue Paper"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorDark" style="background-color: #1e293b;" onclick="setPaperColor('#1e293b')" title="Dark Chalkboard / Slate"></button>
+            </div>
+        </div>
+
+        <!-- 3. Freehand Drawing Tools Strip (Visible in split and draw modes) -->
+        <div id="drawingToolsBar" class="notebook-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom py-1.5 px-3">
+            <!-- Tool: Pen, Highlighter, Eraser -->
+            <div class="d-flex align-items-center gap-1">
+                <button type="button" class="notebook-tool-btn active" id="toolBtnPen" onclick="setDrawTool('pen')" title="Pen Tool">
+                    <i class="fas fa-pen"></i> Pen
+                </button>
+                <button type="button" class="notebook-tool-btn" id="toolBtnMarker" onclick="setDrawTool('marker')" title="Translucent Highlighter">
+                    <i class="fas fa-highlighter text-warning"></i> Marker
+                </button>
+                <button type="button" class="notebook-tool-btn" id="toolBtnEraser" onclick="setDrawTool('eraser')" title="Eraser Tool">
+                    <i class="fas fa-eraser text-danger"></i> Eraser
+                </button>
+            </div>
+
+            <!-- Drawing Ink Color Swatches -->
+            <div class="d-flex align-items-center gap-1" id="inkColorSwatches">
+                <button type="button" class="color-swatch-btn active" style="background-color: #0f172a;" onclick="setInkColor('#0f172a')" title="Black Ink"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #1e3a8a;" onclick="setInkColor('#1e3a8a')" title="DU Navy Ink"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #2563eb;" onclick="setInkColor('#2563eb')" title="Royal Blue"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #059669;" onclick="setInkColor('#059669')" title="Emerald Green"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #dc2626;" onclick="setInkColor('#dc2626')" title="Crimson Red"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #d97706;" onclick="setInkColor('#d97706')" title="Amber Orange"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #7c3aed;" onclick="setInkColor('#7c3aed')" title="Iris Purple"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #ffffff;" onclick="setInkColor('#ffffff')" title="Chalk White"></button>
+            </div>
+
+            <!-- Stroke Thickness & Undo / Redo -->
+            <div class="d-flex align-items-center gap-1">
+                <select class="form-select form-select-sm py-0 ps-2 pe-4" id="selectStrokeWidth" onchange="setStrokeWidth(this.value)" style="font-size: 0.75rem; width: auto;">
+                    <option value="2">Fine (2px)</option>
+                    <option value="4" selected>Medium (4px)</option>
+                    <option value="8">Bold (8px)</option>
+                    <option value="16">Marker (16px)</option>
+                </select>
+                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="undoDrawing()" title="Undo (Ctrl+Z)">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="redoDrawing()" title="Redo (Ctrl+Y)">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button type="button" class="notebook-tool-btn text-danger py-0 px-2" onclick="clearPageCanvas()" title="Clear drawing layer">
+                    <i class="fas fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. Interactive Page Viewport (Canvas + Pattern + Typed Notes) -->
+        <div class="panel-content p-2 d-flex flex-column" style="background-color: #f1f5f9;">
+            <!-- Page Header Title Input -->
+            <div class="input-group input-group-sm mb-2">
+                <span class="input-group-text bg-white border-end-0 text-muted" style="font-size: 0.75rem;">
+                    <i class="fas fa-heading me-1"></i> Title:
+                </span>
+                <input type="text" id="nbPageTitleInput" class="form-control form-control-sm border-start-0 fw-semibold" placeholder="e.g. Advising Strategy & GPA Recovery Plan" oninput="onNotebookTitleChanged()">
+            </div>
+
+            <!-- Paper Sheet Viewport (Canvas + Patterned Background) -->
+            <div id="notebookViewport" class="notebook-paper-viewport paper-lined flex-grow-1">
+                <!-- Freehand HTML5 Canvas -->
+                <canvas id="notebookCanvas" class="notebook-canvas-layer"></canvas>
+
+                <!-- Typed Notes Section (under canvas in Split mode, or full in Text mode) -->
+                <div id="notebookNotesContainer" class="notebook-notes-layer">
+                    <!-- Helper Template Snippet Pills -->
+                    <div class="d-flex flex-wrap gap-1 mb-1.5 align-items-center">
+                        <small class="text-muted me-1 fw-bold" style="font-size: 0.7rem;"><i class="fas fa-bolt text-warning me-1"></i>Templates:</small>
+                        <button type="button" class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('cap')">+ 12-CH Cap</button>
+                        <button type="button" class="badge bg-warning-subtle text-dark border border-warning-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('repeat')">+ Repeat Plan</button>
+                        <button type="button" class="badge bg-success-subtle text-success border border-success-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('goal')">+ 65% Target</button>
+                        <button type="button" class="badge bg-info-subtle text-info border border-info-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('action')">+ Action Items</button>
+                    </div>
+                    <textarea id="notebookNotesText" class="form-control font-monospace" rows="6" style="resize: vertical; font-size: 0.82rem; line-height: 1.45;" placeholder="Type advisor notes, academic agreements, recommended schedule..." oninput="onNotebookTextChanged()"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Notebook Save, Register & Export Footer -->
+        <div class="p-2 px-3 bg-white border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span id="nbSyncStatus" class="small text-muted" style="font-size: 0.75rem;">
+                    <i class="fas fa-check text-success me-1"></i> Synced to Room
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-1.5">
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1" onclick="exportNotebookPageImage()" title="Download current page as image">
+                    <i class="fas fa-image me-1"></i> Export Image
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-dark py-1" onclick="printNotebookPages()" title="Print / PDF preview of all pages">
+                    <i class="fas fa-print me-1"></i> Print / PDF
+                </button>
+                <button type="button" class="btn btn-sm btn-primary py-1 fw-bold" onclick="saveNotebookToServer()" title="Save all pages to this conference">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+                <button type="button" class="btn btn-sm btn-success py-1 fw-bold shadow-sm" onclick="saveNotebookToStudentRecord()" title="Register notes to student persistent dossier for future guidance">
+                    <i class="fas fa-user-check me-1"></i> Save to Student Dossier
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2304,7 +2659,7 @@ function openDeviceSettingsModal() {
 // Side Panels Management (Chat, Notes, Files, Dossier)
 // =========================================================================
 function togglePanel(panelName) {
-    const panels = ['chat', 'notes', 'files', 'dossier', 'waiting'];
+    const panels = ['chat', 'notes', 'files', 'dossier', 'waiting', 'notebook'];
     const targetId = 'panel' + panelName.charAt(0).toUpperCase() + panelName.slice(1);
     const targetElem = document.getElementById(targetId);
 
@@ -2327,7 +2682,17 @@ function togglePanel(panelName) {
         unreadChatCount = 0;
         document.getElementById('chatBadge').style.display = 'none';
         document.getElementById('chatInput').focus();
+    } else if (panelName === 'notebook') {
+        if (!notebookInitialized) {
+            initNotebook();
+        } else {
+            setTimeout(resizeNotebookCanvas, 100);
+        }
     }
+}
+
+function toggleNotebookPanel() {
+    togglePanel('notebook');
 }
 
 function closePanels() {
@@ -2480,6 +2845,615 @@ function copyInviteLink() {
     const url = window.location.origin + APP_PREFIX + `/meeting/${ROOM_ID}`;
     navigator.clipboard.writeText(url);
     alert('Meeting link copied to clipboard:\n' + url);
+}
+
+// =========================================================================
+// Advisor Multi-Page Interactive Notebook & Whiteboard Engine
+// =========================================================================
+
+let notebookData = {
+    pages: [
+        {
+            id: 'page_1',
+            title: 'Page 1 - Advising Session Plan',
+            pattern: 'lined',
+            color: '#ffffff',
+            drawing: '',
+            notes: ''
+        }
+    ],
+    current_page: 0,
+    version: 1
+};
+
+let notebookInitialized = false;
+let currentNotebookMode = 'split'; // 'split', 'draw', 'text'
+let currentDrawTool = 'pen'; // 'pen', 'marker', 'eraser'
+let currentInkColor = '#0f172a';
+let currentStrokeWidth = 4;
+let isNotebookExpanded = false;
+
+let nbCanvas = null;
+let nbCtx = null;
+let nbIsDrawing = false;
+let nbLastPos = null;
+let nbUndoStack = [];
+let nbRedoStack = [];
+let nbSaveDebounceTimer = null;
+
+function toggleNotebookExpand() {
+    const panel = document.getElementById('panelNotebook');
+    const icon = document.getElementById('expandNotebookIcon');
+    isNotebookExpanded = !isNotebookExpanded;
+    panel.classList.toggle('expanded', isNotebookExpanded);
+    if (icon) {
+        icon.className = isNotebookExpanded ? 'fas fa-compress-alt' : 'fas fa-expand-alt';
+    }
+    setTimeout(resizeNotebookCanvas, 200);
+}
+
+async function initNotebook() {
+    notebookInitialized = true;
+    nbCanvas = document.getElementById('notebookCanvas');
+    if (nbCanvas) {
+        nbCtx = nbCanvas.getContext('2d');
+        setupCanvasEvents();
+    }
+
+    try {
+        const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/notebook`);
+        const data = await res.json();
+        if (data.status === 'success' && data.notebook && data.notebook.pages && data.notebook.pages.length > 0) {
+            notebookData = data.notebook;
+        }
+    } catch (e) {
+        console.warn("Using offline notebook defaults:", e);
+    }
+
+    if (!notebookData.pages || notebookData.pages.length === 0) {
+        notebookData.pages = [{
+            id: 'page_1',
+            title: 'Page 1 - Advising Session Plan',
+            pattern: 'lined',
+            color: '#ffffff',
+            drawing: '',
+            notes: ''
+        }];
+        notebookData.current_page = 0;
+    }
+
+    renderNotebookPage(notebookData.current_page || 0);
+}
+
+function getCurrentPage() {
+    const idx = notebookData.current_page || 0;
+    if (!notebookData.pages[idx]) {
+        notebookData.pages[idx] = {
+            id: 'page_' + (idx + 1),
+            title: `Page ${idx + 1}`,
+            pattern: 'lined',
+            color: '#ffffff',
+            drawing: '',
+            notes: ''
+        };
+    }
+    return notebookData.pages[idx];
+}
+
+function renderNotebookPage(pageIndex) {
+    if (pageIndex < 0) pageIndex = 0;
+    if (pageIndex >= notebookData.pages.length) pageIndex = notebookData.pages.length - 1;
+    notebookData.current_page = pageIndex;
+
+    const page = getCurrentPage();
+
+    // 1. Update Title & Page Indicator
+    const counter = document.getElementById('nbPageCounter');
+    if (counter) counter.innerText = `Page ${pageIndex + 1} / ${notebookData.pages.length}`;
+    
+    const titleInput = document.getElementById('nbPageTitleInput');
+    if (titleInput) titleInput.value = page.title || `Page ${pageIndex + 1}`;
+
+    // 2. Update Paper Pattern
+    const vp = document.getElementById('notebookViewport');
+    if (vp) {
+        vp.className = `notebook-paper-viewport paper-${page.pattern || 'lined'} flex-grow-1`;
+        if (page.color === '#1e293b') {
+            vp.classList.add('paper-theme-dark');
+        } else {
+            vp.classList.remove('paper-theme-dark');
+        }
+        vp.style.backgroundColor = page.color || '#ffffff';
+    }
+
+    // Pattern Toolbar buttons active state
+    ['lined', 'blank', 'dot', 'tabular'].forEach(p => {
+        const btn = document.getElementById('btnPat' + p.charAt(0).toUpperCase() + p.slice(1));
+        if (btn) btn.classList.toggle('active', (page.pattern || 'lined') === p);
+    });
+
+    // Paper Color swatches active state
+    document.querySelectorAll('.paper-swatch-btn').forEach(btn => {
+        const btnColor = btn.getAttribute('onclick')?.match(/#([0-9a-fA-F]{6})/)?.[0] || '';
+        btn.classList.toggle('active', btnColor.toLowerCase() === (page.color || '#ffffff').toLowerCase());
+    });
+
+    // 3. Update Typed Notes
+    const notesText = document.getElementById('notebookNotesText');
+    if (notesText) {
+        notesText.value = page.notes || '';
+    }
+
+    // 4. Reset & Render Canvas Drawing
+    nbUndoStack = [];
+    nbRedoStack = [];
+    resizeNotebookCanvas();
+    loadPageDrawingToCanvas(page.drawing);
+
+    // 5. Update Mode view
+    applyNotebookMode();
+}
+
+function resizeNotebookCanvas() {
+    if (!nbCanvas) return;
+    const vp = document.getElementById('notebookViewport');
+    if (!vp) return;
+
+    const rect = vp.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    let targetHeight = 360;
+    if (currentNotebookMode === 'draw') {
+        targetHeight = Math.max(rect.height || 500, 480);
+    } else if (currentNotebookMode === 'split') {
+        targetHeight = 320;
+    } else if (currentNotebookMode === 'text') {
+        targetHeight = 0;
+    }
+
+    nbCanvas.style.height = targetHeight + 'px';
+    const w = rect.width || 500;
+    const h = targetHeight;
+
+    if (w > 0 && h > 0) {
+        let prevData = null;
+        if (nbCanvas.width > 0 && nbCanvas.height > 0) {
+            try { prevData = nbCanvas.toDataURL('image/png'); } catch(e){}
+        }
+
+        nbCanvas.width = Math.floor(w * dpr);
+        nbCanvas.height = Math.floor(h * dpr);
+        nbCtx.setTransform(1, 0, 0, 1, 0, 0);
+        nbCtx.scale(dpr, dpr);
+
+        if (prevData) {
+            loadPageDrawingToCanvas(prevData);
+        } else {
+            const page = getCurrentPage();
+            if (page.drawing) loadPageDrawingToCanvas(page.drawing);
+        }
+    }
+}
+
+function loadPageDrawingToCanvas(dataUrl) {
+    if (!nbCtx || !nbCanvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = nbCanvas.width / dpr;
+    const h = nbCanvas.height / dpr;
+
+    nbCtx.clearRect(0, 0, w, h);
+    if (!dataUrl) return;
+
+    const img = new Image();
+    img.onload = () => {
+        nbCtx.drawImage(img, 0, 0, w, h);
+    };
+    img.src = dataUrl;
+}
+
+function setupCanvasEvents() {
+    if (!nbCanvas) return;
+
+    function getPos(e) {
+        const rect = nbCanvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    nbCanvas.addEventListener('pointerdown', (e) => {
+        if (currentNotebookMode === 'text') return;
+        nbIsDrawing = true;
+        nbCanvas.setPointerCapture(e.pointerId);
+        nbLastPos = getPos(e);
+
+        saveCanvasStateToUndo();
+        drawStroke(nbLastPos, nbLastPos);
+        e.preventDefault();
+    });
+
+    nbCanvas.addEventListener('pointermove', (e) => {
+        if (!nbIsDrawing || currentNotebookMode === 'text') return;
+        const currentPos = getPos(e);
+        drawStroke(nbLastPos, currentPos);
+        nbLastPos = currentPos;
+        e.preventDefault();
+    });
+
+    const stopDrawing = (e) => {
+        if (nbIsDrawing) {
+            nbIsDrawing = false;
+            nbLastPos = null;
+            const page = getCurrentPage();
+            page.drawing = nbCanvas.toDataURL('image/png');
+            debounceSaveNotebook();
+        }
+    };
+
+    nbCanvas.addEventListener('pointerup', stopDrawing);
+    nbCanvas.addEventListener('pointercancel', stopDrawing);
+    nbCanvas.addEventListener('pointerleave', stopDrawing);
+}
+
+function drawStroke(start, end) {
+    if (!nbCtx) return;
+    nbCtx.beginPath();
+    nbCtx.moveTo(start.x, start.y);
+    nbCtx.lineTo(end.x, end.y);
+    nbCtx.lineCap = 'round';
+    nbCtx.lineJoin = 'round';
+
+    if (currentDrawTool === 'eraser') {
+        nbCtx.globalCompositeOperation = 'destination-out';
+        nbCtx.lineWidth = currentStrokeWidth * 4;
+        nbCtx.stroke();
+    } else if (currentDrawTool === 'marker') {
+        nbCtx.globalCompositeOperation = 'source-over';
+        nbCtx.globalAlpha = 0.35;
+        nbCtx.strokeStyle = currentInkColor;
+        nbCtx.lineWidth = currentStrokeWidth * 3.5;
+        nbCtx.stroke();
+    } else {
+        nbCtx.globalCompositeOperation = 'source-over';
+        nbCtx.globalAlpha = 1.0;
+        nbCtx.strokeStyle = currentInkColor;
+        nbCtx.lineWidth = currentStrokeWidth;
+        nbCtx.stroke();
+    }
+}
+
+function saveCanvasStateToUndo() {
+    if (!nbCanvas) return;
+    try {
+        if (nbUndoStack.length >= 25) nbUndoStack.shift();
+        nbUndoStack.push(nbCanvas.toDataURL('image/png'));
+        nbRedoStack = [];
+    } catch(e){}
+}
+
+function undoDrawing() {
+    if (nbUndoStack.length === 0) return;
+    const currentState = nbCanvas.toDataURL('image/png');
+    nbRedoStack.push(currentState);
+    const prevState = nbUndoStack.pop();
+    loadPageDrawingToCanvas(prevState);
+    const page = getCurrentPage();
+    page.drawing = prevState;
+    debounceSaveNotebook();
+}
+
+function redoDrawing() {
+    if (nbRedoStack.length === 0) return;
+    const currentState = nbCanvas.toDataURL('image/png');
+    nbUndoStack.push(currentState);
+    const nextState = nbRedoStack.pop();
+    loadPageDrawingToCanvas(nextState);
+    const page = getCurrentPage();
+    page.drawing = nextState;
+    debounceSaveNotebook();
+}
+
+function clearPageCanvas() {
+    if (!confirm("Clear drawings on this page?")) return;
+    saveCanvasStateToUndo();
+    const dpr = window.devicePixelRatio || 1;
+    nbCtx.clearRect(0, 0, nbCanvas.width / dpr, nbCanvas.height / dpr);
+    const page = getCurrentPage();
+    page.drawing = '';
+    debounceSaveNotebook();
+}
+
+function setDrawTool(tool) {
+    currentDrawTool = tool;
+    document.getElementById('toolBtnPen')?.classList.toggle('active', tool === 'pen');
+    document.getElementById('toolBtnMarker')?.classList.toggle('active', tool === 'marker');
+    document.getElementById('toolBtnEraser')?.classList.toggle('active', tool === 'eraser');
+}
+
+function setInkColor(color) {
+    currentInkColor = color;
+    document.querySelectorAll('#inkColorSwatches .color-swatch-btn').forEach(btn => {
+        const bg = btn.style.backgroundColor;
+        btn.classList.toggle('active', bg.includes(color) || btn.getAttribute('onclick')?.includes(color));
+    });
+    if (currentDrawTool === 'eraser') {
+        setDrawTool('pen');
+    }
+}
+
+function setStrokeWidth(w) {
+    currentStrokeWidth = parseFloat(w) || 4;
+}
+
+function setPaperPattern(pattern) {
+    const page = getCurrentPage();
+    page.pattern = pattern;
+    const vp = document.getElementById('notebookViewport');
+    if (vp) {
+        vp.className = `notebook-paper-viewport paper-${pattern} flex-grow-1`;
+        if (page.color === '#1e293b') vp.classList.add('paper-theme-dark');
+    }
+    ['lined', 'blank', 'dot', 'tabular'].forEach(p => {
+        document.getElementById('btnPat' + p.charAt(0).toUpperCase() + p.slice(1))?.classList.toggle('active', p === pattern);
+    });
+    debounceSaveNotebook();
+}
+
+function setPaperColor(color) {
+    const page = getCurrentPage();
+    page.color = color;
+    const vp = document.getElementById('notebookViewport');
+    if (vp) {
+        vp.style.backgroundColor = color;
+        if (color === '#1e293b') {
+            vp.classList.add('paper-theme-dark');
+            if (currentInkColor === '#0f172a') setInkColor('#ffffff');
+        } else {
+            vp.classList.remove('paper-theme-dark');
+            if (currentInkColor === '#ffffff') setInkColor('#0f172a');
+        }
+    }
+    document.querySelectorAll('.paper-swatch-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(color));
+    });
+    debounceSaveNotebook();
+}
+
+function setNotebookMode(mode) {
+    currentNotebookMode = mode;
+    document.getElementById('btnModeSplit')?.classList.toggle('active', mode === 'split');
+    document.getElementById('btnModeDraw')?.classList.toggle('active', mode === 'draw');
+    document.getElementById('btnModeText')?.classList.toggle('active', mode === 'text');
+    applyNotebookMode();
+}
+
+function applyNotebookMode() {
+    const canvas = document.getElementById('notebookCanvas');
+    const notesBox = document.getElementById('notebookNotesContainer');
+    const drawTools = document.getElementById('drawingToolsBar');
+
+    if (currentNotebookMode === 'draw') {
+        if (canvas) canvas.style.display = 'block';
+        if (notesBox) notesBox.style.display = 'none';
+        if (drawTools) drawTools.style.display = 'flex';
+    } else if (currentNotebookMode === 'text') {
+        if (canvas) canvas.style.display = 'none';
+        if (notesBox) notesBox.style.display = 'block';
+        if (drawTools) drawTools.style.display = 'none';
+    } else {
+        if (canvas) canvas.style.display = 'block';
+        if (notesBox) notesBox.style.display = 'block';
+        if (drawTools) drawTools.style.display = 'flex';
+    }
+    setTimeout(resizeNotebookCanvas, 60);
+}
+
+function addNotebookPage() {
+    saveCurrentPageFormValues();
+    const cur = getCurrentPage();
+
+    const newPageIdx = notebookData.pages.length;
+    const newPage = {
+        id: 'page_' + (newPageIdx + 1),
+        title: `Page ${newPageIdx + 1} - Notes`,
+        pattern: cur.pattern || 'lined',
+        color: cur.color || '#ffffff',
+        drawing: '',
+        notes: '',
+        created_at: new Date().toLocaleTimeString()
+    };
+    notebookData.pages.push(newPage);
+    renderNotebookPage(newPageIdx);
+    debounceSaveNotebook();
+}
+
+function prevNotebookPage() {
+    if (notebookData.current_page > 0) {
+        saveCurrentPageFormValues();
+        renderNotebookPage(notebookData.current_page - 1);
+    }
+}
+
+function nextNotebookPage() {
+    if (notebookData.current_page < notebookData.pages.length - 1) {
+        saveCurrentPageFormValues();
+        renderNotebookPage(notebookData.current_page + 1);
+    }
+}
+
+function deleteCurrentNotebookPage() {
+    if (notebookData.pages.length <= 1) {
+        alert("The notebook must contain at least one page.");
+        return;
+    }
+    if (!confirm(`Delete page ${notebookData.current_page + 1}? This action cannot be undone.`)) return;
+
+    notebookData.pages.splice(notebookData.current_page, 1);
+    const newIdx = Math.max(0, Math.min(notebookData.current_page, notebookData.pages.length - 1));
+    renderNotebookPage(newIdx);
+    debounceSaveNotebook();
+}
+
+function saveCurrentPageFormValues() {
+    const page = getCurrentPage();
+    if (nbCanvas) page.drawing = nbCanvas.toDataURL('image/png');
+    const textEl = document.getElementById('notebookNotesText');
+    if (textEl) page.notes = textEl.value;
+    const titleEl = document.getElementById('nbPageTitleInput');
+    if (titleEl) page.title = titleEl.value;
+}
+
+function onNotebookTitleChanged() {
+    const page = getCurrentPage();
+    page.title = document.getElementById('nbPageTitleInput').value;
+    debounceSaveNotebook();
+}
+
+function onNotebookTextChanged() {
+    const page = getCurrentPage();
+    page.notes = document.getElementById('notebookNotesText').value;
+    debounceSaveNotebook();
+}
+
+function insertNotebookSnippet(type) {
+    const textEl = document.getElementById('notebookNotesText');
+    if (!textEl) return;
+    let snippet = '';
+
+    if (type === 'cap') {
+        snippet = "\n📌 [DU Article 14 Restriction]: Student is on Academic Probation. Course registration is strictly capped at 12 credit hours. Dean approval required for any overload.\n";
+    } else if (type === 'repeat') {
+        snippet = "\n🔄 [DU Article 18 Course Repeat]: Recommend repeating failed/low courses (F, D, D+) to trigger Highest Grade Replacement in Cumulative GPA calculation:\n- Course: \n- Target Grade: >= 75.0% (Gain: +% CGPA)\n";
+    } else if (type === 'goal') {
+        snippet = "\n🎯 [Cumulative GPA Recovery Target]:\n- Current CGPA: %\n- Graduation Benchmark: 65.0%\n- Semester GPA Target Needed: >= 70.0%\n";
+    } else if (type === 'action') {
+        snippet = "\n✅ [Agreed Student Action Items]:\n- [ ] Submit official registration for recommended 12-CH schedule\n- [ ] Attend weekly office hours / tutoring support\n- [ ] Review midterm academic progress with Dr. Nasser\n";
+    }
+
+    textEl.value += snippet;
+    onNotebookTextChanged();
+    textEl.scrollTop = textEl.scrollHeight;
+}
+
+function debounceSaveNotebook() {
+    const status = document.getElementById('nbSyncStatus');
+    if (status) status.innerHTML = '<i class="fas fa-spinner fa-spin text-warning me-1"></i> Saving...';
+    clearTimeout(nbSaveDebounceTimer);
+    nbSaveDebounceTimer = setTimeout(saveNotebookToServer, 1000);
+}
+
+async function saveNotebookToServer() {
+    saveCurrentPageFormValues();
+    const status = document.getElementById('nbSyncStatus');
+    try {
+        const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/notebook`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(notebookData)
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+            if (status) status.innerHTML = '<i class="fas fa-check text-success me-1"></i> Synced to Room';
+        }
+    } catch(e) {
+        if (status) status.innerHTML = '<i class="fas fa-exclamation-triangle text-danger me-1"></i> Local only';
+    }
+}
+
+async function saveNotebookToStudentRecord() {
+    saveCurrentPageFormValues();
+    const btn = event?.currentTarget;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Registering...';
+    }
+
+    try {
+        const allNotes = notebookData.pages.map((p, i) => `### ${p.title || 'Page ' + (i+1)}\n${p.notes || ''}`).join('\n\n');
+
+        const res = await fetch(`${APP_PREFIX}/api/meeting/${ROOM_ID}/notebook/save-to-student`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ notes: allNotes })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+            alert(`✅ ${d.message}\n\nNotes registered to Dr. Nasser's student supervising archives and Second Brain dossier.`);
+        } else {
+            alert("Error saving notes to student dossier: " + (d.message || 'Server error'));
+        }
+    } catch(e) {
+        alert("Failed to register notes to student record: " + e.message);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-check me-1"></i> Save to Student Dossier';
+        }
+    }
+}
+
+function exportNotebookPageImage() {
+    saveCurrentPageFormValues();
+    const page = getCurrentPage();
+    const w = nbCanvas.width || 800;
+    const h = nbCanvas.height || 600;
+
+    const offscreen = document.createElement('canvas');
+    offscreen.width = w;
+    offscreen.height = h;
+    const ctx = offscreen.getContext('2d');
+
+    ctx.fillStyle = page.color || '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(nbCanvas, 0, 0);
+
+    const a = document.createElement('a');
+    a.download = `Advising_Notebook_${ROOM_ID}_Page_${notebookData.current_page + 1}.png`;
+    a.href = offscreen.toDataURL('image/png');
+    a.click();
+}
+
+function printNotebookPages() {
+    saveCurrentPageFormValues();
+    const win = window.open('', '_blank');
+    if (!win) {
+        alert("Please allow popups to view printable notebook.");
+        return;
+    }
+
+    let pagesHtml = notebookData.pages.map((p, idx) => `
+        <div style="page-break-after: always; padding: 30px; font-family: 'Segoe UI', Arial, sans-serif; border-bottom: 2px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0; color: #1e3a8a;">Dhofar University - Academic Advising</h2>
+                    <h4 style="margin: 4px 0 0; color: #334155;">${p.title || 'Page ' + (idx + 1)}</h4>
+                </div>
+                <div style="text-align: right; color: #64748b; font-size: 0.85rem;">
+                    <div>Room: <strong>${ROOM_ID}</strong></div>
+                    <div>Page: <strong>${idx + 1} of ${notebookData.pages.length}</strong></div>
+                    <div>Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+            ${p.drawing ? `<div style="text-align: center; margin-bottom: 25px;"><img src="${p.drawing}" style="max-width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;" /></div>` : ''}
+            ${p.notes ? `<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; white-space: pre-wrap; font-family: monospace; font-size: 0.9rem;">${p.notes}</div>` : ''}
+        </div>
+    `).join('');
+
+    win.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Advising Notebook - ${ROOM_ID}</title>
+            <style>body { margin: 0; background: #fff; }</style>
+        </head>
+        <body>
+            ${pagesHtml}
+            <script>window.onload = function() { window.print(); };<\/script>
+        </body>
+        </html>
+    `);
+    win.document.close();
 }
 </script>
 

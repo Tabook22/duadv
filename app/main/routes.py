@@ -1583,6 +1583,144 @@ def api_meetings_clear_all():
         'message': f'Successfully cleared {count} registered meeting room(s).'
     })
 
+# =========================================================================
+# Advisor Interactive Multi-Page Notebook & Whiteboard APIs
+# =========================================================================
+
+@bp.route('/api/meeting/<room_id>/notebook', methods=['GET'])
+def api_meeting_get_notebook(room_id):
+    """Get the current multi-page notebook, drawings, and paper settings for a meeting"""
+    room = _get_or_create_meeting_room(room_id)
+    return jsonify({
+        'status': 'success',
+        'notebook': room.notebook
+    })
+
+@bp.route('/api/meeting/<room_id>/notebook', methods=['POST'])
+def api_meeting_save_notebook(room_id):
+    """Save multi-page notebook drawings and notes to room and persistent disk"""
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    updated_nb = room.update_notebook(data)
+    
+    # Broadcast signal to peers
+    sender = data.get('sender', 'Advisor')
+    room.add_signal(
+        sender_id='host',
+        sender_name=room.advisor_name,
+        recipient_id=None,
+        signal_type='notebook-updated',
+        payload={'version': updated_nb.get('version', 1)}
+    )
+    
+    return jsonify({
+        'status': 'success',
+        'notebook': updated_nb,
+        'message': 'Notebook saved successfully'
+    })
+
+@bp.route('/api/meeting/<room_id>/notebook/save-to-student', methods=['POST'])
+def api_meeting_save_notebook_to_student(room_id):
+    """
+    Save meeting notebook notes and action plans directly to the student's persistent advising dossier
+    for future guidance and supervising.
+    """
+    import json
+    import uuid
+    from datetime import datetime
+    from app.meeting_engine import MEETINGS_STORAGE_DIR
+
+    room = _get_or_create_meeting_room(room_id)
+    data = request.get_json() or {}
+    
+    student_id = data.get('student_id') or room.student_id
+    if not student_id and room.target_students:
+        student_id = room.target_students[0]['id']
+        
+    student_name = data.get('student_name') or room.student_name
+    notes_summary = data.get('notes') or ''
+    
+    if not notes_summary:
+        pages = room.notebook.get('pages', [])
+        notes_parts = []
+        for i, p in enumerate(pages, 1):
+            p_title = p.get('title', f'Page {i}')
+            p_text = (p.get('notes') or '').strip()
+            if p_text:
+                notes_parts.append(f"### {p_title}\n{p_text}")
+        notes_summary = "\n\n".join(notes_parts) if notes_parts else "Advising session conducted."
+        
+    now = datetime.now()
+    now_str = now.strftime('%Y-%m-%d %H:%M')
+    
+    # 1. Save to central advising history JSON
+    history_file = os.path.join(MEETINGS_STORAGE_DIR, 'advising_records.json')
+    history = []
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, 'r', encoding='utf-8') as f:
+                history = json.load(f)
+        except Exception:
+            history = []
+            
+    record_entry = {
+        'id': str(uuid.uuid4())[:8],
+        'date': now_str,
+        'room_id': room_id,
+        'meeting_title': room.title,
+        'student_id': student_id,
+        'student_name': student_name,
+        'advisor_name': room.advisor_name,
+        'notes': notes_summary,
+        'pages_count': len(room.notebook.get('pages', [])),
+        'saved_at': time.time()
+    }
+    history.append(record_entry)
+    
+    try:
+        with open(history_file, 'w', encoding='utf-8') as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+    # 2. Append directly to student's persistent markdown dossier in wiki/students/
+    if student_id:
+        try:
+            from app.wiki_compiler import WIKI_DIR
+            s_dir = os.path.join(WIKI_DIR, 'students')
+            if os.path.exists(s_dir):
+                for fname in os.listdir(s_dir):
+                    if fname.startswith(f"{student_id}_") and fname.endswith(".md"):
+                        fpath = os.path.join(s_dir, fname)
+                        with open(fpath, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            
+                        entry_md = (
+                            f"\n\n### 📝 Advising Consultation ({now_str})\n"
+                            f"- **Topic / Room:** {room.title} (`{room_id}`)\n"
+                            f"- **Advisor:** {room.advisor_name}\n\n"
+                            f"{notes_summary}\n"
+                        )
+                        
+                        if "## Advising Consultation Sessions & Action Plans" not in content:
+                            content += "\n\n## Advising Consultation Sessions & Action Plans\n"
+                        content += entry_md
+                        
+                        with open(fpath, 'w', encoding='utf-8') as f:
+                            f.write(content)
+                        break
+        except Exception:
+            pass
+
+    return jsonify({
+        'status': 'success',
+        'message': f"Advising notes successfully registered to student profile for {student_name} ({student_id or 'General'})!",
+        'student_id': student_id,
+        'student_name': student_name,
+        'saved_at': now_str
+    })
+
+
 
 
 

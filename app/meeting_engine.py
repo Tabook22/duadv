@@ -6,6 +6,7 @@ passcode security, session recordings, and meeting duration timers.
 """
 
 import os
+import json
 import shutil
 import time
 import uuid
@@ -103,6 +104,86 @@ class MeetingRoom:
 
         # Session Recordings: list of {'id': str, 'filename': str, 'original_name': str, 'recorded_by': str, 'size': int, 'duration': str, 'time': str}
         self.recordings: List[Dict[str, Any]] = []
+
+        # Advisor Multi-Page Interactive Notebook & Whiteboard
+        self.notebook: Dict[str, Any] = self._load_notebook()
+
+    def _load_notebook(self) -> Dict[str, Any]:
+        """Loads persistent notebook from disk or initializes default multi-page notebook"""
+        room_dir = os.path.join(MEETINGS_STORAGE_DIR, self.room_id)
+        os.makedirs(room_dir, exist_ok=True)
+        nb_path = os.path.join(room_dir, 'notebook.json')
+        if os.path.exists(nb_path):
+            try:
+                with open(nb_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and 'pages' in data and len(data['pages']) > 0:
+                        return data
+            except Exception:
+                pass
+        
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        header_text = (
+            f"Advising Session: {self.title}\n"
+            f"Date: {now_str}\n"
+            f"Advisee: {self.student_name}\n"
+            f"Advisor: {self.advisor_name}\n\n"
+            f"Notes & Recommendations:\n- "
+        )
+        return {
+            'pages': [
+                {
+                    'id': 'page_1',
+                    'title': 'Page 1 - Advising Session Plan',
+                    'pattern': 'lined',
+                    'color': '#ffffff',
+                    'drawing': '',
+                    'notes': header_text,
+                    'created_at': now_str
+                }
+            ],
+            'current_page': 0,
+            'updated_at': time.time(),
+            'version': 1
+        }
+
+    def update_notebook(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Updates and persists the multi-page notebook to memory and disk"""
+        self.touch()
+        if not isinstance(data, dict):
+            return self.notebook
+            
+        pages = data.get('pages', [])
+        if not pages:
+            pages = self.notebook.get('pages', [])
+            
+        current_page = int(data.get('current_page', 0))
+        if current_page < 0 or current_page >= len(pages):
+            current_page = 0
+            
+        version = int(self.notebook.get('version', 0)) + 1
+        
+        self.notebook = {
+            'pages': pages,
+            'current_page': current_page,
+            'updated_at': time.time(),
+            'version': version
+        }
+        
+        self.save_notebook_to_disk()
+        return self.notebook
+
+    def save_notebook_to_disk(self) -> bool:
+        """Persist notebook JSON file in meeting data folder"""
+        try:
+            room_dir = os.path.join(MEETINGS_STORAGE_DIR, self.room_id)
+            os.makedirs(room_dir, exist_ok=True)
+            nb_path = os.path.join(room_dir, 'notebook.json')
+            with open(nb_path, 'w', encoding='utf-8') as f:
+                json.dump(self.notebook, f, ensure_ascii=False, indent=2)
+            return True
+        except Exception:
+            return False
 
     def touch(self):
         """Update activity timestamp"""
@@ -380,6 +461,8 @@ class MeetingRoom:
             'participants_count': len(self.participants),
             'participants': list(self.participants.values()),
             'notes_version': self.notes_version,
+            'notebook_version': self.notebook.get('version', 1),
+            'notebook_pages_count': len(self.notebook.get('pages', [])),
             'chat_count': len(self.chat_messages),
             'files_count': len(self.shared_files),
             'recordings_count': len(self.recordings),
