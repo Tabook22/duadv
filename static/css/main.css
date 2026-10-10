@@ -987,18 +987,123 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     background-color: #f1f5f9;
     background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
     background-size: 24px 24px;
-    padding: 2rem;
+    padding: 1.5rem;
     min-height: 100%;
+    cursor: default;
+}
+
+/* Scalable Canvas Scroll Wrapper & Transform Stage */
+.canvas-scroll-wrapper {
+    position: relative;
+    width: 3600px;
+    height: 2600px;
+    transform-origin: 0 0;
+    transition: width 0.1s ease-out, height 0.1s ease-out;
+}
+
+.canvas-stage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3600px;
+    height: 2600px;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+}
+
+#canvasCardsContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3600px;
+    height: 2600px;
+    z-index: 2;
 }
 
 .canvas-connector-svg {
     position: absolute;
     top: 0;
     left: 0;
-    width: 3000px;
-    height: 3000px;
+    width: 3600px;
+    height: 2600px;
     pointer-events: none;
     z-index: 1;
+}
+
+/* Floating Canvas Navigation & Zoom HUD */
+.canvas-zoom-hud {
+    position: absolute;
+    bottom: 24px;
+    right: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 30px;
+    padding: 4px 8px;
+    z-index: 50;
+    user-select: none;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45);
+}
+
+.canvas-zoom-hud .hud-btn {
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.canvas-zoom-hud .hud-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.canvas-zoom-hud .hud-btn:active {
+    transform: scale(0.92);
+}
+
+.canvas-zoom-hud .hud-zoom-indicator {
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0 8px;
+    min-width: 48px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+}
+
+.canvas-zoom-hud .hud-zoom-indicator:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+    .canvas-zoom-hud {
+        bottom: 16px;
+        right: 16px;
+        padding: 5px 8px;
+    }
+    .canvas-zoom-hud .hud-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+    .canvas-zoom-hud .hud-zoom-indicator {
+        font-size: 0.82rem;
+    }
 }
 
 .canvas-connector-line {
