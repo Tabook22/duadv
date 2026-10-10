@@ -462,6 +462,11 @@
                             <div id="canvasCardsContainer">
                                 <!-- Rendered by JS -->
                             </div>
+
+                            <!-- Interactive SVG Overlay for Line Actions / Delete Badges (z-index: 25) -->
+                            <svg class="canvas-connector-overlay-svg" id="canvasConnectorOverlaySvg">
+                                <!-- Connector Delete Badges Render Here -->
+                            </svg>
                         </div>
                     </div>
 
@@ -1793,36 +1798,61 @@ function setupPortDragConnecting() {
 }
 
 function createOrToggleConnection(sourceId, targetId) {
-    const sourceNote = studioNotices.find(n => n.id === sourceId);
+    const sId = String(sourceId);
+    const tId = String(targetId);
+    const sourceNote = studioNotices.find(n => String(n.id) === sId);
     if (!sourceNote) return;
 
-    const currentLinks = sourceNote.linked_to || [];
-    if (!currentLinks.includes(targetId)) {
-        currentLinks.push(targetId);
+    if (!Array.isArray(sourceNote.linked_to)) {
+        sourceNote.linked_to = [];
+    }
+    if (!sourceNote.linked_to.some(id => String(id) === tId)) {
+        sourceNote.linked_to.push(tId);
     }
 
-    fetch((window.APP_PREFIX || '') + `/api/notices/${sourceId}`, {
+    // Instant optimistic render
+    renderCanvasConnectors();
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${sId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ linked_to: currentLinks })
-    }).then(() => {
-        sourceNote.linked_to = currentLinks;
-        renderCanvasConnectors();
-    });
+        body: JSON.stringify({ linked_to: sourceNote.linked_to })
+    }).catch(err => console.error('Error saving connection:', err));
 }
 
 function removeConnection(sourceId, targetId) {
-    const sourceNote = studioNotices.find(n => n.id === sourceId);
-    if (!sourceNote) return;
+    const sId = String(sourceId);
+    const tId = String(targetId);
+    const srcNote = studioNotices.find(n => String(n.id) === sId);
+    const tgtNote = studioNotices.find(n => String(n.id) === tId);
 
-    const currentLinks = (sourceNote.linked_to || []).filter(id => id !== targetId);
-    fetch((window.APP_PREFIX || '') + `/api/notices/${sourceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ linked_to: currentLinks })
-    }).then(() => {
-        sourceNote.linked_to = currentLinks;
-        renderCanvasConnectors();
+    const promises = [];
+    if (srcNote && Array.isArray(srcNote.linked_to) && srcNote.linked_to.some(id => String(id) === tId)) {
+        srcNote.linked_to = srcNote.linked_to.filter(id => String(id) !== tId);
+        promises.push(
+            fetch((window.APP_PREFIX || '') + `/api/notices/${sId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ linked_to: srcNote.linked_to })
+            })
+        );
+    }
+    if (tgtNote && Array.isArray(tgtNote.linked_to) && tgtNote.linked_to.some(id => String(id) === sId)) {
+        tgtNote.linked_to = tgtNote.linked_to.filter(id => String(id) !== sId);
+        promises.push(
+            fetch((window.APP_PREFIX || '') + `/api/notices/${tId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ linked_to: tgtNote.linked_to })
+            })
+        );
+    }
+
+    // Immediate optimistic update: instantly vanish line on click with zero delay
+    renderCanvasConnectors();
+
+    Promise.all(promises).catch(err => {
+        console.error('Error persisting connection deletion:', err);
     });
 }
 
@@ -1954,11 +1984,15 @@ function getExactPortAnchorCoords(srcCard, tgtCard) {
 
 function renderCanvasConnectors() {
     const svg = document.getElementById('canvasConnectorSvg');
+    const overlaySvg = document.getElementById('canvasConnectorOverlaySvg');
     if (!svg) return;
     svg.innerHTML = '';
+    if (overlaySvg) overlaySvg.innerHTML = '';
 
     const styleClass = `style-${activeStudioLineStyle}`;
     const colorClass = `color-${activeStudioLineColor}`;
+
+    const renderedPairs = new Set();
 
     studioNotices.forEach(note => {
         if (!note.linked_to || note.linked_to.length === 0 || note.is_completed) return;
@@ -1969,10 +2003,12 @@ function renderCanvasConnectors() {
             const tgtCard = document.getElementById(`studio-card-${targetId}`);
             if (!tgtCard) return;
 
-            const { srcX, srcY, tgtX, tgtY } = getExactPortAnchorCoords(srcCard, tgtCard);
+            // Deduplicate line rendering between the same pair of cards
+            const pairKey = [String(note.id), String(targetId)].sort().join('--');
+            if (renderedPairs.has(pairKey)) return;
+            renderedPairs.add(pairKey);
 
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.setAttribute('class', 'line-connector-group');
+            const { srcX, srcY, tgtX, tgtY } = getExactPortAnchorCoords(srcCard, tgtCard);
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
@@ -1982,11 +2018,11 @@ function renderCanvasConnectors() {
             const dx = Math.abs(tgtX - srcX) * 0.5;
             const d = `M ${srcX} ${srcY} C ${srcX + dx} ${srcY}, ${tgtX - dx} ${tgtY}, ${tgtX} ${tgtY}`;
 
-            // Line pattern & color class applied
+            // Line pattern & color class applied to lines layer (under cards)
             path.setAttribute('d', d);
             path.setAttribute('class', `canvas-connector-line ${styleClass} ${colorClass}`);
-            g.appendChild(path);
-            svg.appendChild(g);
+            path.style.pointerEvents = 'none';
+            svg.appendChild(path);
 
             // Compute exact midpoint directly along the rendered Bezier path curve
             let badgeX = midX;
@@ -2005,16 +2041,18 @@ function renderCanvasConnectors() {
                 badgeY = midY;
             }
 
-            // Midpoint Unlink Button Group with large generous touch hitbox
+            // Midpoint Unlink Button Group in the top interactive overlay (z-index: 25)
             const delGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             delGroup.setAttribute('class', 'line-delete-group');
             delGroup.style.cursor = 'pointer';
 
-            // Invisible generous hitbox circle (radius 26px = 52px tap area for iPhone / iPad)
+            // Generous touch hitbox circle (radius 24px = 48px tap area for iPhone / iPad)
             const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             hitbox.setAttribute('cx', badgeX);
             hitbox.setAttribute('cy', badgeY);
-            hitbox.setAttribute('r', '26');
+            hitbox.setAttribute('r', '24');
+            hitbox.setAttribute('fill', '#000000');
+            hitbox.setAttribute('fill-opacity', '0.001');
             hitbox.setAttribute('class', 'line-delete-hitbox');
             delGroup.appendChild(hitbox);
 
@@ -2043,12 +2081,13 @@ function renderCanvasConnectors() {
             text.textContent = '×';
             delGroup.appendChild(text);
 
-            let isDeleting = false;
-            function handleDeleteClick(e) {
+            let lastDeleteTime = 0;
+            function handleDelete(e) {
                 e.stopPropagation();
                 if (e.cancelable) e.preventDefault();
-                if (isDeleting) return;
-                isDeleting = true;
+                const now = Date.now();
+                if (now - lastDeleteTime < 400) return;
+                lastDeleteTime = now;
                 removeConnection(note.id, targetId);
             }
 
@@ -2056,11 +2095,16 @@ function renderCanvasConnectors() {
             delGroup.addEventListener('mousedown', e => e.stopPropagation());
             delGroup.addEventListener('touchstart', e => {
                 e.stopPropagation();
-            }, { passive: true });
-            delGroup.addEventListener('touchend', handleDeleteClick);
-            delGroup.addEventListener('click', handleDeleteClick);
+            }, { passive: false });
+            delGroup.addEventListener('click', handleDelete);
+            delGroup.addEventListener('pointerup', handleDelete);
+            delGroup.addEventListener('touchend', handleDelete);
 
-            g.appendChild(delGroup);
+            if (overlaySvg) {
+                overlaySvg.appendChild(delGroup);
+            } else {
+                svg.appendChild(delGroup);
+            }
         });
     });
 }
@@ -2162,6 +2206,8 @@ function setupCanvasZoomAndPan() {
         if (e.target.closest('.canvas-card') || 
             e.target.closest('.canvas-zoom-hud') || 
             e.target.closest('.line-delete-group') || 
+            e.target.closest('.line-delete-hitbox') || 
+            e.target.closest('.line-delete-badge') || 
             e.target.closest('button')) return;
 
         isPanning = true;

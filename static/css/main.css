@@ -1015,6 +1015,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     left: 0;
     width: 3600px;
     height: 2600px;
+    pointer-events: none;
     z-index: 2;
 }
 
@@ -1026,6 +1027,16 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     height: 2600px;
     pointer-events: none;
     z-index: 1;
+}
+
+.canvas-connector-overlay-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3600px;
+    height: 2600px;
+    pointer-events: none;
+    z-index: 25;
 }
 
 /* Floating Canvas Navigation & Zoom HUD */
@@ -1454,20 +1465,20 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 
 /* Interactive Line Delete badge with generous hit target for touch */
 .line-delete-group {
-    cursor: pointer;
+    cursor: pointer !important;
     touch-action: manipulation;
+    pointer-events: all !important;
 }
 
 .line-delete-hitbox {
-    cursor: pointer;
-    pointer-events: all;
-    fill: transparent;
+    cursor: pointer !important;
+    pointer-events: all !important;
     touch-action: manipulation;
 }
 
 .line-delete-badge {
-    cursor: pointer;
-    pointer-events: all;
+    cursor: pointer !important;
+    pointer-events: all !important;
     transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     /* Fixed in place - never apply geometric scale or translation */
