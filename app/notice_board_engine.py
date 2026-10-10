@@ -153,6 +153,9 @@ def create_notice(data: Dict[str, Any]) -> Dict[str, Any]:
         "is_pinned": bool(data.get("is_pinned", False)),
         "is_completed": bool(data.get("is_completed", False)),
         "order": int(data.get("order", 0)),
+        "position_x": data.get("position_x", None), # for canvas drag coordinates
+        "position_y": data.get("position_y", None),
+        "linked_to": data.get("linked_to", []),     # list of linked notice IDs
         "created_at": now,
         "updated_at": now
     }
@@ -192,7 +195,8 @@ def update_notice(notice_id: str, updates: Dict[str, Any]) -> Optional[Dict[str,
             if n.get("id") == notice_id:
                 for key in ['title', 'content', 'color', 'category', 'priority', 
                             'size', 'font_size', 'student_id', 'student_name', 
-                            'program', 'due_date', 'is_pinned', 'is_completed', 'order']:
+                            'program', 'due_date', 'is_pinned', 'is_completed', 'order',
+                            'position_x', 'position_y', 'linked_to']:
                     if key in updates:
                         n[key] = updates[key]
                 n['updated_at'] = now

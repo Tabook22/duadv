@@ -141,6 +141,11 @@
                 <i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk
             </button>
 
+            <!-- Interactive 80% Screen Studio Modal Button -->
+            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm" onclick="openNoticeStudioModal()" title="Open 80% screen full interactive whiteboard studio">
+                <i class="fas fa-expand me-1"></i> Interactive Studio
+            </button>
+
             <!-- Add Note Button -->
             <button class="btn btn-sm btn-primary shadow-sm" onclick="openNewNoticeModal()">
                 <i class="fas fa-plus me-1"></i> Add Sticky Note
@@ -351,6 +356,81 @@
                 <button type="button" class="btn btn-primary btn-sm px-3" onclick="saveNoticeModal()">
                     <i class="fas fa-floppy-disk me-1"></i> Save Note
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- Modal: Interactive 80% Notice Board Studio (Drag Anywhere, Link, Done Bin) -->
+<!-- ========================================================================= -->
+<div class="modal fade modal-notice-studio" id="noticeStudioModal" tabindex="-1" aria-labelledby="noticeStudioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0">
+            <!-- Studio Modal Header -->
+            <div class="modal-header bg-dark text-white py-2.5 px-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-warning text-dark p-2 rounded-2">
+                        <i class="fas fa-chalkboard fs-6"></i>
+                    </span>
+                    <div>
+                        <h6 class="modal-title fw-bold text-white mb-0" id="noticeStudioModalLabel">
+                            Advisor Canvas Studio &bull; Visual Workspace
+                        </h6>
+                        <small class="text-light text-opacity-75" style="font-size: 0.72rem;">
+                            Free-form drag &amp; drop anywhere &bull; Click "Link Notes" to connect with animated strings &bull; Check &amp; set aside completed tasks
+                        </small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Link Mode Toggle -->
+                    <button class="btn btn-sm btn-outline-info text-info border-info" id="studioLinkToggleBtn" onclick="toggleLinkingMode()" title="Connect two notes together with a line">
+                        <i class="fas fa-bezier-curve me-1"></i> <span id="studioLinkBtnText">Link Notes</span>
+                    </button>
+                    <!-- Add Note from Studio -->
+                    <button class="btn btn-sm btn-primary shadow-sm" onclick="openNewNoticeModal()">
+                        <i class="fas fa-plus me-1"></i> New Sticky
+                    </button>
+                    <!-- Reset Positions -->
+                    <button class="btn btn-sm btn-outline-light" onclick="autoOrganizeStudioCards()" title="Neatly snap cards into clean rows">
+                        <i class="fas fa-table-cells me-1"></i> Snap &amp; Organize
+                    </button>
+                    <!-- Toggle Completed Drawer -->
+                    <button class="btn btn-sm btn-outline-secondary text-white" onclick="toggleDoneDrawer()" title="View Completed / Set Aside Bin">
+                        <i class="fas fa-box-archive me-1"></i> Completed Bin (<span id="studioDoneCount">0</span>)
+                    </button>
+                    <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Studio Modal Body -->
+            <div class="notice-studio-body">
+                <!-- Freeform Canvas Viewport -->
+                <div class="notice-canvas-viewport" id="noticeCanvasViewport">
+                    <!-- SVG Overlay for Connecting Lines -->
+                    <svg class="canvas-connector-svg" id="canvasConnectorSvg">
+                        <!-- Dynamic Bezier / Linear Connector Lines Render Here -->
+                    </svg>
+
+                    <!-- Freeform Canvas Cards Container -->
+                    <div id="canvasCardsContainer" style="position: relative; width: 100%; height: 100%; min-height: 800px; min-width: 1200px;">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Set-Aside / Done Drawer -->
+                <div class="notice-done-drawer collapsed" id="noticeDoneDrawer">
+                    <div class="notice-done-header">
+                        <span class="d-flex align-items-center gap-2">
+                            <i class="fas fa-check-circle text-success"></i> Set-Aside &amp; Completed
+                        </span>
+                        <button type="button" class="btn-close btn-close-sm" onclick="toggleDoneDrawer()"></button>
+                    </div>
+                    <div class="notice-done-list" id="studioDoneList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -842,6 +922,368 @@ function autoGenerateRiskNotices() {
             console.error(err);
             if (btn) btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk';
         });
+}
+
+/* ==========================================================================
+   Notice Studio Interactive Canvas Engine (80% Viewport, Free Drag, Connectors)
+   ========================================================================== */
+let studioModalInstance = null;
+let studioNotices = [];
+let isLinkingMode = false;
+let linkSourceId = null;
+
+function getStudioModal() {
+    if (!studioModalInstance) {
+        studioModalInstance = new bootstrap.Modal(document.getElementById('noticeStudioModal'));
+    }
+    return studioModalInstance;
+}
+
+function openNoticeStudioModal() {
+    loadAndRenderStudio();
+    getStudioModal().show();
+}
+
+function loadAndRenderStudio() {
+    fetch((window.APP_PREFIX || '') + '/api/notices')
+        .then(r => r.json())
+        .then(res => {
+            studioNotices = res.notices || [];
+            renderStudioCanvas();
+            renderDoneDrawer();
+            renderCanvasConnectors();
+        });
+}
+
+function renderStudioCanvas() {
+    const container = document.getElementById('canvasCardsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const activeNotices = studioNotices.filter(n => !n.is_completed);
+
+    activeNotices.forEach((note, idx) => {
+        let posX = note.position_x;
+        let posY = note.position_y;
+
+        // Default layout if no stored coordinates
+        if (posX === null || posX === undefined || posY === null || posY === undefined) {
+            const cols = 3;
+            const col = idx % cols;
+            const row = Math.floor(idx / cols);
+            posX = 40 + col * 320;
+            posY = 40 + row * 240;
+        }
+
+        const card = document.createElement('div');
+        card.className = `canvas-card color-${note.color} size-${note.size || 'medium'} font-${note.font_size || 'medium'} ${note.is_pinned ? 'pinned' : ''}`;
+        card.id = `studio-card-${note.id}`;
+        card.dataset.id = note.id;
+        card.style.left = `${posX}px`;
+        card.style.top = `${posY}px`;
+
+        card.innerHTML = `
+            <div class="notice-header">
+                <span class="notice-title">${note.title}</span>
+                ${note.priority === 'high' ? '<span class="badge bg-danger text-white rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">URGENT</span>' : ''}
+            </div>
+            ${note.student_id ? `
+                <div class="mb-2">
+                    <span class="badge bg-white text-dark border py-1 px-2 d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
+                        <i class="fas fa-user-graduate text-primary"></i> ${note.student_name || note.student_id} (${note.student_id})
+                    </span>
+                </div>
+            ` : ''}
+            <div class="notice-content" style="max-height: 120px; overflow-y: auto;">${note.content}</div>
+            <div class="notice-footer">
+                <span class="badge bg-light text-dark py-0.5 px-1.5" style="font-size: 0.68rem; text-transform: uppercase;">
+                    ${(note.category || 'general').replace('_', ' ')}
+                </span>
+                <div class="notice-actions">
+                    <button class="notice-btn-icon" onclick="completeAndSetAside('${note.id}', event)" title="Tick &amp; Set Aside to Completed Bin">
+                        <i class="fas fa-check text-success"></i>
+                    </button>
+                    <button class="notice-btn-icon" onclick="openEditNoticeModal('${note.id}')" title="Edit Note">
+                        <i class="fas fa-pencil"></i>
+                    </button>
+                    <button class="notice-btn-icon delete" onclick="deleteStudioNotice('${note.id}', event)" title="Delete">
+                        <i class="far fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Card Click Handler for Linking Mode
+        card.addEventListener('click', (e) => {
+            if (isLinkingMode) {
+                handleCardLinkClick(note.id);
+                e.stopPropagation();
+            }
+        });
+
+        // Initialize free drag
+        enableFreeCardDragging(card, note.id);
+
+        container.appendChild(card);
+    });
+
+    renderCanvasConnectors();
+}
+
+function renderDoneDrawer() {
+    const list = document.getElementById('studioDoneList');
+    const badge = document.getElementById('studioDoneCount');
+    if (!list) return;
+
+    const completed = studioNotices.filter(n => n.is_completed);
+    if (badge) badge.innerText = completed.length;
+    list.innerHTML = '';
+
+    if (completed.length === 0) {
+        list.innerHTML = '<div class="text-center text-muted small p-4">No completed tasks yet. Tick active notes to set them aside here.</div>';
+        return;
+    }
+
+    completed.forEach(note => {
+        const item = document.createElement('div');
+        item.className = 'done-item-card d-flex justify-content-between align-items-center';
+        item.innerHTML = `
+            <div>
+                <strong class="d-block text-decoration-line-through text-dark">${note.title}</strong>
+                <small class="text-muted">${note.student_name || 'General'}</small>
+            </div>
+            <div class="d-flex gap-1">
+                <button class="btn btn-outline-secondary btn-sm py-0 px-1.5" onclick="restoreFromDone('${note.id}')" title="Restore back to Active Board">
+                    <i class="fas fa-rotate-left"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm py-0 px-1.5" onclick="deleteStudioNotice('${note.id}', event)" title="Permanently Delete">
+                    <i class="far fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function toggleDoneDrawer() {
+    const drawer = document.getElementById('noticeDoneDrawer');
+    if (drawer) {
+        drawer.classList.toggle('collapsed');
+    }
+}
+
+function completeAndSetAside(noteId, e) {
+    if (e) e.stopPropagation();
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_completed: true })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            loadAndRenderStudio();
+            const mainCard = document.getElementById(`card-${noteId}`);
+            if (mainCard) mainCard.classList.add('completed');
+        }
+    });
+}
+
+function restoreFromDone(noteId) {
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_completed: false })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            loadAndRenderStudio();
+            const mainCard = document.getElementById(`card-${noteId}`);
+            if (mainCard) mainCard.classList.remove('completed');
+        }
+    });
+}
+
+function deleteStudioNotice(noteId, e) {
+    if (e) e.stopPropagation();
+    if (!confirm('Delete this notice?')) return;
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                loadAndRenderStudio();
+                const mainCard = document.getElementById(`card-${noteId}`);
+                if (mainCard) mainCard.remove();
+                updateVisibleCounts();
+            }
+        });
+}
+
+function enableFreeCardDragging(card, noteId) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
+
+    card.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button') || e.target.closest('a') || isLinkingMode) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = parseInt(card.style.left, 10) || 0;
+        initialTop = parseInt(card.style.top, 10) || 0;
+        card.style.zIndex = 1000;
+        e.preventDefault();
+
+        function onMouseMove(ev) {
+            if (!isDragging) return;
+            const dx = ev.clientX - startX;
+            const dy = ev.clientY - startY;
+            const newX = Math.max(10, initialLeft + dx);
+            const newY = Math.max(10, initialTop + dy);
+            card.style.left = `${newX}px`;
+            card.style.top = `${newY}px`;
+            renderCanvasConnectors();
+        }
+
+        function onMouseUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            card.style.zIndex = 2;
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+
+            const finalX = parseInt(card.style.left, 10);
+            const finalY = parseInt(card.style.top, 10);
+
+            // Persist card position
+            fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ position_x: finalX, position_y: finalY })
+            });
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+    });
+}
+
+// Linking Notes feature (Drawing lines between related notices)
+function toggleLinkingMode() {
+    isLinkingMode = !isLinkingMode;
+    const btn = document.getElementById('studioLinkToggleBtn');
+    const text = document.getElementById('studioLinkBtnText');
+    const cards = document.querySelectorAll('.canvas-card');
+
+    if (isLinkingMode) {
+        linkSourceId = null;
+        btn.classList.remove('btn-outline-info');
+        btn.classList.add('btn-info');
+        text.innerText = 'Click 1st Note...';
+        cards.forEach(c => c.classList.add('linking-target'));
+    } else {
+        linkSourceId = null;
+        btn.classList.remove('btn-info');
+        btn.classList.add('btn-outline-info');
+        text.innerText = 'Link Notes';
+        cards.forEach(c => {
+            c.classList.remove('linking-source');
+            c.classList.remove('linking-target');
+        });
+    }
+}
+
+function handleCardLinkClick(noteId) {
+    const text = document.getElementById('studioLinkBtnText');
+    const cards = document.querySelectorAll('.canvas-card');
+
+    if (!linkSourceId) {
+        linkSourceId = noteId;
+        const sourceCard = document.getElementById(`studio-card-${noteId}`);
+        if (sourceCard) sourceCard.classList.add('linking-source');
+        text.innerText = 'Click 2nd Note to Connect...';
+    } else {
+        if (linkSourceId === noteId) {
+            toggleLinkingMode();
+            return;
+        }
+
+        // Link them
+        const sourceNote = studioNotices.find(n => n.id === linkSourceId);
+        if (sourceNote) {
+            const currentLinks = sourceNote.linked_to || [];
+            if (!currentLinks.includes(noteId)) {
+                currentLinks.push(noteId);
+            } else {
+                // If already linked, toggle disconnect
+                const idx = currentLinks.indexOf(noteId);
+                currentLinks.splice(idx, 1);
+            }
+
+            fetch((window.APP_PREFIX || '') + `/api/notices/${linkSourceId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ linked_to: currentLinks })
+            }).then(() => {
+                sourceNote.linked_to = currentLinks;
+                renderCanvasConnectors();
+            });
+        }
+
+        toggleLinkingMode();
+    }
+}
+
+function renderCanvasConnectors() {
+    const svg = document.getElementById('canvasConnectorSvg');
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    studioNotices.forEach(note => {
+        if (!note.linked_to || note.linked_to.length === 0 || note.is_completed) return;
+        const srcCard = document.getElementById(`studio-card-${note.id}`);
+        if (!srcCard) return;
+
+        const srcX = (parseInt(srcCard.style.left, 10) || 0) + (srcCard.offsetWidth / 2);
+        const srcY = (parseInt(srcCard.style.top, 10) || 0) + (srcCard.offsetHeight / 2);
+
+        note.linked_to.forEach(targetId => {
+            const tgtCard = document.getElementById(`studio-card-${targetId}`);
+            if (!tgtCard) return;
+
+            const tgtX = (parseInt(tgtCard.style.left, 10) || 0) + (tgtCard.offsetWidth / 2);
+            const tgtY = (parseInt(tgtCard.style.top, 10) || 0) + (tgtCard.offsetHeight / 2);
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const dx = Math.abs(tgtX - srcX) * 0.5;
+            const d = `M ${srcX} ${srcY} C ${srcX + dx} ${srcY}, ${tgtX - dx} ${tgtY}, ${tgtX} ${tgtY}`;
+
+            path.setAttribute('d', d);
+            path.setAttribute('class', 'canvas-connector-line');
+            svg.appendChild(path);
+        });
+    });
+}
+
+function autoOrganizeStudioCards() {
+    const cards = document.querySelectorAll('.canvas-card');
+    const cols = 3;
+    cards.forEach((card, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const newX = 40 + col * 320;
+        const newY = 40 + row * 240;
+        card.style.left = `${newX}px`;
+        card.style.top = `${newY}px`;
+
+        fetch((window.APP_PREFIX || '') + `/api/notices/${card.dataset.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position_x: newX, position_y: newY })
+        });
+    });
+    renderCanvasConnectors();
 }
 
 // Setup on DOM load
