@@ -1670,6 +1670,7 @@ function enableFreeCardDragging(card, noteId) {
             if (!isDragging) return;
             if (ev.cancelable) ev.preventDefault();
             const curX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
+            const curY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
             const zoom = currentStudioZoom || 1.0;
             const dx = (curX - startX) / zoom;
             const dy = (curY - startY) / zoom;
