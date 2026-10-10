@@ -1002,12 +1002,35 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 
 .canvas-connector-line {
-    stroke: #3b82f6;
+    stroke: #2563eb;
     stroke-width: 2.5;
-    stroke-dasharray: 6 4;
     fill: none;
-    animation: dashLine 20s linear infinite;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
 }
+
+.canvas-connector-line.style-solid {
+    stroke-dasharray: none;
+    animation: none;
+}
+
+.canvas-connector-line.style-dashed {
+    stroke-dasharray: 8 5;
+    animation: dashLine 25s linear infinite;
+}
+
+.canvas-connector-line.style-dotted {
+    stroke-dasharray: 3 4;
+    stroke-linecap: round;
+    animation: dashLine 30s linear infinite;
+}
+
+/* Connector Line Colors */
+.canvas-connector-line.color-blue   { stroke: #2563eb; }
+.canvas-connector-line.color-red    { stroke: #ef4444; }
+.canvas-connector-line.color-green  { stroke: #10b981; }
+.canvas-connector-line.color-amber  { stroke: #f59e0b; }
+.canvas-connector-line.color-purple { stroke: #8b5cf6; }
+.canvas-connector-line.color-slate  { stroke: #475569; }
 
 @keyframes dashLine {
     to { stroke-dashoffset: -1000; }
@@ -1312,12 +1335,52 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     stroke-dasharray: 4 4;
 }
 
-/* Interactive Line Delete badge */
+/* Interactive Line Delete badge with generous hit target for touch */
+.line-delete-hitbox {
+    cursor: pointer;
+    pointer-events: all;
+    fill: transparent;
+}
+
 .line-delete-badge {
     cursor: pointer;
     pointer-events: all;
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
-.line-delete-badge:hover {
-    transform: scale(1.35);
+
+.line-delete-group:hover .line-delete-badge,
+.line-delete-group:active .line-delete-badge {
+    transform: scale(1.3);
+    filter: drop-shadow(0 3px 8px rgba(239, 68, 68, 0.5));
+}
+
+/* Touch-optimized handles for iOS / iPad / Android */
+@media (pointer: coarse), (max-width: 991px) {
+    .rotate-handle {
+        width: 34px !important;
+        height: 34px !important;
+        top: -38px !important;
+        font-size: 0.85rem !important;
+        opacity: 0.9 !important;
+    }
+    
+    .card-resize-handle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.95rem !important;
+        opacity: 0.85 !important;
+        padding: 4px;
+    }
+
+    .port-anchor {
+        width: 22px !important;
+        height: 22px !important;
+        margin-left: -11px !important;
+        margin-top: -11px !important;
+    }
+    .port-anchor.port-top    { top: -11px !important; }
+    .port-anchor.port-right  { right: -11px !important; }
+    .port-anchor.port-bottom { bottom: -11px !important; }
+    .port-anchor.port-left   { left: -11px !important; }
 }

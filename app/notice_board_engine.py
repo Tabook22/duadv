@@ -159,6 +159,8 @@ def create_notice(data: Dict[str, Any]) -> Dict[str, Any]:
         "height": data.get("height", None),         # custom height in px
         "rotation": data.get("rotation", None),     # degrees rotation for organic sticky look
         "linked_to": data.get("linked_to", []),     # list of linked notice IDs
+        "line_style": data.get("line_style", "solid"), # solid, dashed, dotted
+        "line_color": data.get("line_color", "blue"),  # blue, red, green, amber, purple, slate
         "created_at": now,
         "updated_at": now
     }
@@ -199,7 +201,8 @@ def update_notice(notice_id: str, updates: Dict[str, Any]) -> Optional[Dict[str,
                 for key in ['title', 'content', 'color', 'category', 'priority', 
                             'size', 'font_size', 'student_id', 'student_name', 
                             'program', 'due_date', 'is_pinned', 'is_completed', 'order',
-                            'position_x', 'position_y', 'width', 'height', 'rotation', 'linked_to']:
+                            'position_x', 'position_y', 'width', 'height', 'rotation', 'linked_to',
+                            'line_style', 'line_color']:
                     if key in updates:
                         n[key] = updates[key]
                 n['updated_at'] = now

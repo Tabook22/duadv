@@ -384,6 +384,31 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Line Style Selector -->
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Change Connector Line Style &amp; Color">
+                            <i class="fas fa-pen-nib me-1 text-warning"></i> <span id="studioCurrentLineStyleLabel">Solid Blue</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width: 220px;">
+                            <li><h6 class="dropdown-header text-uppercase fs-9 py-1">Line Pattern</h6></li>
+                            <li><a class="dropdown-item active" href="javascript:void(0)" onclick="setStudioLineStyle('solid', this)"><i class="fas fa-minus me-2"></i>Solid Line (Firm)</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setStudioLineStyle('dashed', this)"><i class="fas fa-ellipsis me-2"></i>Dashed Line (Flow)</a></li>
+                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="setStudioLineStyle('dotted', this)"><i class="fas fa-ellipsis-vertical me-2"></i>Dotted Line (Soft)</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header text-uppercase fs-9 py-1">Line Color</h6></li>
+                            <li class="px-3 py-1">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span class="quick-color-dot" style="background: #2563eb; width: 20px; height: 20px;" onclick="setStudioLineColor('blue')" title="Royal Blue"></span>
+                                    <span class="quick-color-dot" style="background: #ef4444; width: 20px; height: 20px;" onclick="setStudioLineColor('red')" title="Coral Red"></span>
+                                    <span class="quick-color-dot" style="background: #10b981; width: 20px; height: 20px;" onclick="setStudioLineColor('green')" title="Emerald Green"></span>
+                                    <span class="quick-color-dot" style="background: #f59e0b; width: 20px; height: 20px;" onclick="setStudioLineColor('amber')" title="Amber Orange"></span>
+                                    <span class="quick-color-dot" style="background: #8b5cf6; width: 20px; height: 20px;" onclick="setStudioLineColor('purple')" title="Iris Purple"></span>
+                                    <span class="quick-color-dot" style="background: #475569; width: 20px; height: 20px;" onclick="setStudioLineColor('slate')" title="Slate Grey"></span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                     <!-- Link Mode Toggle -->
                     <button class="btn btn-sm btn-outline-info text-info border-info" id="studioLinkToggleBtn" onclick="toggleLinkingMode()" title="Connect two notes together with a line">
                         <i class="fas fa-bezier-curve me-1"></i> <span id="studioLinkBtnText">Link Notes</span>
@@ -1200,12 +1225,43 @@ function toggleStudioNoticeDone(noteId, e) {
     });
 }
 
-// Smooth 360-Degree Free Rotary Dragging
+// Global Line Style and Line Color preferences
+let activeStudioLineStyle = localStorage.getItem('du_studio_line_style') || 'solid';
+let activeStudioLineColor = localStorage.getItem('du_studio_line_color') || 'blue';
+
+function setStudioLineStyle(style, el) {
+    activeStudioLineStyle = style;
+    localStorage.setItem('du_studio_line_style', style);
+    if (el) {
+        document.querySelectorAll('#studioLineStyleDropdown .dropdown-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+    }
+    updateStudioLineStyleLabel();
+    renderCanvasConnectors();
+}
+
+function setStudioLineColor(color) {
+    activeStudioLineColor = color;
+    localStorage.setItem('du_studio_line_color', color);
+    updateStudioLineStyleLabel();
+    renderCanvasConnectors();
+}
+
+function updateStudioLineStyleLabel() {
+    const lbl = document.getElementById('studioCurrentLineStyleLabel');
+    if (lbl) {
+        const styleName = activeStudioLineStyle.charAt(0).toUpperCase() + activeStudioLineStyle.slice(1);
+        const colorName = activeStudioLineColor.charAt(0).toUpperCase() + activeStudioLineColor.slice(1);
+        lbl.innerText = `${styleName} ${colorName}`;
+    }
+}
+
+// Smooth 360-Degree Free Rotary Dragging (Supports Mouse, Touchpad, Touch on iPad/iPhone)
 function enableRotaryDial(card, noteId) {
     const handle = card.querySelector('.rotate-handle');
     if (!handle) return;
 
-    handle.addEventListener('mousedown', (e) => {
+    function startRotate(e) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -1213,10 +1269,12 @@ function enableRotaryDial(card, noteId) {
         const centerX = cardRect.left + cardRect.width / 2;
         const centerY = cardRect.top + cardRect.height / 2;
 
-        function onMouseMove(ev) {
-            // Calculate angle between card center and cursor in degrees
-            const rad = Math.atan2(ev.clientY - centerY, ev.clientX - centerX);
-            // Offset by 90deg because handle is at top (12 o'clock)
+        function onPointerMove(ev) {
+            const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+            const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+
+            // Calculate angle between card center and pointer in degrees
+            const rad = Math.atan2(clientY - centerY, clientX - centerX);
             let deg = Math.round(rad * (180 / Math.PI)) + 90;
             if (deg > 180) deg -= 360;
 
@@ -1225,9 +1283,11 @@ function enableRotaryDial(card, noteId) {
             renderCanvasConnectors();
         }
 
-        function onMouseUp() {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+        function onPointerUp() {
+            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('mouseup', onPointerUp);
+            window.removeEventListener('touchmove', onPointerMove);
+            window.removeEventListener('touchend', onPointerUp);
 
             const finalRot = parseFloat(card.dataset.rotation || 0);
             fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
@@ -1240,37 +1300,49 @@ function enableRotaryDial(card, noteId) {
             });
         }
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-    });
+        window.addEventListener('mousemove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+    }
+
+    handle.addEventListener('mousedown', startRotate);
+    handle.addEventListener('touchstart', startRotate, { passive: false });
 }
 
-// Interactive Corner Resizing
+// Interactive Corner Resizing (Supports Mouse, Touchpad, Touch on iPad/iPhone)
 function enableCornerResizing(card, noteId) {
     const handle = card.querySelector('.card-resize-handle');
     if (!handle) return;
 
-    handle.addEventListener('mousedown', (e) => {
+    function startResize(e) {
         e.stopPropagation();
         e.preventDefault();
 
-        const startX = e.clientX;
-        const startY = e.clientY;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const startX = clientX;
+        const startY = clientY;
         const startWidth = card.offsetWidth;
         const startHeight = card.offsetHeight;
 
-        function onMouseMove(ev) {
-            const newWidth = Math.max(200, Math.min(650, startWidth + (ev.clientX - startX)));
-            const newHeight = Math.max(140, Math.min(500, startHeight + (ev.clientY - startY)));
+        function onPointerMove(ev) {
+            const curX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+            const curY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+
+            const newWidth = Math.max(200, Math.min(650, startWidth + (curX - startX)));
+            const newHeight = Math.max(140, Math.min(500, startHeight + (curY - startY)));
 
             card.style.width = `${newWidth}px`;
             card.style.minHeight = `${newHeight}px`;
             renderCanvasConnectors();
         }
 
-        function onMouseUp() {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+        function onPointerUp() {
+            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('mouseup', onPointerUp);
+            window.removeEventListener('touchmove', onPointerMove);
+            window.removeEventListener('touchend', onPointerUp);
 
             const finalW = card.offsetWidth;
             const finalH = card.offsetHeight;
@@ -1288,9 +1360,14 @@ function enableCornerResizing(card, noteId) {
             });
         }
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-    });
+        window.addEventListener('mousemove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+    }
+
+    handle.addEventListener('mousedown', startResize);
+    handle.addEventListener('touchstart', startResize, { passive: false });
 }
 
 function renderDoneDrawer() {
@@ -1388,20 +1465,26 @@ function enableFreeCardDragging(card, noteId) {
     let startX = 0, startY = 0;
     let initialLeft = 0, initialTop = 0;
 
-    card.addEventListener('mousedown', (e) => {
-        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.card-quick-colors') || e.target.classList.contains('port-anchor') || isLinkingMode) return;
+    function startDrag(e) {
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.card-quick-colors') || 
+            e.target.classList.contains('port-anchor') || e.target.classList.contains('rotate-handle') || 
+            e.target.classList.contains('card-resize-handle') || isLinkingMode) return;
+        
         isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
         initialLeft = parseInt(card.style.left, 10) || 0;
         initialTop = parseInt(card.style.top, 10) || 0;
         card.style.zIndex = 1000;
-        e.preventDefault();
 
-        function onMouseMove(ev) {
+        function onPointerMove(ev) {
             if (!isDragging) return;
-            const dx = ev.clientX - startX;
-            const dy = ev.clientY - startY;
+            const curX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+            const curY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+            const dx = curX - startX;
+            const dy = curY - startY;
             const newX = Math.max(10, initialLeft + dx);
             const newY = Math.max(10, initialTop + dy);
             card.style.left = `${newX}px`;
@@ -1409,12 +1492,14 @@ function enableFreeCardDragging(card, noteId) {
             renderCanvasConnectors();
         }
 
-        function onMouseUp() {
+        function onPointerUp() {
             if (!isDragging) return;
             isDragging = false;
             card.style.zIndex = 2;
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('mouseup', onPointerUp);
+            window.removeEventListener('touchmove', onPointerMove);
+            window.removeEventListener('touchend', onPointerUp);
 
             const finalX = parseInt(card.style.left, 10);
             const finalY = parseInt(card.style.top, 10);
@@ -1427,9 +1512,14 @@ function enableFreeCardDragging(card, noteId) {
             });
         }
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-    });
+        window.addEventListener('mousemove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+    }
+
+    card.addEventListener('mousedown', startDrag);
+    card.addEventListener('touchstart', startDrag, { passive: true });
 }
 
 /* ==========================================================================
@@ -1442,9 +1532,9 @@ function setupPortDragConnecting() {
     if (!viewport || !svg) return;
 
     ports.forEach(port => {
-        port.addEventListener('mousedown', (e) => {
+        function startPortConnect(e) {
             e.stopPropagation();
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
 
             const sourceId = port.dataset.id;
             const sourceCard = document.getElementById(`studio-card-${sourceId}`);
@@ -1463,8 +1553,10 @@ function setupPortDragConnecting() {
             svg.appendChild(tempPath);
 
             function onDragLine(ev) {
-                const curX = ev.clientX - vpRect.left + viewport.scrollLeft;
-                const curY = ev.clientY - vpRect.top + viewport.scrollTop;
+                const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+                const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+                const curX = clientX - vpRect.left + viewport.scrollLeft;
+                const curY = clientY - vpRect.top + viewport.scrollTop;
                 const dx = Math.abs(curX - startX) * 0.5;
                 const d = `M ${startX} ${startY} C ${startX + dx} ${startY}, ${curX - dx} ${curY}, ${curX} ${curY}`;
                 tempPath.setAttribute('d', d);
@@ -1473,10 +1565,15 @@ function setupPortDragConnecting() {
             function onReleaseLine(ev) {
                 window.removeEventListener('mousemove', onDragLine);
                 window.removeEventListener('mouseup', onReleaseLine);
+                window.removeEventListener('touchmove', onDragLine);
+                window.removeEventListener('touchend', onReleaseLine);
                 tempPath.remove();
 
+                const clientX = ev.changedTouches ? ev.changedTouches[0].clientX : ev.clientX;
+                const clientY = ev.changedTouches ? ev.changedTouches[0].clientY : ev.clientY;
+
                 // Detect element underneath pointer
-                const dropTarget = document.elementFromPoint(ev.clientX, ev.clientY);
+                const dropTarget = document.elementFromPoint(clientX, clientY);
                 const targetCard = dropTarget ? dropTarget.closest('.canvas-card') : null;
 
                 if (targetCard && targetCard.dataset.id && targetCard.dataset.id !== sourceId) {
@@ -1485,9 +1582,14 @@ function setupPortDragConnecting() {
                 }
             }
 
-            window.addEventListener('mousemove', onDragLine);
+            window.addEventListener('mousemove', onDragLine, { passive: false });
             window.addEventListener('mouseup', onReleaseLine);
-        });
+            window.addEventListener('touchmove', onDragLine, { passive: false });
+            window.addEventListener('touchend', onReleaseLine);
+        }
+
+        port.addEventListener('mousedown', startPortConnect);
+        port.addEventListener('touchstart', startPortConnect, { passive: false });
     });
 }
 
@@ -1636,6 +1738,9 @@ function renderCanvasConnectors() {
     if (!svg) return;
     svg.innerHTML = '';
 
+    const styleClass = `style-${activeStudioLineStyle}`;
+    const colorClass = `color-${activeStudioLineColor}`;
+
     studioNotices.forEach(note => {
         if (!note.linked_to || note.linked_to.length === 0 || note.is_completed) return;
         const srcCard = document.getElementById(`studio-card-${note.id}`);
@@ -1648,40 +1753,67 @@ function renderCanvasConnectors() {
             const { srcX, srcY, tgtX, tgtY } = getExactPortAnchorCoords(srcCard, tgtCard);
 
             const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'line-connector-group');
+
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
+            // True Cubic Bezier calculation between the two centers
             const midX = (srcX + tgtX) / 2;
             const midY = (srcY + tgtY) / 2;
             const dx = Math.abs(tgtX - srcX) * 0.5;
             const d = `M ${srcX} ${srcY} C ${srcX + dx} ${srcY}, ${tgtX - dx} ${tgtY}, ${tgtX} ${tgtY}`;
 
+            // Line pattern & color class applied
             path.setAttribute('d', d);
-            path.setAttribute('class', 'canvas-connector-line');
+            path.setAttribute('class', `canvas-connector-line ${styleClass} ${colorClass}`);
             g.appendChild(path);
 
-            // Midpoint Unlink button (×)
+            // Midpoint Unlink Button Group with large generous touch hitbox
+            const delGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            delGroup.setAttribute('class', 'line-delete-group');
+            delGroup.style.cursor = 'pointer';
+
+            // Invisible generous hitbox circle (radius 24px = 48px tap area for iPhone / iPad)
+            const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            hitbox.setAttribute('cx', midX);
+            hitbox.setAttribute('cy', midY);
+            hitbox.setAttribute('r', '24');
+            hitbox.setAttribute('class', 'line-delete-hitbox');
+            delGroup.appendChild(hitbox);
+
+            // Visible badge circle
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             circle.setAttribute('cx', midX);
             circle.setAttribute('cy', midY);
-            circle.setAttribute('r', '9');
+            circle.setAttribute('r', '12');
             circle.setAttribute('fill', '#ef4444');
+            circle.setAttribute('stroke', '#ffffff');
+            circle.setAttribute('stroke-width', '2');
             circle.setAttribute('class', 'line-delete-badge');
-            circle.setAttribute('title', 'Click to remove this connection');
-            circle.addEventListener('click', () => removeConnection(note.id, targetId));
-            g.appendChild(circle);
+            delGroup.appendChild(circle);
 
+            // Visible "×" text inside badge
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             text.setAttribute('x', midX);
-            text.setAttribute('y', midY + 3.5);
+            text.setAttribute('y', midY + 4);
             text.setAttribute('text-anchor', 'middle');
             text.setAttribute('fill', '#ffffff');
-            text.setAttribute('font-size', '10px');
+            text.setAttribute('font-size', '13px');
             text.setAttribute('font-weight', 'bold');
-            text.setAttribute('class', 'line-delete-badge');
+            text.setAttribute('pointer-events', 'none');
             text.textContent = '×';
-            text.addEventListener('click', () => removeConnection(note.id, targetId));
-            g.appendChild(text);
+            delGroup.appendChild(text);
 
+            function handleDeleteClick(e) {
+                e.stopPropagation();
+                if (e.cancelable) e.preventDefault();
+                removeConnection(note.id, targetId);
+            }
+
+            delGroup.addEventListener('click', handleDeleteClick);
+            delGroup.addEventListener('touchend', handleDeleteClick);
+
+            g.appendChild(delGroup);
             svg.appendChild(g);
         });
     });
