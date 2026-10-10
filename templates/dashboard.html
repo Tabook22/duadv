@@ -1662,13 +1662,14 @@ function enableFreeCardDragging(card, noteId) {
             e.target.closest('.status-indicator-badge') || 
             isLinkingMode) return;
         
+        e.stopPropagation();
         isDragging = true;
         const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
         const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
         startX = clientX;
         startY = clientY;
-        initialLeft = parseInt(card.style.left, 10) || 0;
-        initialTop = parseInt(card.style.top, 10) || 0;
+        initialLeft = parseFloat(card.style.left) || card.offsetLeft || 0;
+        initialTop = parseFloat(card.style.top) || card.offsetTop || 0;
         card.style.zIndex = 1000;
 
         function onPointerMove(ev) {
@@ -1689,7 +1690,7 @@ function enableFreeCardDragging(card, noteId) {
         function onPointerUp(ev) {
             if (!isDragging) return;
             isDragging = false;
-            card.style.zIndex = 2;
+            card.style.zIndex = card.classList.contains('card-selected') ? 20 : 2;
             if (ev && ev.cancelable) ev.preventDefault();
             window.removeEventListener('mousemove', onPointerMove);
             window.removeEventListener('mouseup', onPointerUp);
