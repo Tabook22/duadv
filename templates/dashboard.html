@@ -1731,24 +1731,25 @@ function setupPortDragConnecting() {
             const sourceCard = document.getElementById(`studio-card-${sourceId}`);
             if (!sourceCard) return;
 
-            const stage = document.getElementById('canvasStage') || viewport;
-            const stageRect = stage.getBoundingClientRect();
-            const zoom = currentStudioZoom || 1.0;
-
-            // Exact center of the circular anchor port in stage local coordinates
-            const startX = (rect.left + (rect.width / 2) - stageRect.left) / zoom;
-            const startY = (rect.top + (rect.height / 2) - stageRect.top) / zoom;
+            const portName = port.dataset.port || 'right';
+            const startCoord = getCardPortLocalCoords(sourceCard, portName);
+            const startX = startCoord.x;
+            const startY = startCoord.y;
 
             // In-flight SVG path
             const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             tempPath.setAttribute('class', 'canvas-connector-line inflight');
+            tempPath.style.pointerEvents = 'none';
             svg.appendChild(tempPath);
+
+            const stage = document.getElementById('canvasStage') || viewport;
 
             function onDragLine(ev) {
                 if (ev.cancelable) ev.preventDefault();
                 const clientX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
                 const clientY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
                 const curStageRect = stage.getBoundingClientRect();
+                const zoom = currentStudioZoom || 1.0;
                 const curX = (clientX - curStageRect.left) / zoom;
                 const curY = (clientY - curStageRect.top) / zoom;
                 const dx = Math.abs(curX - startX) * 0.5;
@@ -1868,70 +1869,86 @@ function handleCardLinkClick(noteId) {
     }
 }
 
+function getCardPortLocalCoords(card, portName) {
+    const left = parseFloat(card.style.left) || card.offsetLeft || 0;
+    const top = parseFloat(card.style.top) || card.offsetTop || 0;
+    const w = card.offsetWidth || 260;
+    const h = card.offsetHeight || 180;
+    const cx = left + w / 2;
+    const cy = top + h / 2;
+    const rotDeg = parseFloat(card.dataset.rotation || 0);
+    const rad = (rotDeg * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    let localDx = 0, localDy = 0;
+    if (portName === 'top') {
+        localDx = 0;
+        localDy = -h / 2;
+    } else if (portName === 'bottom') {
+        localDx = 0;
+        localDy = h / 2;
+    } else if (portName === 'left') {
+        localDx = -w / 2;
+        localDy = 0;
+    } else { // right
+        localDx = w / 2;
+        localDy = 0;
+    }
+
+    const portX = cx + (localDx * cos - localDy * sin);
+    const portY = cy + (localDx * sin + localDy * cos);
+    return { x: portX, y: portY };
+}
+
 function getExactPortAnchorCoords(srcCard, tgtCard) {
-    const viewport = document.getElementById('noticeCanvasViewport');
-    const vpRect = viewport.getBoundingClientRect();
+    const srcLeft = parseFloat(srcCard.style.left) || srcCard.offsetLeft || 0;
+    const srcTop = parseFloat(srcCard.style.top) || srcCard.offsetTop || 0;
+    const srcW = srcCard.offsetWidth || 260;
+    const srcH = srcCard.offsetHeight || 180;
+    const srcCenterX = srcLeft + srcW / 2;
+    const srcCenterY = srcTop + srcH / 2;
 
-    const srcPorts = {
-        top: srcCard.querySelector('.port-top'),
-        right: srcCard.querySelector('.port-right'),
-        bottom: srcCard.querySelector('.port-bottom'),
-        left: srcCard.querySelector('.port-left')
-    };
-
-    const tgtPorts = {
-        top: tgtCard.querySelector('.port-top'),
-        right: tgtCard.querySelector('.port-right'),
-        bottom: tgtCard.querySelector('.port-bottom'),
-        left: tgtCard.querySelector('.port-left')
-    };
-
-    // Calculate actual screen center of card elements
-    const srcRect = srcCard.getBoundingClientRect();
-    const tgtRect = tgtCard.getBoundingClientRect();
-
-    const srcCenterX = srcRect.left + srcRect.width / 2;
-    const srcCenterY = srcRect.top + srcRect.height / 2;
-    const tgtCenterX = tgtRect.left + tgtRect.width / 2;
-    const tgtCenterY = tgtRect.top + tgtRect.height / 2;
+    const tgtLeft = parseFloat(tgtCard.style.left) || tgtCard.offsetLeft || 0;
+    const tgtTop = parseFloat(tgtCard.style.top) || tgtCard.offsetTop || 0;
+    const tgtW = tgtCard.offsetWidth || 260;
+    const tgtH = tgtCard.offsetHeight || 180;
+    const tgtCenterX = tgtLeft + tgtW / 2;
+    const tgtCenterY = tgtTop + tgtH / 2;
 
     const dx = tgtCenterX - srcCenterX;
     const dy = tgtCenterY - srcCenterY;
 
-    let chosenSrcPort = srcPorts.right;
-    let chosenTgtPort = tgtPorts.left;
+    let srcPortName = 'right';
+    let tgtPortName = 'left';
 
     if (Math.abs(dx) >= Math.abs(dy)) {
         if (dx > 0) {
-            chosenSrcPort = srcPorts.right;
-            chosenTgtPort = tgtPorts.left;
+            srcPortName = 'right';
+            tgtPortName = 'left';
         } else {
-            chosenSrcPort = srcPorts.left;
-            chosenTgtPort = tgtPorts.right;
+            srcPortName = 'left';
+            tgtPortName = 'right';
         }
     } else {
         if (dy > 0) {
-            chosenSrcPort = srcPorts.bottom;
-            chosenTgtPort = tgtPorts.top;
+            srcPortName = 'bottom';
+            tgtPortName = 'top';
         } else {
-            chosenSrcPort = srcPorts.top;
-            chosenTgtPort = tgtPorts.bottom;
+            srcPortName = 'top';
+            tgtPortName = 'bottom';
         }
     }
 
-    const sPortRect = (chosenSrcPort || srcCard).getBoundingClientRect();
-    const tPortRect = (chosenTgtPort || tgtCard).getBoundingClientRect();
+    const srcCoord = getCardPortLocalCoords(srcCard, srcPortName);
+    const tgtCoord = getCardPortLocalCoords(tgtCard, tgtPortName);
 
-    const stage = document.getElementById('canvasStage') || viewport;
-    const stageRect = stage.getBoundingClientRect();
-    const zoom = currentStudioZoom || 1.0;
-
-    const srcX = (sPortRect.left + (sPortRect.width / 2) - stageRect.left) / zoom;
-    const srcY = (sPortRect.top + (sPortRect.height / 2) - stageRect.top) / zoom;
-    const tgtX = (tPortRect.left + (tPortRect.width / 2) - stageRect.left) / zoom;
-    const tgtY = (tPortRect.top + (tPortRect.height / 2) - stageRect.top) / zoom;
-
-    return { srcX, srcY, tgtX, tgtY };
+    return {
+        srcX: srcCoord.x,
+        srcY: srcCoord.y,
+        tgtX: tgtCoord.x,
+        tgtY: tgtCoord.y
+    };
 }
 
 function renderCanvasConnectors() {
