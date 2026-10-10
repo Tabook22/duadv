@@ -981,12 +981,21 @@ function renderStudioCanvas() {
             posY = 40 + row * 240;
         }
 
+        // Rotation: saved value or subtle organic random angle (-3 to +3 deg)
+        let rot = note.rotation;
+        if (rot === null || rot === undefined) {
+            const presetAngles = [-2.5, 1.8, -1.2, 2.8, -2.0, 1.5, -3.2, 2.2];
+            rot = presetAngles[idx % presetAngles.length];
+        }
+
         const card = document.createElement('div');
         card.className = `canvas-card color-${note.color} size-${note.size || 'medium'} font-${note.font_size || 'medium'} ${note.is_pinned ? 'pinned' : ''}`;
         card.id = `studio-card-${note.id}`;
         card.dataset.id = note.id;
+        card.dataset.rotation = rot;
         card.style.left = `${posX}px`;
         card.style.top = `${posY}px`;
+        card.style.transform = `rotate(${rot}deg)`;
 
         card.innerHTML = `
             <!-- 4 Directional Anchor Ports for Multi-Angle Linking -->
@@ -1007,17 +1016,36 @@ function renderStudioCanvas() {
                 </div>
             ` : ''}
             <div class="notice-content" style="max-height: 120px; overflow-y: auto;">${note.content}</div>
+            
+            <!-- Quick In-Card Color Palette Switcher -->
+            <div class="card-quick-colors">
+                <span class="text-muted" style="font-size: 0.68rem; margin-right: 2px;">Color:</span>
+                <span class="quick-color-dot" style="background: #fef08a;" onclick="setStudioNoteColor('${note.id}', 'yellow', event)" title="Yellow"></span>
+                <span class="quick-color-dot" style="background: #fca5a5;" onclick="setStudioNoteColor('${note.id}', 'red', event)" title="Red"></span>
+                <span class="quick-color-dot" style="background: #93c5fd;" onclick="setStudioNoteColor('${note.id}', 'blue', event)" title="Blue"></span>
+                <span class="quick-color-dot" style="background: #86efac;" onclick="setStudioNoteColor('${note.id}', 'green', event)" title="Green"></span>
+                <span class="quick-color-dot" style="background: #d8b4fe;" onclick="setStudioNoteColor('${note.id}', 'purple', event)" title="Purple"></span>
+                <span class="quick-color-dot" style="background: #fdba74;" onclick="setStudioNoteColor('${note.id}', 'amber', event)" title="Orange"></span>
+            </div>
+
             <div class="notice-footer">
                 <span class="badge bg-light text-dark py-0.5 px-1.5" style="font-size: 0.68rem; text-transform: uppercase;">
                     ${(note.category || 'general').replace('_', ' ')}
                 </span>
                 <div class="notice-actions">
+                    <!-- Rotate Button -->
+                    <button class="notice-btn-icon" onclick="rotateStudioNote('${note.id}', event)" title="Rotate Note Angle">
+                        <i class="fas fa-arrow-rotate-right"></i>
+                    </button>
+                    <!-- Complete & Set Aside -->
                     <button class="notice-btn-icon" onclick="completeAndSetAside('${note.id}', event)" title="Tick &amp; Set Aside to Completed Bin">
                         <i class="fas fa-check text-success"></i>
                     </button>
+                    <!-- Edit Note -->
                     <button class="notice-btn-icon" onclick="openEditNoticeModal('${note.id}')" title="Edit Title, Content &amp; Color">
                         <i class="fas fa-pencil"></i>
                     </button>
+                    <!-- Delete Note -->
                     <button class="notice-btn-icon delete" onclick="deleteStudioNotice('${note.id}', event)" title="Delete">
                         <i class="far fa-trash-can"></i>
                     </button>
@@ -1025,11 +1053,14 @@ function renderStudioCanvas() {
             </div>
         `;
 
-        // Card Click Handler for Linking Mode
+        // Card Selection on Click (Highlights card and reveals ports)
         card.addEventListener('click', (e) => {
             if (isLinkingMode) {
                 handleCardLinkClick(note.id);
                 e.stopPropagation();
+            } else {
+                document.querySelectorAll('.canvas-card').forEach(c => c.classList.remove('card-selected'));
+                card.classList.add('card-selected');
             }
         });
 
@@ -1039,10 +1070,68 @@ function renderStudioCanvas() {
         container.appendChild(card);
     });
 
+    // Deselect card when clicking empty canvas
+    const viewport = document.getElementById('noticeCanvasViewport');
+    if (viewport) {
+        viewport.onclick = (e) => {
+            if (!e.target.closest('.canvas-card')) {
+                document.querySelectorAll('.canvas-card').forEach(c => c.classList.remove('card-selected'));
+            }
+        };
+    }
+
     // Initialize drag-to-connect line from any of the 4 ports
     setupPortDragConnecting();
 
     renderCanvasConnectors();
+}
+
+function setStudioNoteColor(noteId, color, e) {
+    if (e) e.stopPropagation();
+    const card = document.getElementById(`studio-card-${noteId}`);
+    if (card) {
+        // Instant visual feedback
+        card.className = card.className.replace(/color-\w+/g, `color-${color}`);
+    }
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ color: color })
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            const note = studioNotices.find(n => n.id === noteId);
+            if (note) note.color = color;
+            // Also update main dashboard card if present
+            const mainCard = document.getElementById(`card-${noteId}`);
+            if (mainCard) mainCard.className = mainCard.className.replace(/color-\w+/g, `color-${color}`);
+        }
+    });
+}
+
+function rotateStudioNote(noteId, e) {
+    if (e) e.stopPropagation();
+    const card = document.getElementById(`studio-card-${noteId}`);
+    if (!card) return;
+
+    let curRot = parseFloat(card.dataset.rotation || 0);
+    // Cycle through casual organic angles: -3deg -> 0deg -> 3deg -> -4deg -> etc.
+    let newRot = curRot + 3;
+    if (newRot > 6) newRot = -5;
+
+    card.dataset.rotation = newRot;
+    card.style.transform = `rotate(${newRot}deg)`;
+
+    renderCanvasConnectors();
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rotation: newRot })
+    }).then(() => {
+        const note = studioNotices.find(n => n.id === noteId);
+        if (note) note.rotation = newRot;
+    });
 }
 
 function renderDoneDrawer() {
@@ -1141,7 +1230,7 @@ function enableFreeCardDragging(card, noteId) {
     let initialLeft = 0, initialTop = 0;
 
     card.addEventListener('mousedown', (e) => {
-        if (e.target.closest('button') || e.target.closest('a') || e.target.classList.contains('port-anchor') || isLinkingMode) return;
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.card-quick-colors') || e.target.classList.contains('port-anchor') || isLinkingMode) return;
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
@@ -1185,7 +1274,7 @@ function enableFreeCardDragging(card, noteId) {
 }
 
 /* ==========================================================================
-   Drag-to-Connect from Anchor Ports (Top, Right, Bottom, Left)
+   Drag-to-Connect from Anchor Ports (Exact Pixel Center Alignment)
    ========================================================================== */
 function setupPortDragConnecting() {
     const ports = document.querySelectorAll('.port-anchor');
@@ -1205,8 +1294,9 @@ function setupPortDragConnecting() {
             const rect = port.getBoundingClientRect();
             const vpRect = viewport.getBoundingClientRect();
 
-            const startX = rect.left - vpRect.left + viewport.scrollLeft + 7;
-            const startY = rect.top - vpRect.top + viewport.scrollTop + 7;
+            // Exact center of the circular anchor port
+            const startX = rect.left - vpRect.left + viewport.scrollLeft + (rect.width / 2);
+            const startY = rect.top - vpRect.top + viewport.scrollTop + (rect.height / 2);
 
             // In-flight SVG path
             const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1320,45 +1410,64 @@ function handleCardLinkClick(noteId) {
     }
 }
 
-function getBestPortCoordinates(srcCard, tgtCard) {
-    const srcLeft = parseInt(srcCard.style.left, 10) || 0;
-    const srcTop = parseInt(srcCard.style.top, 10) || 0;
-    const srcWidth = srcCard.offsetWidth || 280;
-    const srcHeight = srcCard.offsetHeight || 160;
+function getExactPortAnchorCoords(srcCard, tgtCard) {
+    const viewport = document.getElementById('noticeCanvasViewport');
+    const vpRect = viewport.getBoundingClientRect();
 
-    const tgtLeft = parseInt(tgtCard.style.left, 10) || 0;
-    const tgtTop = parseInt(tgtCard.style.top, 10) || 0;
-    const tgtWidth = tgtCard.offsetWidth || 280;
-    const tgtHeight = tgtCard.offsetHeight || 160;
+    const srcPorts = {
+        top: srcCard.querySelector('.port-top'),
+        right: srcCard.querySelector('.port-right'),
+        bottom: srcCard.querySelector('.port-bottom'),
+        left: srcCard.querySelector('.port-left')
+    };
 
-    const srcCenterX = srcLeft + srcWidth / 2;
-    const srcCenterY = srcTop + srcHeight / 2;
-    const tgtCenterX = tgtLeft + tgtWidth / 2;
-    const tgtCenterY = tgtTop + tgtHeight / 2;
+    const tgtPorts = {
+        top: tgtCard.querySelector('.port-top'),
+        right: tgtCard.querySelector('.port-right'),
+        bottom: tgtCard.querySelector('.port-bottom'),
+        left: tgtCard.querySelector('.port-left')
+    };
+
+    // Calculate actual screen center of card elements
+    const srcRect = srcCard.getBoundingClientRect();
+    const tgtRect = tgtCard.getBoundingClientRect();
+
+    const srcCenterX = srcRect.left + srcRect.width / 2;
+    const srcCenterY = srcRect.top + srcRect.height / 2;
+    const tgtCenterX = tgtRect.left + tgtRect.width / 2;
+    const tgtCenterY = tgtRect.top + tgtRect.height / 2;
 
     const dx = tgtCenterX - srcCenterX;
     const dy = tgtCenterY - srcCenterY;
 
-    let srcX = srcCenterX, srcY = srcCenterY;
-    let tgtX = tgtCenterX, tgtY = tgtCenterY;
+    let chosenSrcPort = srcPorts.right;
+    let chosenTgtPort = tgtPorts.left;
 
     if (Math.abs(dx) >= Math.abs(dy)) {
         if (dx > 0) {
-            srcX = srcLeft + srcWidth;
-            tgtX = tgtLeft;
+            chosenSrcPort = srcPorts.right;
+            chosenTgtPort = tgtPorts.left;
         } else {
-            srcX = srcLeft;
-            tgtX = tgtLeft + tgtWidth;
+            chosenSrcPort = srcPorts.left;
+            chosenTgtPort = tgtPorts.right;
         }
     } else {
         if (dy > 0) {
-            srcY = srcTop + srcHeight;
-            tgtY = tgtTop;
+            chosenSrcPort = srcPorts.bottom;
+            chosenTgtPort = tgtPorts.top;
         } else {
-            srcY = srcTop;
-            tgtY = tgtTop + tgtHeight;
+            chosenSrcPort = srcPorts.top;
+            chosenTgtPort = tgtPorts.bottom;
         }
     }
+
+    const sPortRect = (chosenSrcPort || srcCard).getBoundingClientRect();
+    const tPortRect = (chosenTgtPort || tgtCard).getBoundingClientRect();
+
+    const srcX = sPortRect.left - vpRect.left + viewport.scrollLeft + (sPortRect.width / 2);
+    const srcY = sPortRect.top - vpRect.top + viewport.scrollTop + (sPortRect.height / 2);
+    const tgtX = tPortRect.left - vpRect.left + viewport.scrollLeft + (tPortRect.width / 2);
+    const tgtY = tPortRect.top - vpRect.top + viewport.scrollTop + (tPortRect.height / 2);
 
     return { srcX, srcY, tgtX, tgtY };
 }
@@ -1377,7 +1486,7 @@ function renderCanvasConnectors() {
             const tgtCard = document.getElementById(`studio-card-${targetId}`);
             if (!tgtCard) return;
 
-            const { srcX, srcY, tgtX, tgtY } = getBestPortCoordinates(srcCard, tgtCard);
+            const { srcX, srcY, tgtX, tgtY } = getExactPortAnchorCoords(srcCard, tgtCard);
 
             const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
