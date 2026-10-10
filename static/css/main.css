@@ -1137,6 +1137,116 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     transform: scale(1.35);
 }
 
+/* ==========================================================================
+   Full 360-Degree Rotation Handle (Top Center Dial)
+   ========================================================================== */
+.rotate-handle {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 22px;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: grab;
+    z-index: 30;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.rotate-handle::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    width: 1.5px;
+    height: 8px;
+    background: #0f172a;
+    transform: translateX(-50%);
+}
+
+.canvas-card:hover .rotate-handle,
+.canvas-card.card-selected .rotate-handle {
+    opacity: 1;
+}
+
+.rotate-handle:active {
+    cursor: grabbing;
+    transform: translateX(-50%) scale(1.25);
+    background: #3b82f6;
+}
+
+/* ==========================================================================
+   Interactive Resizing Handle (Bottom-Right Grip)
+   ========================================================================== */
+.card-resize-handle {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    cursor: se-resize;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    opacity: 0.5;
+    z-index: 25;
+    color: #64748b;
+    font-size: 0.75rem;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.canvas-card:hover .card-resize-handle,
+.canvas-card.card-selected .card-resize-handle {
+    opacity: 1;
+}
+
+.card-resize-handle:hover {
+    color: #2563eb;
+    transform: scale(1.15);
+}
+
+/* ==========================================================================
+   Prominent Completed / Done Status Indicator
+   ========================================================================== */
+.status-indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.status-indicator-badge.status-pending {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+.status-indicator-badge.status-pending:hover {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #6ee7b7;
+}
+
+.status-indicator-badge.status-done {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1.5px solid #22c55e;
+    box-shadow: 0 1px 4px rgba(34, 197, 94, 0.2);
+}
+
 /* 4-Directional Anchor Ports: HIDDEN BY DEFAULT, VISIBLE ONLY ON HOVER OR SELECTED */
 .port-anchor {
     position: absolute;

@@ -155,7 +155,9 @@ def create_notice(data: Dict[str, Any]) -> Dict[str, Any]:
         "order": int(data.get("order", 0)),
         "position_x": data.get("position_x", None), # for canvas drag coordinates
         "position_y": data.get("position_y", None),
-        "rotation": data.get("rotation", None),     # degrees rotation for organic sticky look (-4 to +4)
+        "width": data.get("width", None),           # custom width in px
+        "height": data.get("height", None),         # custom height in px
+        "rotation": data.get("rotation", None),     # degrees rotation for organic sticky look
         "linked_to": data.get("linked_to", []),     # list of linked notice IDs
         "created_at": now,
         "updated_at": now
@@ -197,7 +199,7 @@ def update_notice(notice_id: str, updates: Dict[str, Any]) -> Optional[Dict[str,
                 for key in ['title', 'content', 'color', 'category', 'priority', 
                             'size', 'font_size', 'student_id', 'student_name', 
                             'program', 'due_date', 'is_pinned', 'is_completed', 'order',
-                            'position_x', 'position_y', 'rotation', 'linked_to']:
+                            'position_x', 'position_y', 'width', 'height', 'rotation', 'linked_to']:
                     if key in updates:
                         n[key] = updates[key]
                 n['updated_at'] = now

@@ -995,19 +995,42 @@ function renderStudioCanvas() {
         card.dataset.rotation = rot;
         card.style.left = `${posX}px`;
         card.style.top = `${posY}px`;
+        if (note.width) card.style.width = `${note.width}px`;
+        if (note.height) card.style.minHeight = `${note.height}px`;
         card.style.transform = `rotate(${rot}deg)`;
 
+        const isDone = !!note.is_completed;
+
         card.innerHTML = `
+            <!-- 360-Degree Free Rotary Dial Handle -->
+            <div class="rotate-handle" data-id="${note.id}" title="Drag around in any direction to rotate note smoothly (360°)">
+                <i class="fas fa-rotate"></i>
+            </div>
+
+            <!-- Interactive Resizing Grip -->
+            <div class="card-resize-handle" data-id="${note.id}" title="Drag corner to resize width &amp; height">
+                <i class="fas fa-up-right-and-down-left-from-center" style="font-size: 0.65rem;"></i>
+            </div>
+
             <!-- 4 Directional Anchor Ports for Multi-Angle Linking -->
             <div class="port-anchor port-top" data-port="top" data-id="${note.id}" title="Drag line from Top"></div>
             <div class="port-anchor port-right" data-port="right" data-id="${note.id}" title="Drag line from Right"></div>
             <div class="port-anchor port-bottom" data-port="bottom" data-id="${note.id}" title="Drag line from Bottom"></div>
             <div class="port-anchor port-left" data-port="left" data-id="${note.id}" title="Drag line from Left"></div>
 
-            <div class="notice-header">
+            <div class="notice-header d-flex justify-content-between align-items-start gap-1">
                 <span class="notice-title">${note.title}</span>
-                ${note.priority === 'high' ? '<span class="badge bg-danger text-white rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">URGENT</span>' : ''}
+                <div class="d-flex align-items-center gap-1">
+                    ${note.priority === 'high' ? '<span class="badge bg-danger text-white rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">URGENT</span>' : ''}
+                    
+                    <!-- Bold Status Pill (Clear Visible Done / Pending State) -->
+                    <span class="status-indicator-badge ${isDone ? 'status-done' : 'status-pending'}" onclick="toggleStudioNoticeDone('${note.id}', event)" title="Click to toggle Done state">
+                        <i class="fas ${isDone ? 'fa-check-double text-success' : 'fa-circle-dot text-secondary'}"></i>
+                        <span>${isDone ? 'DONE' : 'PENDING'}</span>
+                    </span>
+                </div>
             </div>
+
             ${note.student_id ? `
                 <div class="mb-2">
                     <span class="badge bg-white text-dark border py-1 px-2 d-inline-flex align-items-center gap-1" style="font-size: 0.72rem;">
@@ -1015,7 +1038,7 @@ function renderStudioCanvas() {
                     </span>
                 </div>
             ` : ''}
-            <div class="notice-content" style="max-height: 120px; overflow-y: auto;">${note.content}</div>
+            <div class="notice-content" style="max-height: 140px; overflow-y: auto;">${note.content}</div>
             
             <!-- Quick In-Card Color Palette Switcher -->
             <div class="card-quick-colors">
@@ -1033,13 +1056,13 @@ function renderStudioCanvas() {
                     ${(note.category || 'general').replace('_', ' ')}
                 </span>
                 <div class="notice-actions">
-                    <!-- Rotate Button -->
-                    <button class="notice-btn-icon" onclick="rotateStudioNote('${note.id}', event)" title="Rotate Note Angle">
+                    <!-- Quick 15° Step Rotate -->
+                    <button class="notice-btn-icon" onclick="rotateStudioNote('${note.id}', event)" title="Tilt Note 15°">
                         <i class="fas fa-arrow-rotate-right"></i>
                     </button>
                     <!-- Complete & Set Aside -->
-                    <button class="notice-btn-icon" onclick="completeAndSetAside('${note.id}', event)" title="Tick &amp; Set Aside to Completed Bin">
-                        <i class="fas fa-check text-success"></i>
+                    <button class="notice-btn-icon" onclick="completeAndSetAside('${note.id}', event)" title="Set Aside into Completed Bin">
+                        <i class="fas fa-box-archive text-success"></i>
                     </button>
                     <!-- Edit Note -->
                     <button class="notice-btn-icon" onclick="openEditNoticeModal('${note.id}')" title="Edit Title, Content &amp; Color">
@@ -1053,7 +1076,7 @@ function renderStudioCanvas() {
             </div>
         `;
 
-        // Card Selection on Click (Highlights card and reveals ports)
+        // Card Selection on Click (Highlights card and reveals ports & handles)
         card.addEventListener('click', (e) => {
             if (isLinkingMode) {
                 handleCardLinkClick(note.id);
@@ -1066,6 +1089,12 @@ function renderStudioCanvas() {
 
         // Initialize free drag
         enableFreeCardDragging(card, note.id);
+
+        // Initialize 360-degree free rotary handle
+        enableRotaryDial(card, note.id);
+
+        // Initialize interactive corner resizing
+        enableCornerResizing(card, note.id);
 
         container.appendChild(card);
     });
@@ -1115,9 +1144,9 @@ function rotateStudioNote(noteId, e) {
     if (!card) return;
 
     let curRot = parseFloat(card.dataset.rotation || 0);
-    // Cycle through casual organic angles: -3deg -> 0deg -> 3deg -> -4deg -> etc.
-    let newRot = curRot + 3;
-    if (newRot > 6) newRot = -5;
+    // Cycle through casual organic angles in 15-degree steps
+    let newRot = Math.round(curRot + 15);
+    if (newRot > 180) newRot = -180;
 
     card.dataset.rotation = newRot;
     card.style.transform = `rotate(${newRot}deg)`;
@@ -1131,6 +1160,136 @@ function rotateStudioNote(noteId, e) {
     }).then(() => {
         const note = studioNotices.find(n => n.id === noteId);
         if (note) note.rotation = newRot;
+    });
+}
+
+// Toggle Done / Pending state with instant bold visual indicator
+function toggleStudioNoticeDone(noteId, e) {
+    if (e) e.stopPropagation();
+    const note = studioNotices.find(n => n.id === noteId);
+    if (!note) return;
+
+    const newCompleted = !note.is_completed;
+    note.is_completed = newCompleted;
+
+    // Live update status badge on card
+    const card = document.getElementById(`studio-card-${noteId}`);
+    if (card) {
+        const badge = card.querySelector('.status-indicator-badge');
+        if (badge) {
+            badge.className = `status-indicator-badge ${newCompleted ? 'status-done' : 'status-pending'}`;
+            badge.innerHTML = `<i class="fas ${newCompleted ? 'fa-check-double text-success' : 'fa-circle-dot text-secondary'}"></i> <span>${newCompleted ? 'DONE' : 'PENDING'}</span>`;
+        }
+    }
+
+    // Also update main dashboard card
+    const mainCard = document.getElementById(`card-${noteId}`);
+    if (mainCard) {
+        mainCard.dataset.completed = newCompleted ? 'true' : 'false';
+        if (newCompleted) mainCard.classList.add('completed');
+        else mainCard.classList.remove('completed');
+    }
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_completed: newCompleted })
+    }).then(() => {
+        renderDoneDrawer();
+        renderCanvasConnectors();
+    });
+}
+
+// Smooth 360-Degree Free Rotary Dragging
+function enableRotaryDial(card, noteId) {
+    const handle = card.querySelector('.rotate-handle');
+    if (!handle) return;
+
+    handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const cardRect = card.getBoundingClientRect();
+        const centerX = cardRect.left + cardRect.width / 2;
+        const centerY = cardRect.top + cardRect.height / 2;
+
+        function onMouseMove(ev) {
+            // Calculate angle between card center and cursor in degrees
+            const rad = Math.atan2(ev.clientY - centerY, ev.clientX - centerX);
+            // Offset by 90deg because handle is at top (12 o'clock)
+            let deg = Math.round(rad * (180 / Math.PI)) + 90;
+            if (deg > 180) deg -= 360;
+
+            card.dataset.rotation = deg;
+            card.style.transform = `rotate(${deg}deg)`;
+            renderCanvasConnectors();
+        }
+
+        function onMouseUp() {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+
+            const finalRot = parseFloat(card.dataset.rotation || 0);
+            fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rotation: finalRot })
+            }).then(() => {
+                const note = studioNotices.find(n => n.id === noteId);
+                if (note) note.rotation = finalRot;
+            });
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+    });
+}
+
+// Interactive Corner Resizing
+function enableCornerResizing(card, noteId) {
+    const handle = card.querySelector('.card-resize-handle');
+    if (!handle) return;
+
+    handle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = card.offsetWidth;
+        const startHeight = card.offsetHeight;
+
+        function onMouseMove(ev) {
+            const newWidth = Math.max(200, Math.min(650, startWidth + (ev.clientX - startX)));
+            const newHeight = Math.max(140, Math.min(500, startHeight + (ev.clientY - startY)));
+
+            card.style.width = `${newWidth}px`;
+            card.style.minHeight = `${newHeight}px`;
+            renderCanvasConnectors();
+        }
+
+        function onMouseUp() {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+
+            const finalW = card.offsetWidth;
+            const finalH = card.offsetHeight;
+
+            fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ width: finalW, height: finalH })
+            }).then(() => {
+                const note = studioNotices.find(n => n.id === noteId);
+                if (note) {
+                    note.width = finalW;
+                    note.height = finalH;
+                }
+            });
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
     });
 }
 
