@@ -1165,23 +1165,26 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
    ========================================================================== */
 .rotate-handle {
     position: absolute;
-    top: -28px;
+    top: -30px;
     left: 50%;
     transform: translateX(-50%);
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     background: #0f172a;
     color: #ffffff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.65rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    font-size: 0.72rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
     cursor: grab;
     z-index: 30;
-    opacity: 0;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    opacity: 0.75;
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .rotate-handle::after {
@@ -1202,8 +1205,8 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 
 .rotate-handle:active {
     cursor: grabbing;
-    transform: translateX(-50%) scale(1.25);
-    background: #3b82f6;
+    transform: translateX(-50%) scale(1.2);
+    background: #2563eb;
 }
 
 /* ==========================================================================
@@ -1213,22 +1216,26 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     position: absolute;
     bottom: 2px;
     right: 2px;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     cursor: se-resize;
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
-    opacity: 0.5;
+    opacity: 0.7;
     z-index: 25;
     color: #64748b;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     transition: opacity 0.15s ease, color 0.15s ease;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .canvas-card:hover .card-resize-handle,
 .canvas-card.card-selected .card-resize-handle {
     opacity: 1;
+    color: #2563eb;
 }
 
 .card-resize-handle:hover {
@@ -1336,40 +1343,51 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 
 /* Interactive Line Delete badge with generous hit target for touch */
+.line-delete-group {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
 .line-delete-hitbox {
     cursor: pointer;
     pointer-events: all;
     fill: transparent;
+    touch-action: manipulation;
 }
 
 .line-delete-badge {
     cursor: pointer;
     pointer-events: all;
-    transition: transform 0.15s ease, filter 0.15s ease;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+    transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    /* Fixed in place - never apply geometric scale or translation */
+    transform: none !important;
 }
 
 .line-delete-group:hover .line-delete-badge,
 .line-delete-group:active .line-delete-badge {
-    transform: scale(1.3);
-    filter: drop-shadow(0 3px 8px rgba(239, 68, 68, 0.5));
+    fill: #dc2626 !important;
+    stroke: #ffffff !important;
+    stroke-width: 3.5px !important;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.85)) !important;
+    transform: none !important;
 }
 
 /* Touch-optimized handles for iOS / iPad / Android */
 @media (pointer: coarse), (max-width: 991px) {
     .rotate-handle {
-        width: 34px !important;
-        height: 34px !important;
-        top: -38px !important;
-        font-size: 0.85rem !important;
-        opacity: 0.9 !important;
+        width: 36px !important;
+        height: 36px !important;
+        top: -42px !important;
+        font-size: 0.95rem !important;
+        opacity: 0.95 !important;
     }
     
     .card-resize-handle {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.95rem !important;
-        opacity: 0.85 !important;
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 1rem !important;
+        opacity: 0.95 !important;
         padding: 4px;
     }
 

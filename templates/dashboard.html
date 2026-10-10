@@ -1263,15 +1263,16 @@ function enableRotaryDial(card, noteId) {
 
     function startRotate(e) {
         e.stopPropagation();
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
 
         const cardRect = card.getBoundingClientRect();
         const centerX = cardRect.left + cardRect.width / 2;
         const centerY = cardRect.top + cardRect.height / 2;
 
         function onPointerMove(ev) {
-            const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-            const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+            if (ev.cancelable) ev.preventDefault();
+            const clientX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
+            const clientY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
 
             // Calculate angle between card center and pointer in degrees
             const rad = Math.atan2(clientY - centerY, clientX - centerX);
@@ -1283,11 +1284,13 @@ function enableRotaryDial(card, noteId) {
             renderCanvasConnectors();
         }
 
-        function onPointerUp() {
+        function onPointerUp(ev) {
+            if (ev && ev.cancelable) ev.preventDefault();
             window.removeEventListener('mousemove', onPointerMove);
             window.removeEventListener('mouseup', onPointerUp);
             window.removeEventListener('touchmove', onPointerMove);
             window.removeEventListener('touchend', onPointerUp);
+            window.removeEventListener('touchcancel', onPointerUp);
 
             const finalRot = parseFloat(card.dataset.rotation || 0);
             fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
@@ -1304,6 +1307,7 @@ function enableRotaryDial(card, noteId) {
         window.addEventListener('mouseup', onPointerUp);
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
+        window.addEventListener('touchcancel', onPointerUp);
     }
 
     handle.addEventListener('mousedown', startRotate);
@@ -1317,32 +1321,48 @@ function enableCornerResizing(card, noteId) {
 
     function startResize(e) {
         e.stopPropagation();
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
 
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
         const startX = clientX;
         const startY = clientY;
         const startWidth = card.offsetWidth;
         const startHeight = card.offsetHeight;
 
-        function onPointerMove(ev) {
-            const curX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-            const curY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+        // Project resize drag along current card rotation angle
+        const rotDeg = parseFloat(card.dataset.rotation || 0);
+        const rotRad = (rotDeg * Math.PI) / 180;
+        const cosAngle = Math.cos(rotRad);
+        const sinAngle = Math.sin(rotRad);
 
-            const newWidth = Math.max(200, Math.min(650, startWidth + (curX - startX)));
-            const newHeight = Math.max(140, Math.min(500, startHeight + (curY - startY)));
+        function onPointerMove(ev) {
+            if (ev.cancelable) ev.preventDefault();
+            const curX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
+            const curY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
+
+            const deltaX = curX - startX;
+            const deltaY = curY - startY;
+
+            // Rotate delta into card coordinate system
+            const localDx = deltaX * cosAngle + deltaY * sinAngle;
+            const localDy = -deltaX * sinAngle + deltaY * cosAngle;
+
+            const newWidth = Math.max(180, Math.min(700, Math.round(startWidth + localDx)));
+            const newHeight = Math.max(130, Math.min(550, Math.round(startHeight + localDy)));
 
             card.style.width = `${newWidth}px`;
             card.style.minHeight = `${newHeight}px`;
             renderCanvasConnectors();
         }
 
-        function onPointerUp() {
+        function onPointerUp(ev) {
+            if (ev && ev.cancelable) ev.preventDefault();
             window.removeEventListener('mousemove', onPointerMove);
             window.removeEventListener('mouseup', onPointerUp);
             window.removeEventListener('touchmove', onPointerMove);
             window.removeEventListener('touchend', onPointerUp);
+            window.removeEventListener('touchcancel', onPointerUp);
 
             const finalW = card.offsetWidth;
             const finalH = card.offsetHeight;
@@ -1364,6 +1384,7 @@ function enableCornerResizing(card, noteId) {
         window.addEventListener('mouseup', onPointerUp);
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
+        window.addEventListener('touchcancel', onPointerUp);
     }
 
     handle.addEventListener('mousedown', startResize);
@@ -1466,13 +1487,18 @@ function enableFreeCardDragging(card, noteId) {
     let initialLeft = 0, initialTop = 0;
 
     function startDrag(e) {
-        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.card-quick-colors') || 
-            e.target.classList.contains('port-anchor') || e.target.classList.contains('rotate-handle') || 
-            e.target.classList.contains('card-resize-handle') || isLinkingMode) return;
+        if (e.target.closest('button') || 
+            e.target.closest('a') || 
+            e.target.closest('.card-quick-colors') || 
+            e.target.closest('.port-anchor') || 
+            e.target.closest('.rotate-handle') || 
+            e.target.closest('.card-resize-handle') || 
+            e.target.closest('.status-indicator-badge') || 
+            isLinkingMode) return;
         
         isDragging = true;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
         startX = clientX;
         startY = clientY;
         initialLeft = parseInt(card.style.left, 10) || 0;
@@ -1481,8 +1507,9 @@ function enableFreeCardDragging(card, noteId) {
 
         function onPointerMove(ev) {
             if (!isDragging) return;
-            const curX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-            const curY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+            if (ev.cancelable) ev.preventDefault();
+            const curX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
+            const curY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
             const dx = curX - startX;
             const dy = curY - startY;
             const newX = Math.max(10, initialLeft + dx);
@@ -1492,14 +1519,16 @@ function enableFreeCardDragging(card, noteId) {
             renderCanvasConnectors();
         }
 
-        function onPointerUp() {
+        function onPointerUp(ev) {
             if (!isDragging) return;
             isDragging = false;
             card.style.zIndex = 2;
+            if (ev && ev.cancelable) ev.preventDefault();
             window.removeEventListener('mousemove', onPointerMove);
             window.removeEventListener('mouseup', onPointerUp);
             window.removeEventListener('touchmove', onPointerMove);
             window.removeEventListener('touchend', onPointerUp);
+            window.removeEventListener('touchcancel', onPointerUp);
 
             const finalX = parseInt(card.style.left, 10);
             const finalY = parseInt(card.style.top, 10);
@@ -1516,10 +1545,11 @@ function enableFreeCardDragging(card, noteId) {
         window.addEventListener('mouseup', onPointerUp);
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
+        window.addEventListener('touchcancel', onPointerUp);
     }
 
     card.addEventListener('mousedown', startDrag);
-    card.addEventListener('touchstart', startDrag, { passive: true });
+    card.addEventListener('touchstart', startDrag, { passive: false });
 }
 
 /* ==========================================================================
@@ -1553,8 +1583,9 @@ function setupPortDragConnecting() {
             svg.appendChild(tempPath);
 
             function onDragLine(ev) {
-                const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-                const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+                if (ev.cancelable) ev.preventDefault();
+                const clientX = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientX : ev.clientX;
+                const clientY = (ev.touches && ev.touches.length > 0) ? ev.touches[0].clientY : ev.clientY;
                 const curX = clientX - vpRect.left + viewport.scrollLeft;
                 const curY = clientY - vpRect.top + viewport.scrollTop;
                 const dx = Math.abs(curX - startX) * 0.5;
@@ -1563,14 +1594,16 @@ function setupPortDragConnecting() {
             }
 
             function onReleaseLine(ev) {
+                if (ev && ev.cancelable) ev.preventDefault();
                 window.removeEventListener('mousemove', onDragLine);
                 window.removeEventListener('mouseup', onReleaseLine);
                 window.removeEventListener('touchmove', onDragLine);
                 window.removeEventListener('touchend', onReleaseLine);
+                window.removeEventListener('touchcancel', onReleaseLine);
                 tempPath.remove();
 
-                const clientX = ev.changedTouches ? ev.changedTouches[0].clientX : ev.clientX;
-                const clientY = ev.changedTouches ? ev.changedTouches[0].clientY : ev.clientY;
+                const clientX = (ev.changedTouches && ev.changedTouches.length > 0) ? ev.changedTouches[0].clientX : ev.clientX;
+                const clientY = (ev.changedTouches && ev.changedTouches.length > 0) ? ev.changedTouches[0].clientY : ev.clientY;
 
                 // Detect element underneath pointer
                 const dropTarget = document.elementFromPoint(clientX, clientY);
@@ -1586,6 +1619,7 @@ function setupPortDragConnecting() {
             window.addEventListener('mouseup', onReleaseLine);
             window.addEventListener('touchmove', onDragLine, { passive: false });
             window.addEventListener('touchend', onReleaseLine);
+            window.addEventListener('touchcancel', onReleaseLine);
         }
 
         port.addEventListener('mousedown', startPortConnect);
@@ -1767,54 +1801,81 @@ function renderCanvasConnectors() {
             path.setAttribute('d', d);
             path.setAttribute('class', `canvas-connector-line ${styleClass} ${colorClass}`);
             g.appendChild(path);
+            svg.appendChild(g);
+
+            // Compute exact midpoint directly along the rendered Bezier path curve
+            let badgeX = midX;
+            let badgeY = midY;
+            try {
+                const totalLen = (path.getTotalLength && typeof path.getTotalLength === 'function') ? path.getTotalLength() : 0;
+                if (totalLen > 0) {
+                    const curvePt = path.getPointAtLength(totalLen / 2);
+                    if (curvePt && !isNaN(curvePt.x) && !isNaN(curvePt.y)) {
+                        badgeX = curvePt.x;
+                        badgeY = curvePt.y;
+                    }
+                }
+            } catch (err) {
+                badgeX = midX;
+                badgeY = midY;
+            }
 
             // Midpoint Unlink Button Group with large generous touch hitbox
             const delGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             delGroup.setAttribute('class', 'line-delete-group');
             delGroup.style.cursor = 'pointer';
 
-            // Invisible generous hitbox circle (radius 24px = 48px tap area for iPhone / iPad)
+            // Invisible generous hitbox circle (radius 26px = 52px tap area for iPhone / iPad)
             const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            hitbox.setAttribute('cx', midX);
-            hitbox.setAttribute('cy', midY);
-            hitbox.setAttribute('r', '24');
+            hitbox.setAttribute('cx', badgeX);
+            hitbox.setAttribute('cy', badgeY);
+            hitbox.setAttribute('r', '26');
             hitbox.setAttribute('class', 'line-delete-hitbox');
             delGroup.appendChild(hitbox);
 
-            // Visible badge circle
+            // Visible badge circle (Fixed in place, never shifts on hover/touch)
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', midX);
-            circle.setAttribute('cy', midY);
-            circle.setAttribute('r', '12');
+            circle.setAttribute('cx', badgeX);
+            circle.setAttribute('cy', badgeY);
+            circle.setAttribute('r', '13');
             circle.setAttribute('fill', '#ef4444');
             circle.setAttribute('stroke', '#ffffff');
-            circle.setAttribute('stroke-width', '2');
+            circle.setAttribute('stroke-width', '2.5');
             circle.setAttribute('class', 'line-delete-badge');
             delGroup.appendChild(circle);
 
-            // Visible "×" text inside badge
+            // Visible "×" text inside badge (Dead-center aligned)
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('x', midX);
-            text.setAttribute('y', midY + 4);
+            text.setAttribute('x', badgeX);
+            text.setAttribute('y', badgeY);
             text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('dominant-baseline', 'central');
             text.setAttribute('fill', '#ffffff');
-            text.setAttribute('font-size', '13px');
+            text.setAttribute('font-size', '15px');
             text.setAttribute('font-weight', 'bold');
+            text.setAttribute('font-family', 'system-ui, -apple-system, sans-serif');
             text.setAttribute('pointer-events', 'none');
             text.textContent = '×';
             delGroup.appendChild(text);
 
+            let isDeleting = false;
             function handleDeleteClick(e) {
                 e.stopPropagation();
                 if (e.cancelable) e.preventDefault();
+                if (isDeleting) return;
+                isDeleting = true;
                 removeConnection(note.id, targetId);
             }
 
-            delGroup.addEventListener('click', handleDeleteClick);
+            delGroup.addEventListener('pointerdown', e => e.stopPropagation());
+            delGroup.addEventListener('mousedown', e => e.stopPropagation());
+            delGroup.addEventListener('touchstart', e => {
+                e.stopPropagation();
+            }, { passive: true });
             delGroup.addEventListener('touchend', handleDeleteClick);
+            delGroup.addEventListener('click', handleDeleteClick);
 
             g.appendChild(delGroup);
-            svg.appendChild(g);
         });
     });
 }
