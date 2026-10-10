@@ -1499,6 +1499,10 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
         height: 22px !important;
         margin-left: -11px !important;
         margin-top: -11px !important;
+        opacity: 0.85 !important;
+        pointer-events: all !important;
+        transform: scale(1) !important;
+        touch-action: none !important;
     }
     .port-anchor.port-top    { top: -11px !important; }
     .port-anchor.port-right  { right: -11px !important; }
