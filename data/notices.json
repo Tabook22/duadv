@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "notices": [
+    {
+      "id": "note-841b383c",
+      "title": "Strict Probation Urgent Check-in",
+      "content": "Follow up with advisees on Strict & 2nd Probation before Drop/Add deadline. Ensure Article 14 credit limits (max 12 credits) are enforced.",
+      "color": "red",
+      "category": "at_risk",
+      "priority": "high",
+      "size": "medium",
+      "font_size": "medium",
+      "student_id": "",
+      "student_name": "",
+      "program": "All Programs",
+      "due_date": "",
+      "is_pinned": true,
+      "is_completed": false,
+      "order": 2,
+      "created_at": "2026-10-10T09:51:34.416701",
+      "updated_at": "2026-10-10T09:51:34.416701"
+    },
+    {
+      "id": "note-89cbf0b7",
+      "title": "Spring 2026/2027 Advising Memo Prep",
+      "content": "Review students completing 60+ credit hours for major milestone requirements and elective prerequisites.",
+      "color": "blue",
+      "category": "registration",
+      "priority": "medium",
+      "size": "medium",
+      "font_size": "medium",
+      "student_id": "",
+      "student_name": "",
+      "program": "BSc Computer Science",
+      "due_date": "",
+      "is_pinned": false,
+      "is_completed": false,
+      "order": 3,
+      "created_at": "2026-10-10T09:51:34.416701",
+      "updated_at": "2026-10-10T09:51:34.416701"
+    },
+    {
+      "id": "note-d603b16c",
+      "title": "Book Office Hours Hub Sessions",
+      "content": "Schedule 15-minute 1-on-1 virtual check-ins with at-risk cohort in the Virtual Office Hours Hub.",
+      "color": "yellow",
+      "category": "meeting",
+      "priority": "high",
+      "size": "medium",
+      "font_size": "medium",
+      "student_id": "",
+      "student_name": "",
+      "program": "All Programs",
+      "due_date": "",
+      "is_pinned": false,
+      "is_completed": false,
+      "order": 4,
+      "created_at": "2026-10-10T09:51:34.416701",
+      "updated_at": "2026-10-10T09:51:34.416701"
+    }
+  ]
+}

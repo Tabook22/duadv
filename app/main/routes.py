@@ -22,6 +22,9 @@ def dashboard():
     cleared_count = sum(1 for s in students if 'Removal' in (s.status or ''))
     good_standing_count = sum(1 for s in students if ('Good' in (s.status or '') or s.status == 'Normal / Good Standing') and 'Probation' not in (s.status or ''))
     
+    from app.notice_board_engine import get_all_notices
+    notices = get_all_notices()
+    
     return render_template(
         'dashboard.html', 
         students=students, 
@@ -29,7 +32,8 @@ def dashboard():
         strict_count=strict_count,
         probation_count=probation_count,
         cleared_count=cleared_count,
-        good_standing_count=good_standing_count
+        good_standing_count=good_standing_count,
+        notices=notices
     )
 
 @bp.route('/students')
@@ -1980,6 +1984,69 @@ def admin_save_security():
     else:
         flash(f'Failed to update security credentials: {msg}', 'danger')
     return redirect(url_for('main.admin_settings'))
+
+
+# ============================================================================
+# Advisor Notice Board API Routes
+# ============================================================================
+
+@bp.route('/api/notices', methods=['GET'])
+def api_get_notices():
+    """Retrieve all notices on the advisor board."""
+    from app.notice_board_engine import get_all_notices
+    notices = get_all_notices()
+    return jsonify({'success': True, 'notices': notices})
+
+
+@bp.route('/api/notices', methods=['POST'])
+def api_create_notice():
+    """Create a new sticky note on the advisor notice board."""
+    from app.notice_board_engine import create_notice
+    data = request.get_json() or {}
+    new_notice = create_notice(data)
+    return jsonify({'success': True, 'notice': new_notice})
+
+
+@bp.route('/api/notices/<notice_id>', methods=['PUT', 'PATCH'])
+def api_update_notice(notice_id):
+    """Update fields of an existing sticky note."""
+    from app.notice_board_engine import update_notice
+    data = request.get_json() or {}
+    updated = update_notice(notice_id, data)
+    if not updated:
+        return jsonify({'success': False, 'error': 'Notice not found'}), 404
+    return jsonify({'success': True, 'notice': updated})
+
+
+@bp.route('/api/notices/<notice_id>', methods=['DELETE'])
+def api_delete_notice(notice_id):
+    """Delete a sticky note from the notice board."""
+    from app.notice_board_engine import delete_notice
+    deleted = delete_notice(notice_id)
+    if not deleted:
+        return jsonify({'success': False, 'error': 'Notice not found'}), 404
+    return jsonify({'success': True})
+
+
+@bp.route('/api/notices/reorder', methods=['POST'])
+def api_reorder_notices():
+    """Update the order ranking of notices after drag-and-drop."""
+    from app.notice_board_engine import reorder_notices
+    data = request.get_json() or {}
+    ordered_ids = data.get('ordered_ids', [])
+    reorder_notices(ordered_ids)
+    return jsonify({'success': True})
+
+
+@bp.route('/api/notices/auto-generate-risk', methods=['POST'])
+def api_auto_generate_risk():
+    """Scan cohort and auto-generate notices for all at-risk students."""
+    from app.notice_board_engine import auto_generate_risk_notices, get_all_notices
+    students = load_students_from_file()
+    count = auto_generate_risk_notices(students)
+    notices = get_all_notices()
+    return jsonify({'success': True, 'created_count': count, 'notices': notices})
+
 
 
 

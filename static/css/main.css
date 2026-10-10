@@ -688,3 +688,267 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 }
+
+/* ==========================================================================
+   Advisor Notice Board & Sticky Notes System
+   ========================================================================== */
+.notice-board-container {
+    background: #ffffff;
+    border-radius: var(--du-radius-lg);
+    box-shadow: var(--du-shadow-md);
+    border: 1px solid var(--du-border);
+    transition: all 0.3s ease;
+}
+
+.notice-board-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    border-top-left-radius: var(--du-radius-lg);
+    border-top-right-radius: var(--du-radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.notice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.15rem;
+    padding: 1.25rem;
+    min-height: 120px;
+}
+
+/* Notice Card Sticky Style */
+.notice-card {
+    position: relative;
+    border-radius: 12px;
+    padding: 1.1rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    border-left: 6px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+    cursor: grab;
+    user-select: none;
+}
+
+.notice-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06);
+}
+
+.notice-card.dragging {
+    opacity: 0.45;
+    transform: scale(0.97) rotate(1deg);
+    cursor: grabbing;
+}
+
+/* Card Sizes */
+.notice-card.size-small {
+    grid-column: span 1;
+    min-height: 160px;
+}
+
+.notice-card.size-medium {
+    grid-column: span 1;
+    min-height: 210px;
+}
+
+.notice-card.size-large {
+    grid-column: span 2;
+    min-height: 240px;
+}
+
+@media (max-width: 768px) {
+    .notice-card.size-large {
+        grid-column: span 1;
+    }
+}
+
+/* Font Scales */
+.notice-card.font-small .notice-content {
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+.notice-card.font-medium .notice-content {
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+.notice-card.font-large .notice-content {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* Color Palettes */
+.notice-card.color-yellow {
+    background-color: #fffbeb;
+    border-left-color: #f59e0b;
+    border-top: 1px solid #fef3c7;
+    border-right: 1px solid #fef3c7;
+    border-bottom: 1px solid #fde68a;
+}
+.notice-card.color-yellow .notice-title { color: #92400e; }
+.notice-card.color-yellow .notice-content { color: #78350f; }
+
+.notice-card.color-red {
+    background-color: #fef2f2;
+    border-left-color: #ef4444;
+    border-top: 1px solid #fee2e2;
+    border-right: 1px solid #fee2e2;
+    border-bottom: 1px solid #fecaca;
+}
+.notice-card.color-red .notice-title { color: #991b1b; }
+.notice-card.color-red .notice-content { color: #7f1d1d; }
+
+.notice-card.color-blue {
+    background-color: #f0f9ff;
+    border-left-color: #0284c7;
+    border-top: 1px solid #e0f2fe;
+    border-right: 1px solid #e0f2fe;
+    border-bottom: 1px solid #bae6fd;
+}
+.notice-card.color-blue .notice-title { color: #075985; }
+.notice-card.color-blue .notice-content { color: #0369a1; }
+
+.notice-card.color-green {
+    background-color: #f0fdf4;
+    border-left-color: #22c55e;
+    border-top: 1px solid #dcfce7;
+    border-right: 1px solid #dcfce7;
+    border-bottom: 1px solid #bbf7d0;
+}
+.notice-card.color-green .notice-title { color: #166534; }
+.notice-card.color-green .notice-content { color: #14532d; }
+
+.notice-card.color-purple {
+    background-color: #faf5ff;
+    border-left-color: #a855f7;
+    border-top: 1px solid #f3e8ff;
+    border-right: 1px solid #f3e8ff;
+    border-bottom: 1px solid #e9d5ff;
+}
+.notice-card.color-purple .notice-title { color: #6b21a8; }
+.notice-card.color-purple .notice-content { color: #581c87; }
+
+.notice-card.color-amber {
+    background-color: #fff7ed;
+    border-left-color: #f97316;
+    border-top: 1px solid #ffedd5;
+    border-right: 1px solid #ffedd5;
+    border-bottom: 1px solid #fed7aa;
+}
+.notice-card.color-amber .notice-title { color: #9a3412; }
+.notice-card.color-amber .notice-content { color: #7c2d12; }
+
+/* Pin and Completed States */
+.notice-card.pinned::before {
+    content: "\f08d";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    color: #dc2626;
+    font-size: 0.85rem;
+    transform: rotate(45deg);
+}
+
+.notice-card.completed {
+    opacity: 0.6;
+    border-left-color: #10b981 !important;
+}
+.notice-card.completed .notice-title {
+    text-decoration: line-through;
+}
+.notice-card.completed .notice-content {
+    text-decoration: line-through;
+}
+
+/* Notice Elements */
+.notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.notice-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    margin-bottom: 0;
+    line-height: 1.35;
+}
+
+.notice-content {
+    flex-grow: 1;
+    margin-bottom: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.notice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.6rem;
+    border-top: 1px dashed rgba(15, 23, 42, 0.12);
+    font-size: 0.76rem;
+}
+
+.notice-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.notice-btn-icon {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #475569;
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.notice-btn-icon:hover {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.notice-btn-icon.delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.color-dot-selector {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease;
+}
+
+.color-dot:hover {
+    transform: scale(1.18);
+}
+
+.color-dot.active {
+    border-color: #0f172a;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+}

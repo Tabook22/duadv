@@ -100,6 +100,262 @@
     </div>
 </div>
 
+<!-- ========================================================================= -->
+<!-- Advisor Action & Notice Board (Sticky Notes System) -->
+<!-- ========================================================================= -->
+<div class="notice-board-container mb-4">
+    <!-- Notice Board Header -->
+    <div class="notice-board-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-warning text-dark p-2 rounded-3 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px;">
+                <i class="fas fa-note-sticky fs-6"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold text-white d-flex align-items-center gap-2">
+                    Advisor Action &amp; Notice Board
+                    <span class="badge bg-warning text-dark rounded-pill" id="noticeCountBadge">{{ notices|length }}</span>
+                </h5>
+                <small class="text-light text-opacity-75">Prioritize advising tasks, pin student follow-ups, and organize next semester prep</small>
+            </div>
+        </div>
+        
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- Filter Dropdown -->
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-filter me-1"></i> <span id="currentNoticeFilter">All Categories</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item active" href="javascript:void(0)" onclick="filterNotices('all', this)"><i class="fas fa-layer-group me-2 text-primary"></i>All Notes</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('at_risk', this)"><i class="fas fa-triangle-exclamation me-2 text-danger"></i>At-Risk &amp; Probation</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('meeting', this)"><i class="fas fa-video me-2 text-success"></i>Meetings &amp; Office Hours</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('registration', this)"><i class="fas fa-calendar-check me-2 text-info"></i>Registration &amp; Plans</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('general', this)"><i class="fas fa-bookmark me-2 text-warning"></i>General &amp; Admin</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('pinned', this)"><i class="fas fa-thumbtack me-2 text-danger"></i>Pinned Only</a></li>
+                </ul>
+            </div>
+
+            <!-- Auto-Suggest for At-Risk Button -->
+            <button class="btn btn-sm btn-outline-warning text-warning border-warning" onclick="autoGenerateRiskNotices()" title="Scan advisees on probation and auto-create action notes">
+                <i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk
+            </button>
+
+            <!-- Add Note Button -->
+            <button class="btn btn-sm btn-primary shadow-sm" onclick="openNewNoticeModal()">
+                <i class="fas fa-plus me-1"></i> Add Sticky Note
+            </button>
+
+            <!-- Board Collapse Toggle -->
+            <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="collapse" data-bs-target="#noticeBoardBody" aria-expanded="true" title="Minimize / Expand Board">
+                <i class="fas fa-chevron-up" id="noticeBoardCollapseIcon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notice Board Body -->
+    <div class="collapse show" id="noticeBoardBody">
+        <!-- Search and Quick Filter Toolbar -->
+        <div class="bg-light px-3 py-2 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 360px;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" id="noticeSearchInput" class="form-control border-start-0" placeholder="Filter notes by keyword, student name or ID..." onkeyup="searchNotices()">
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <span><i class="fas fa-grip-vertical text-secondary me-1"></i> Drag cards to reorder</span>
+                <span class="mx-1">&bull;</span>
+                <span id="visibleNoticesText">{{ notices|length }} showing</span>
+            </div>
+        </div>
+
+        <!-- Sticky Notes Interactive Grid -->
+        <div class="notice-grid" id="noticeGrid">
+            {% for note in notices %}
+            <div class="notice-card color-{{ note.color }} size-{{ note.size }} font-{{ note.font_size }} {% if note.is_pinned %}pinned{% endif %} {% if note.is_completed %}completed{% endif %}" 
+                 id="card-{{ note.id }}"
+                 data-id="{{ note.id }}"
+                 data-category="{{ note.category }}"
+                 data-pinned="{{ 'true' if note.is_pinned else 'false' }}"
+                 data-completed="{{ 'true' if note.is_completed else 'false' }}"
+                 draggable="true">
+                
+                <!-- Card Header -->
+                <div class="notice-header">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                        <span class="notice-title">{{ note.title }}</span>
+                        {% if note.priority == 'high' %}
+                            <span class="badge bg-danger text-white rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">URGENT</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Linked Student Badge (if linked) -->
+                {% if note.student_id %}
+                <div class="mb-2">
+                    <a href="{{ url_for('main.student_detail', student_id=note.student_id) }}" class="badge bg-white text-dark border text-decoration-none shadow-xs d-inline-flex align-items-center gap-1.5 py-1 px-2" style="font-size: 0.72rem;">
+                        <i class="fas fa-user-graduate text-primary"></i>
+                        <strong>{{ note.student_name or note.student_id }}</strong>
+                        <span class="text-muted font-monospace">({{ note.student_id }})</span>
+                        <i class="fas fa-arrow-up-right-from-square text-secondary ms-0.5" style="font-size: 0.65rem;"></i>
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Content Body -->
+                <div class="notice-content">{{ note.content }}</div>
+
+                <!-- Footer with Controls -->
+                <div class="notice-footer">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-dark border-0 py-0.5 px-1.5" style="font-size: 0.68rem; text-transform: uppercase;">
+                            {{ note.category|replace('_', ' ') }}
+                        </span>
+                        {% if note.due_date %}
+                            <span class="text-danger fw-semibold" style="font-size: 0.7rem;" title="Target Due Date">
+                                <i class="far fa-clock me-1"></i>{{ note.due_date }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="notice-actions">
+                        <!-- Toggle Pin -->
+                        <button class="notice-btn-icon" onclick="togglePinNotice('{{ note.id }}')" title="{% if note.is_pinned %}Unpin Note{% else %}Pin to Top{% endif %}">
+                            <i class="fas fa-thumbtack {% if note.is_pinned %}text-danger{% endif %}"></i>
+                        </button>
+                        <!-- Toggle Completed -->
+                        <button class="notice-btn-icon" onclick="toggleCompleteNotice('{{ note.id }}')" title="{% if note.is_completed %}Mark Active{% else %}Mark Completed{% endif %}">
+                            <i class="fas fa-check {% if note.is_completed %}text-success{% endif %}"></i>
+                        </button>
+                        <!-- Edit Button -->
+                        <button class="notice-btn-icon" onclick="openEditNoticeModal('{{ note.id }}')" title="Edit Note &amp; Style">
+                            <i class="fas fa-pencil"></i>
+                        </button>
+                        <!-- Delete Button -->
+                        <button class="notice-btn-icon delete" onclick="deleteNotice('{{ note.id }}')" title="Delete Note">
+                            <i class="far fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Create / Edit Sticky Note -->
+<div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold" id="noticeModalLabel">
+                    <i class="fas fa-note-sticky text-warning me-2"></i>Sticky Note
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="noticeForm">
+                    <input type="hidden" id="noticeModalId" value="">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Note Title</label>
+                        <input type="text" id="noticeModalTitle" class="form-control" placeholder="e.g. Call for Article 14 Petition" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Note Details / Instructions</label>
+                        <textarea id="noticeModalContent" class="form-control" rows="3" placeholder="Write reminders, transcript action items, or meeting notes here..." required></textarea>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold">Link Advisee (Optional)</label>
+                            <select id="noticeModalStudent" class="form-select form-select-sm">
+                                <option value="">-- No Student Linked --</option>
+                                {% for s in students %}
+                                    <option value="{{ s.id }}" data-name="{{ s.name }}" data-program="{{ s.program or '' }}">
+                                        {{ s.name }} ({{ s.id }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold">Category</label>
+                            <select id="noticeModalCategory" class="form-select form-select-sm">
+                                <option value="at_risk">At-Risk / Probation</option>
+                                <option value="meeting">Meeting / Office Hours</option>
+                                <option value="registration">Registration / Study Plan</option>
+                                <option value="follow_up">Student Follow-up</option>
+                                <option value="general">General Advisory</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-4">
+                            <label class="form-label small fw-bold">Priority</label>
+                            <select id="noticeModalPriority" class="form-select form-select-sm">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High (Urgent)</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small fw-bold">Card Size</label>
+                            <select id="noticeModalSize" class="form-select form-select-sm">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large (Wide)</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-label small fw-bold">Font Size</label>
+                            <select id="noticeModalFontSize" class="form-select form-select-sm">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Normal</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold">Target Date (Optional)</label>
+                            <input type="date" id="noticeModalDueDate" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold">Sticky Color</label>
+                            <div class="color-dot-selector mt-1" id="colorPickerGroup">
+                                <div class="color-dot active" data-color="yellow" style="background: #fef08a;" onclick="selectNoticeColor('yellow')"></div>
+                                <div class="color-dot" data-color="red" style="background: #fca5a5;" onclick="selectNoticeColor('red')"></div>
+                                <div class="color-dot" data-color="blue" style="background: #93c5fd;" onclick="selectNoticeColor('blue')"></div>
+                                <div class="color-dot" data-color="green" style="background: #86efac;" onclick="selectNoticeColor('green')"></div>
+                                <div class="color-dot" data-color="purple" style="background: #d8b4fe;" onclick="selectNoticeColor('purple')"></div>
+                                <div class="color-dot" data-color="amber" style="background: #fdba74;" onclick="selectNoticeColor('amber')"></div>
+                            </div>
+                            <input type="hidden" id="noticeModalColor" value="yellow">
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="noticeModalPinned">
+                        <label class="form-check-label small" for="noticeModalPinned">
+                            <strong>Pin to top of board</strong>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm px-3" onclick="saveNoticeModal()">
+                    <i class="fas fa-floppy-disk me-1"></i> Save Note
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Cohort Academic Health Visual Bar -->
 {% if student_count > 0 %}
 <div class="card border-0 shadow-sm p-3 mb-4">
@@ -281,5 +537,317 @@ function filterDashboardTable() {
     const countEl = document.getElementById('filteredStudentCount');
     if (countEl) countEl.innerText = visibleCount;
 }
+
+/* ==========================================================================
+   Advisor Notice Board Client Engine (Drag-and-Drop, Filter, CRUD)
+   ========================================================================== */
+let activeNoticeFilter = 'all';
+
+// Initialize drag and drop on board cards
+function setupDragAndDrop() {
+    const grid = document.getElementById('noticeGrid');
+    if (!grid) return;
+    const cards = grid.querySelectorAll('.notice-card');
+
+    cards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+    });
+}
+
+let draggedCard = null;
+
+function handleDragStart(e) {
+    draggedCard = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.id);
+}
+
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    draggedCard = null;
+    saveCardOrder();
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    if (draggedCard && draggedCard !== this) {
+        const grid = document.getElementById('noticeGrid');
+        const cards = Array.from(grid.querySelectorAll('.notice-card'));
+        const draggedIndex = cards.indexOf(draggedCard);
+        const targetIndex = cards.indexOf(this);
+
+        if (draggedIndex < targetIndex) {
+            this.after(draggedCard);
+        } else {
+            this.before(draggedCard);
+        }
+    }
+}
+
+function saveCardOrder() {
+    const grid = document.getElementById('noticeGrid');
+    const cards = grid.querySelectorAll('.notice-card');
+    const ordered_ids = Array.from(cards).map(c => c.dataset.id);
+
+    fetch((window.APP_PREFIX || '') + '/api/notices/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ordered_ids })
+    }).catch(err => console.error('Failed to save order', err));
+}
+
+// Color picker selection in modal
+function selectNoticeColor(color) {
+    document.getElementById('noticeModalColor').value = color;
+    document.querySelectorAll('#colorPickerGroup .color-dot').forEach(dot => {
+        if (dot.dataset.color === color) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
+}
+
+// Modal open handlers
+let noticeModalInstance = null;
+function getNoticeModal() {
+    if (!noticeModalInstance) {
+        noticeModalInstance = new bootstrap.Modal(document.getElementById('noticeModal'));
+    }
+    return noticeModalInstance;
+}
+
+function openNewNoticeModal() {
+    document.getElementById('noticeModalLabel').innerHTML = '<i class="fas fa-plus text-warning me-2"></i>Add Sticky Note';
+    document.getElementById('noticeModalId').value = '';
+    document.getElementById('noticeModalTitle').value = '';
+    document.getElementById('noticeModalContent').value = '';
+    document.getElementById('noticeModalStudent').value = '';
+    document.getElementById('noticeModalCategory').value = 'general';
+    document.getElementById('noticeModalPriority').value = 'medium';
+    document.getElementById('noticeModalSize').value = 'medium';
+    document.getElementById('noticeModalFontSize').value = 'medium';
+    document.getElementById('noticeModalDueDate').value = '';
+    document.getElementById('noticeModalPinned').checked = false;
+    selectNoticeColor('yellow');
+    getNoticeModal().show();
+}
+
+function openEditNoticeModal(noteId) {
+    fetch((window.APP_PREFIX || '') + '/api/notices')
+        .then(r => r.json())
+        .then(res => {
+            const note = (res.notices || []).find(n => n.id === noteId);
+            if (!note) return;
+            document.getElementById('noticeModalLabel').innerHTML = '<i class="fas fa-pencil text-warning me-2"></i>Edit Sticky Note';
+            document.getElementById('noticeModalId').value = note.id;
+            document.getElementById('noticeModalTitle').value = note.title;
+            document.getElementById('noticeModalContent').value = note.content;
+            document.getElementById('noticeModalStudent').value = note.student_id || '';
+            document.getElementById('noticeModalCategory').value = note.category || 'general';
+            document.getElementById('noticeModalPriority').value = note.priority || 'medium';
+            document.getElementById('noticeModalSize').value = note.size || 'medium';
+            document.getElementById('noticeModalFontSize').value = note.font_size || 'medium';
+            document.getElementById('noticeModalDueDate').value = note.due_date || '';
+            document.getElementById('noticeModalPinned').checked = !!note.is_pinned;
+            selectNoticeColor(note.color || 'yellow');
+            getNoticeModal().show();
+        });
+}
+
+function saveNoticeModal() {
+    const id = document.getElementById('noticeModalId').value;
+    const studentSelect = document.getElementById('noticeModalStudent');
+    const selectedOption = studentSelect.options[studentSelect.selectedIndex];
+    const studentId = studentSelect.value;
+    const studentName = selectedOption ? (selectedOption.dataset.name || '') : '';
+    const program = selectedOption ? (selectedOption.dataset.program || '') : '';
+
+    const payload = {
+        title: document.getElementById('noticeModalTitle').value.trim(),
+        content: document.getElementById('noticeModalContent').value.trim(),
+        student_id: studentId,
+        student_name: studentName,
+        program: program,
+        category: document.getElementById('noticeModalCategory').value,
+        priority: document.getElementById('noticeModalPriority').value,
+        size: document.getElementById('noticeModalSize').value,
+        font_size: document.getElementById('noticeModalFontSize').value,
+        due_date: document.getElementById('noticeModalDueDate').value,
+        color: document.getElementById('noticeModalColor').value,
+        is_pinned: document.getElementById('noticeModalPinned').checked
+    };
+
+    if (!payload.title) {
+        alert('Please enter a note title.');
+        return;
+    }
+
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? ((window.APP_PREFIX || '') + `/api/notices/${id}`) : ((window.APP_PREFIX || '') + '/api/notices');
+
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            getNoticeModal().hide();
+            window.location.reload();
+        } else {
+            alert('Failed to save: ' + (res.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Server connection error');
+    });
+}
+
+function deleteNotice(noteId) {
+    if (!confirm('Are you sure you want to delete this sticky note?')) return;
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                const card = document.getElementById(`card-${noteId}`);
+                if (card) card.remove();
+                updateVisibleCounts();
+            }
+        });
+}
+
+function togglePinNotice(noteId) {
+    const card = document.getElementById(`card-${noteId}`);
+    if (!card) return;
+    const isCurrentlyPinned = card.dataset.pinned === 'true';
+    const newPinned = !isCurrentlyPinned;
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_pinned: newPinned })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.location.reload();
+        }
+    });
+}
+
+function toggleCompleteNotice(noteId) {
+    const card = document.getElementById(`card-${noteId}`);
+    if (!card) return;
+    const isCurrentlyCompleted = card.dataset.completed === 'true';
+    const newCompleted = !isCurrentlyCompleted;
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${noteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_completed: newCompleted })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            card.dataset.completed = newCompleted ? 'true' : 'false';
+            if (newCompleted) {
+                card.classList.add('completed');
+            } else {
+                card.classList.remove('completed');
+            }
+        }
+    });
+}
+
+function filterNotices(category, element) {
+    activeNoticeFilter = category;
+    if (element) {
+        document.querySelectorAll('.dropdown-menu .dropdown-item').forEach(i => i.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById('currentNoticeFilter').innerText = element.innerText.trim();
+    }
+    applyNoticeFilters();
+}
+
+function searchNotices() {
+    applyNoticeFilters();
+}
+
+function applyNoticeFilters() {
+    const query = (document.getElementById('noticeSearchInput')?.value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('#noticeGrid .notice-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const cat = card.dataset.category || 'general';
+        const pinned = card.dataset.pinned === 'true';
+
+        let matchesCat = true;
+        if (activeNoticeFilter === 'all') matchesCat = true;
+        else if (activeNoticeFilter === 'pinned') matchesCat = pinned;
+        else matchesCat = (cat === activeNoticeFilter);
+
+        let matchesSearch = query === '' || text.includes(query);
+
+        if (matchesCat && matchesSearch) {
+            card.style.display = 'flex';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const visibleText = document.getElementById('visibleNoticesText');
+    if (visibleText) visibleText.innerText = `${visibleCount} showing`;
+}
+
+function updateVisibleCounts() {
+    const cards = document.querySelectorAll('#noticeGrid .notice-card');
+    const badge = document.getElementById('noticeCountBadge');
+    if (badge) badge.innerText = cards.length;
+    applyNoticeFilters();
+}
+
+function autoGenerateRiskNotices() {
+    const btn = event?.currentTarget;
+    if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Scanning...';
+
+    fetch((window.APP_PREFIX || '') + '/api/notices/auto-generate-risk', { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                if (res.created_count > 0) {
+                    alert(`Created ${res.created_count} action notes for at-risk advisees!`);
+                    window.location.reload();
+                } else {
+                    alert('All at-risk advisees already have action notes on the board.');
+                    if (btn) btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk';
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (btn) btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk';
+        });
+}
+
+// Setup on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+    setupDragAndDrop();
+    applyNoticeFilters();
+});
 </script>
 {% endblock %}
