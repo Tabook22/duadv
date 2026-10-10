@@ -1532,3 +1532,415 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     .port-anchor.port-bottom { bottom: -11px !important; }
     .port-anchor.port-left   { left: -11px !important; }
 }
+
+/* ==========================================================================
+   Dark / Light Theme Toggle Control
+   ========================================================================== */
+.du-theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.38rem 0.72rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    color: #ffffff;
+    user-select: none;
+    line-height: 1;
+}
+
+.du-theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px) scale(1.03);
+    color: #ffffff;
+}
+
+.du-theme-toggle-btn:active {
+    transform: scale(0.96);
+}
+
+.du-theme-toggle-btn i {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+    font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Dark Theme Definition & Component Overrides [data-theme="dark"]
+   ========================================================================== */
+[data-theme="dark"] {
+    /* Primary & Vibrant Accents in Dark Mode */
+    --du-primary: #3b82f6;
+    --du-primary-hover: #60a5fa;
+    --du-primary-light: #93c5fd;
+    --du-primary-subtle: rgba(59, 130, 246, 0.18);
+
+    --du-accent: #38bdf8;
+    --du-success: #34d399;
+    --du-success-subtle: rgba(16, 185, 129, 0.18);
+    --du-warning: #fbbf24;
+    --du-warning-subtle: rgba(245, 158, 11, 0.18);
+    --du-danger: #f87171;
+    --du-danger-subtle: rgba(239, 68, 68, 0.18);
+    --du-purple: #a78bfa;
+    --du-purple-subtle: rgba(139, 92, 246, 0.18);
+
+    /* Surfaces & Typography */
+    --du-dark: #f8fafc;             /* Crisp bright text for dark mode */
+    --du-dark-muted: #cbd5e1;
+    --du-text-muted: #94a3b8;
+    --du-border: #334155;           /* Slate 700 */
+    --du-border-subtle: #1e293b;    /* Slate 800 */
+    --du-bg: #0b1120;               /* Deep obsidian slate canvas */
+    --du-card-bg: #131c31;          /* Elevated card surface */
+
+    /* Gradients */
+    --du-gradient-primary: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+    --du-gradient-hero: linear-gradient(135deg, #070c18 0%, #0f1d3d 55%, #172554 100%);
+    --du-gradient-card: linear-gradient(180deg, #162038 0%, #111a2e 100%);
+    --du-gradient-success: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+    --du-gradient-warning: linear-gradient(135deg, #92400e 0%, #f59e0b 100%);
+    --du-gradient-danger: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+    --du-gradient-purple: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%);
+
+    /* Elevation Shadows */
+    --du-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --du-shadow-sm: 0 2px 6px -1px rgba(0, 0, 0, 0.55), 0 1px 4px -1px rgba(0, 0, 0, 0.35);
+    --du-shadow-md: 0 6px 18px -3px rgba(0, 0, 0, 0.65), 0 3px 6px -2px rgba(0, 0, 0, 0.45);
+    --du-shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.75), 0 6px 12px -3px rgba(0, 0, 0, 0.55);
+    --du-shadow-hover: 0 16px 32px -4px rgba(59, 130, 246, 0.28), 0 8px 16px -4px rgba(0, 0, 0, 0.65);
+}
+
+/* Base Body & Bootstrap Reset in Dark Mode */
+[data-theme="dark"] body {
+    background-color: var(--du-bg);
+    color: var(--du-dark);
+}
+
+[data-theme="dark"] .du-theme-toggle-btn {
+    background: rgba(251, 191, 36, 0.16);
+    border-color: rgba(251, 191, 36, 0.38);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .du-theme-toggle-btn:hover {
+    background: rgba(251, 191, 36, 0.28);
+    border-color: rgba(251, 191, 36, 0.6);
+    color: #fef08a;
+}
+
+[data-theme="dark"] .bg-white {
+    background-color: var(--du-card-bg) !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: #0f172a !important;
+}
+
+[data-theme="dark"] .text-dark {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .text-secondary {
+    color: var(--du-text-muted) !important;
+}
+
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-top,
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-start,
+[data-theme="dark"] .border-end {
+    border-color: var(--du-border) !important;
+}
+
+/* Cards & Panels in Dark Mode */
+[data-theme="dark"] .card {
+    background: var(--du-card-bg);
+    border-color: var(--du-border);
+    box-shadow: var(--du-shadow-md);
+}
+
+[data-theme="dark"] .card:hover {
+    border-color: rgba(59, 130, 246, 0.45);
+}
+
+[data-theme="dark"] .card-header {
+    background: #162038;
+    border-bottom-color: var(--du-border);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .card-footer {
+    background: #0f172a;
+    border-top-color: var(--du-border);
+}
+
+[data-theme="dark"] .action-card {
+    background: var(--du-gradient-card);
+    border-color: var(--du-border);
+}
+
+[data-theme="dark"] .action-card:hover {
+    border-color: rgba(59, 130, 246, 0.55);
+}
+
+[data-theme="dark"] .stat-widget {
+    background: var(--du-card-bg);
+    border-color: var(--du-border);
+}
+
+/* Tables in Dark Mode */
+[data-theme="dark"] .table {
+    color: #f8fafc;
+    border-color: var(--du-border);
+}
+
+[data-theme="dark"] .table thead th {
+    background-color: #0f172a;
+    color: var(--du-text-muted);
+    border-bottom-color: var(--du-border);
+}
+
+[data-theme="dark"] .table tbody td {
+    border-bottom-color: var(--du-border-subtle);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover,
+[data-theme="dark"] .dashboard-student-row:hover {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Forms & Inputs in Dark Mode */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: #0f172a;
+    border-color: var(--du-border);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background-color: #0f172a;
+    border-color: var(--du-primary);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+[data-theme="dark"] .form-control::placeholder {
+    color: #64748b;
+}
+
+[data-theme="dark"] .input-group-text {
+    background-color: #1e293b;
+    border-color: var(--du-border);
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .du-search-bar input {
+    background-color: #0f172a;
+    border-color: var(--du-border);
+    color: #f8fafc;
+}
+
+/* Modals & Dropdowns in Dark Mode */
+[data-theme="dark"] .modal-content {
+    background-color: var(--du-card-bg);
+    border-color: var(--du-border);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .modal-footer {
+    border-color: var(--du-border);
+}
+
+[data-theme="dark"] .dropdown-menu {
+    background-color: var(--du-card-bg);
+    border-color: var(--du-border);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:focus {
+    background-color: #1e293b;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .dropdown-divider {
+    border-color: var(--du-border);
+}
+
+/* List Groups & Accordions in Dark Mode */
+[data-theme="dark"] .list-group-item {
+    background-color: var(--du-card-bg);
+    border-color: var(--du-border);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .list-group-item-action:hover {
+    background-color: #1e293b;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .accordion-item {
+    background-color: var(--du-card-bg);
+    border-color: var(--du-border);
+}
+
+[data-theme="dark"] .accordion-button {
+    background-color: #162038;
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .accordion-button:not(.collapsed) {
+    background-color: #1e293b;
+    color: var(--du-primary-light);
+}
+
+[data-theme="dark"] .accordion-button::after {
+    filter: invert(1);
+}
+
+/* Nav Tabs in Dark Mode */
+[data-theme="dark"] .nav-tabs {
+    border-bottom-color: var(--du-border);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link {
+    color: var(--du-text-muted);
+}
+
+[data-theme="dark"] .nav-tabs .nav-link:hover {
+    border-color: var(--du-border) var(--du-border) transparent;
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .nav-tabs .nav-link.active {
+    background-color: var(--du-card-bg);
+    border-color: var(--du-border) var(--du-border) var(--du-card-bg);
+    color: var(--du-primary-light);
+}
+
+/* Badges & Status Pills in Dark Mode */
+[data-theme="dark"] .badge.bg-light {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .du-status-strict {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.38);
+}
+
+[data-theme="dark"] .du-status-second {
+    background: rgba(249, 115, 22, 0.18);
+    color: #fdba74;
+    border-color: rgba(249, 115, 22, 0.38);
+}
+
+[data-theme="dark"] .du-status-first {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fde047;
+    border-color: rgba(245, 158, 11, 0.38);
+}
+
+[data-theme="dark"] .du-status-cleared {
+    background: rgba(16, 185, 129, 0.18);
+    color: #86efac;
+    border-color: rgba(16, 185, 129, 0.38);
+}
+
+[data-theme="dark"] .du-status-good {
+    background: rgba(16, 185, 129, 0.18);
+    color: #86efac;
+    border-color: rgba(16, 185, 129, 0.38);
+}
+
+/* Notice Board & Canvas Studio in Dark Mode */
+[data-theme="dark"] .notice-canvas-viewport {
+    background-color: #0b1120;
+    background-image: radial-gradient(#1e293b 1.2px, transparent 1.2px);
+}
+
+[data-theme="dark"] .canvas-zoom-hud {
+    background: rgba(15, 23, 42, 0.94);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .notice-filter-btn {
+    background: #0f172a;
+    border-color: var(--du-border);
+    color: var(--du-text-muted);
+}
+
+[data-theme="dark"] .notice-filter-btn:hover {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .notice-filter-btn.active {
+    background: var(--du-primary);
+    border-color: var(--du-primary);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .done-bin-drawer {
+    background: #0f172a;
+    border-left-color: var(--du-border);
+}
+
+[data-theme="dark"] .status-indicator-badge.status-pending {
+    background: #1e293b;
+    color: #94a3b8;
+    border-color: #334155;
+}
+
+/* Wiki Content in Dark Mode */
+[data-theme="dark"] .wiki-content h1,
+[data-theme="dark"] .wiki-content h2,
+[data-theme="dark"] .wiki-content h3,
+[data-theme="dark"] .wiki-content h4 {
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .wiki-content p,
+[data-theme="dark"] .wiki-content li {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .wiki-content code {
+    background: #1e293b;
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .wiki-content pre {
+    background: #0f172a;
+    border-color: var(--du-border);
+}
+
+[data-theme="dark"] .wiki-content blockquote {
+    border-left-color: var(--du-primary);
+    background: rgba(59, 130, 246, 0.08);
+    color: #cbd5e1;
+}
+
+/* Smooth Transition on Theme Switch */
+body, .card, .table, .form-control, .form-select, .notice-canvas-viewport, .modal-content, .dropdown-menu {
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}

@@ -12,7 +12,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Application Styles -->
     <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    <!-- Theme Early Script (Prevents flash of wrong theme) -->
     <script>
+        (function() {
+            var savedTheme = localStorage.getItem('du_theme');
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
         window.APP_PREFIX = "{{ request.script_root }}";
     </script>
     {% block styles %}{% endblock %}
@@ -97,6 +104,12 @@
                         <a class="nav-link nav-risk-pill" href="{{ url_for('main.students_at_risk') }}" title="Monitor students on academic probation">
                             <i class="fas fa-shield-halved me-1"></i> Students at Risk
                         </a>
+
+                        <!-- Dark / Light Theme Toggle Button -->
+                        <button type="button" class="btn btn-sm du-theme-toggle-btn" id="duThemeToggleBtn" title="Switch between Dark and Light Mode" aria-label="Toggle theme">
+                            <i class="fas fa-moon" id="duThemeIcon"></i>
+                            <span class="d-none d-xl-inline ms-1 small" id="duThemeLabel">Dark</span>
+                        </button>
                         
                         <!-- Advisor / Admin Account Badge & Actions -->
                         <div class="d-flex align-items-center ms-2 text-white-50 border-start border-white border-opacity-20 ps-3 gap-2">

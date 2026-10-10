@@ -68,9 +68,63 @@ function createToastContainer() {
     return container;
 }
 
+// Theme Toggle (Dark / Light Mode)
+function initThemeToggle() {
+    const toggleBtn = document.getElementById('duThemeToggleBtn');
+    const themeIcon = document.getElementById('duThemeIcon');
+    const themeLabel = document.getElementById('duThemeLabel');
+
+    function updateToggleUI(theme) {
+        if (!themeIcon) return;
+        if (theme === 'dark') {
+            themeIcon.className = 'fas fa-sun text-warning';
+            if (themeLabel) themeLabel.textContent = 'Light';
+            if (toggleBtn) toggleBtn.setAttribute('title', 'Switch to Light Mode');
+        } else {
+            themeIcon.className = 'fas fa-moon text-light';
+            if (themeLabel) themeLabel.textContent = 'Dark';
+            if (toggleBtn) toggleBtn.setAttribute('title', 'Switch to Dark Mode');
+        }
+    }
+
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    updateToggleUI(currentTheme);
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('du_theme', newTheme);
+            updateToggleUI(newTheme);
+
+            if (themeIcon) {
+                themeIcon.style.transform = 'rotate(360deg)';
+                setTimeout(() => { themeIcon.style.transform = ''; }, 350);
+            }
+
+            window.dispatchEvent(new CustomEvent('duThemeChanged', { detail: { theme: newTheme } }));
+        });
+    }
+
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('du_theme')) {
+                const sysTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', sysTheme);
+                updateToggleUI(sysTheme);
+                window.dispatchEvent(new CustomEvent('duThemeChanged', { detail: { theme: sysTheme } }));
+            }
+        });
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dhofar University Student Management System initialized');
+    initThemeToggle();
     
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
