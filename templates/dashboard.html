@@ -784,7 +784,13 @@ function saveNoticeModal() {
     .then(res => {
         if (res.success) {
             getNoticeModal().hide();
-            window.location.reload();
+            // If inside Interactive Studio, live update canvas seamlessly without full reload
+            const studioEl = document.getElementById('noticeStudioModal');
+            if (studioEl && studioEl.classList.contains('show')) {
+                loadAndRenderStudio();
+            } else {
+                window.location.reload();
+            }
         } else {
             alert('Failed to save: ' + (res.error || 'Unknown error'));
         }
@@ -983,6 +989,12 @@ function renderStudioCanvas() {
         card.style.top = `${posY}px`;
 
         card.innerHTML = `
+            <!-- 4 Directional Anchor Ports for Multi-Angle Linking -->
+            <div class="port-anchor port-top" data-port="top" data-id="${note.id}" title="Drag line from Top"></div>
+            <div class="port-anchor port-right" data-port="right" data-id="${note.id}" title="Drag line from Right"></div>
+            <div class="port-anchor port-bottom" data-port="bottom" data-id="${note.id}" title="Drag line from Bottom"></div>
+            <div class="port-anchor port-left" data-port="left" data-id="${note.id}" title="Drag line from Left"></div>
+
             <div class="notice-header">
                 <span class="notice-title">${note.title}</span>
                 ${note.priority === 'high' ? '<span class="badge bg-danger text-white rounded-pill px-1.5 py-0.5" style="font-size: 0.65rem;">URGENT</span>' : ''}
@@ -1003,7 +1015,7 @@ function renderStudioCanvas() {
                     <button class="notice-btn-icon" onclick="completeAndSetAside('${note.id}', event)" title="Tick &amp; Set Aside to Completed Bin">
                         <i class="fas fa-check text-success"></i>
                     </button>
-                    <button class="notice-btn-icon" onclick="openEditNoticeModal('${note.id}')" title="Edit Note">
+                    <button class="notice-btn-icon" onclick="openEditNoticeModal('${note.id}')" title="Edit Title, Content &amp; Color">
                         <i class="fas fa-pencil"></i>
                     </button>
                     <button class="notice-btn-icon delete" onclick="deleteStudioNotice('${note.id}', event)" title="Delete">
@@ -1026,6 +1038,9 @@ function renderStudioCanvas() {
 
         container.appendChild(card);
     });
+
+    // Initialize drag-to-connect line from any of the 4 ports
+    setupPortDragConnecting();
 
     renderCanvasConnectors();
 }
@@ -1126,7 +1141,7 @@ function enableFreeCardDragging(card, noteId) {
     let initialLeft = 0, initialTop = 0;
 
     card.addEventListener('mousedown', (e) => {
-        if (e.target.closest('button') || e.target.closest('a') || isLinkingMode) return;
+        if (e.target.closest('button') || e.target.closest('a') || e.target.classList.contains('port-anchor') || isLinkingMode) return;
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
@@ -1169,7 +1184,99 @@ function enableFreeCardDragging(card, noteId) {
     });
 }
 
-// Linking Notes feature (Drawing lines between related notices)
+/* ==========================================================================
+   Drag-to-Connect from Anchor Ports (Top, Right, Bottom, Left)
+   ========================================================================== */
+function setupPortDragConnecting() {
+    const ports = document.querySelectorAll('.port-anchor');
+    const viewport = document.getElementById('noticeCanvasViewport');
+    const svg = document.getElementById('canvasConnectorSvg');
+    if (!viewport || !svg) return;
+
+    ports.forEach(port => {
+        port.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const sourceId = port.dataset.id;
+            const sourceCard = document.getElementById(`studio-card-${sourceId}`);
+            if (!sourceCard) return;
+
+            const rect = port.getBoundingClientRect();
+            const vpRect = viewport.getBoundingClientRect();
+
+            const startX = rect.left - vpRect.left + viewport.scrollLeft + 7;
+            const startY = rect.top - vpRect.top + viewport.scrollTop + 7;
+
+            // In-flight SVG path
+            const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            tempPath.setAttribute('class', 'canvas-connector-line inflight');
+            svg.appendChild(tempPath);
+
+            function onDragLine(ev) {
+                const curX = ev.clientX - vpRect.left + viewport.scrollLeft;
+                const curY = ev.clientY - vpRect.top + viewport.scrollTop;
+                const dx = Math.abs(curX - startX) * 0.5;
+                const d = `M ${startX} ${startY} C ${startX + dx} ${startY}, ${curX - dx} ${curY}, ${curX} ${curY}`;
+                tempPath.setAttribute('d', d);
+            }
+
+            function onReleaseLine(ev) {
+                window.removeEventListener('mousemove', onDragLine);
+                window.removeEventListener('mouseup', onReleaseLine);
+                tempPath.remove();
+
+                // Detect element underneath pointer
+                const dropTarget = document.elementFromPoint(ev.clientX, ev.clientY);
+                const targetCard = dropTarget ? dropTarget.closest('.canvas-card') : null;
+
+                if (targetCard && targetCard.dataset.id && targetCard.dataset.id !== sourceId) {
+                    const targetId = targetCard.dataset.id;
+                    createOrToggleConnection(sourceId, targetId);
+                }
+            }
+
+            window.addEventListener('mousemove', onDragLine);
+            window.addEventListener('mouseup', onReleaseLine);
+        });
+    });
+}
+
+function createOrToggleConnection(sourceId, targetId) {
+    const sourceNote = studioNotices.find(n => n.id === sourceId);
+    if (!sourceNote) return;
+
+    const currentLinks = sourceNote.linked_to || [];
+    if (!currentLinks.includes(targetId)) {
+        currentLinks.push(targetId);
+    }
+
+    fetch((window.APP_PREFIX || '') + `/api/notices/${sourceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linked_to: currentLinks })
+    }).then(() => {
+        sourceNote.linked_to = currentLinks;
+        renderCanvasConnectors();
+    });
+}
+
+function removeConnection(sourceId, targetId) {
+    const sourceNote = studioNotices.find(n => n.id === sourceId);
+    if (!sourceNote) return;
+
+    const currentLinks = (sourceNote.linked_to || []).filter(id => id !== targetId);
+    fetch((window.APP_PREFIX || '') + `/api/notices/${sourceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linked_to: currentLinks })
+    }).then(() => {
+        sourceNote.linked_to = currentLinks;
+        renderCanvasConnectors();
+    });
+}
+
+// Linking Notes click fallback mode
 function toggleLinkingMode() {
     isLinkingMode = !isLinkingMode;
     const btn = document.getElementById('studioLinkToggleBtn');
@@ -1196,7 +1303,6 @@ function toggleLinkingMode() {
 
 function handleCardLinkClick(noteId) {
     const text = document.getElementById('studioLinkBtnText');
-    const cards = document.querySelectorAll('.canvas-card');
 
     if (!linkSourceId) {
         linkSourceId = noteId;
@@ -1209,30 +1315,52 @@ function handleCardLinkClick(noteId) {
             return;
         }
 
-        // Link them
-        const sourceNote = studioNotices.find(n => n.id === linkSourceId);
-        if (sourceNote) {
-            const currentLinks = sourceNote.linked_to || [];
-            if (!currentLinks.includes(noteId)) {
-                currentLinks.push(noteId);
-            } else {
-                // If already linked, toggle disconnect
-                const idx = currentLinks.indexOf(noteId);
-                currentLinks.splice(idx, 1);
-            }
-
-            fetch((window.APP_PREFIX || '') + `/api/notices/${linkSourceId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ linked_to: currentLinks })
-            }).then(() => {
-                sourceNote.linked_to = currentLinks;
-                renderCanvasConnectors();
-            });
-        }
-
+        createOrToggleConnection(linkSourceId, noteId);
         toggleLinkingMode();
     }
+}
+
+function getBestPortCoordinates(srcCard, tgtCard) {
+    const srcLeft = parseInt(srcCard.style.left, 10) || 0;
+    const srcTop = parseInt(srcCard.style.top, 10) || 0;
+    const srcWidth = srcCard.offsetWidth || 280;
+    const srcHeight = srcCard.offsetHeight || 160;
+
+    const tgtLeft = parseInt(tgtCard.style.left, 10) || 0;
+    const tgtTop = parseInt(tgtCard.style.top, 10) || 0;
+    const tgtWidth = tgtCard.offsetWidth || 280;
+    const tgtHeight = tgtCard.offsetHeight || 160;
+
+    const srcCenterX = srcLeft + srcWidth / 2;
+    const srcCenterY = srcTop + srcHeight / 2;
+    const tgtCenterX = tgtLeft + tgtWidth / 2;
+    const tgtCenterY = tgtTop + tgtHeight / 2;
+
+    const dx = tgtCenterX - srcCenterX;
+    const dy = tgtCenterY - srcCenterY;
+
+    let srcX = srcCenterX, srcY = srcCenterY;
+    let tgtX = tgtCenterX, tgtY = tgtCenterY;
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+        if (dx > 0) {
+            srcX = srcLeft + srcWidth;
+            tgtX = tgtLeft;
+        } else {
+            srcX = srcLeft;
+            tgtX = tgtLeft + tgtWidth;
+        }
+    } else {
+        if (dy > 0) {
+            srcY = srcTop + srcHeight;
+            tgtY = tgtTop;
+        } else {
+            srcY = srcTop;
+            tgtY = tgtTop + tgtHeight;
+        }
+    }
+
+    return { srcX, srcY, tgtX, tgtY };
 }
 
 function renderCanvasConnectors() {
@@ -1245,23 +1373,48 @@ function renderCanvasConnectors() {
         const srcCard = document.getElementById(`studio-card-${note.id}`);
         if (!srcCard) return;
 
-        const srcX = (parseInt(srcCard.style.left, 10) || 0) + (srcCard.offsetWidth / 2);
-        const srcY = (parseInt(srcCard.style.top, 10) || 0) + (srcCard.offsetHeight / 2);
-
         note.linked_to.forEach(targetId => {
             const tgtCard = document.getElementById(`studio-card-${targetId}`);
             if (!tgtCard) return;
 
-            const tgtX = (parseInt(tgtCard.style.left, 10) || 0) + (tgtCard.offsetWidth / 2);
-            const tgtY = (parseInt(tgtCard.style.top, 10) || 0) + (tgtCard.offsetHeight / 2);
+            const { srcX, srcY, tgtX, tgtY } = getBestPortCoordinates(srcCard, tgtCard);
 
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+            const midX = (srcX + tgtX) / 2;
+            const midY = (srcY + tgtY) / 2;
             const dx = Math.abs(tgtX - srcX) * 0.5;
             const d = `M ${srcX} ${srcY} C ${srcX + dx} ${srcY}, ${tgtX - dx} ${tgtY}, ${tgtX} ${tgtY}`;
 
             path.setAttribute('d', d);
             path.setAttribute('class', 'canvas-connector-line');
-            svg.appendChild(path);
+            g.appendChild(path);
+
+            // Midpoint Unlink button (×)
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', midX);
+            circle.setAttribute('cy', midY);
+            circle.setAttribute('r', '9');
+            circle.setAttribute('fill', '#ef4444');
+            circle.setAttribute('class', 'line-delete-badge');
+            circle.setAttribute('title', 'Click to remove this connection');
+            circle.addEventListener('click', () => removeConnection(note.id, targetId));
+            g.appendChild(circle);
+
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', midX);
+            text.setAttribute('y', midY + 3.5);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#ffffff');
+            text.setAttribute('font-size', '10px');
+            text.setAttribute('font-weight', 'bold');
+            text.setAttribute('class', 'line-delete-badge');
+            text.textContent = '×';
+            text.addEventListener('click', () => removeConnection(note.id, targetId));
+            g.appendChild(text);
+
+            svg.appendChild(g);
         });
     });
 }
