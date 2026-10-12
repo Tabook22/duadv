@@ -12,6 +12,19 @@ def index():
     """Landing page"""
     return render_template('index.html')
 
+@bp.route('/set-language/<lang>')
+def set_language(lang):
+    """Switch active interface language (English or Arabic) and persist in session"""
+    lang = (lang or '').lower().strip()
+    if lang in ['en', 'ar']:
+        session['lang'] = lang
+    
+    referrer = request.referrer
+    if referrer and request.host in referrer:
+        return redirect(referrer)
+    return redirect(url_for('main.dashboard'))
+
+
 @bp.route('/dashboard')
 def dashboard():
     """Main dashboard"""

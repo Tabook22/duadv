@@ -32,15 +32,19 @@ def create_app(config_name=None):
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     
-    # Context processor for global application settings and admin session state
+    # Context processor for global application settings, admin session state, and i18n
     @app.context_processor
     def inject_app_context():
         from flask import session
         from app.settings_manager import get_settings
+        from app.i18n import get_current_language, is_rtl, t
         return {
             'app_settings': get_settings(),
             'is_admin_logged_in': session.get('is_admin', False),
-            'admin_username': session.get('admin_username', '')
+            'admin_username': session.get('admin_username', ''),
+            'current_lang': get_current_language(),
+            'is_rtl': is_rtl(),
+            't': t
         }
     
     # Optional global login enforcement if admin configured require_login_for_portal

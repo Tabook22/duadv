@@ -8,25 +8,25 @@
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
             <span class="badge bg-primary px-2.5 py-1">
-                <i class="fas fa-university me-1"></i> Dhofar University
+                <i class="fas fa-university me-1"></i> {{ t('app_title') }}
             </span>
             <span class="badge bg-light text-dark border">
-                <i class="far fa-calendar-alt text-primary me-1"></i> Academic Year 2026-2027
+                <i class="far fa-calendar-alt text-primary me-1"></i> {{ t('academic_year') }}
             </span>
         </div>
         <h2 class="fw-bold mb-0 text-dark">
-            <i class="fas fa-chart-pie text-primary me-2"></i>Supervisor Advising Dashboard
+            <i class="fas fa-chart-pie text-primary me-2"></i>{{ t('supervisor_dashboard') }}
         </h2>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger btn-sm shadow-sm">
-            <i class="fas fa-triangle-exclamation me-1"></i> Students at Risk ({{ strict_count + probation_count }})
+            <i class="fas fa-triangle-exclamation me-1"></i> {{ t('students_at_risk') }} ({{ strict_count + probation_count }})
         </a>
         <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-success btn-sm shadow-sm">
-            <i class="fas fa-video me-1"></i> Office Hours Hub
+            <i class="fas fa-video me-1"></i> {{ t('office_hours_hub') }}
         </a>
         <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrows-rotate me-1"></i> Sync Roster
+            <i class="fas fa-arrows-rotate me-1"></i> {{ t('sync_roster') }}
         </a>
     </div>
 </div>
@@ -37,12 +37,12 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-widget stat-widget-primary">
             <i class="fas fa-users-rectangle stat-bg-icon"></i>
-            <div class="stat-label">Total Advisees</div>
+            <div class="stat-label">{{ t('total_advisees') }}</div>
             <div class="stat-value">{{ student_count }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
-                <span class="small text-white-50">Active registered cohort</span>
+                <span class="small text-white-50">{{ t('active_cohort') }}</span>
                 <a href="{{ url_for('main.students') }}" class="text-white text-decoration-none small fw-semibold">
-                    View roster &rarr;
+                    {{ t('view_roster') }} {% if is_rtl %}&larr;{% else %}&rarr;{% endif %}
                 </a>
             </div>
         </div>
@@ -52,18 +52,18 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-widget stat-widget-success">
             <i class="fas fa-circle-check stat-bg-icon"></i>
-            <div class="stat-label">Good Standing &amp; Cleared</div>
+            <div class="stat-label">{{ t('good_standing_cleared') }}</div>
             <div class="stat-value">{{ good_standing_count + cleared_count }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
                 <span class="small text-white-50">
                     {% if student_count > 0 %}
-                        {{ ((good_standing_count + cleared_count) / student_count * 100)|round(1) }}% of cohort
+                        {{ ((good_standing_count + cleared_count) / student_count * 100)|round(1) }}%
                     {% else %}
                         0%
                     {% endif %}
                 </span>
                 <span class="badge bg-white bg-opacity-20 text-white small">
-                    <i class="fas fa-arrow-trend-up me-1"></i>CGPA &ge; 65%
+                    <i class="fas fa-arrow-trend-up me-1"></i>{{ t('cgpa_threshold_label') }}
                 </span>
             </div>
         </div>
@@ -73,12 +73,12 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-widget stat-widget-warning">
             <i class="fas fa-triangle-exclamation stat-bg-icon"></i>
-            <div class="stat-label">Academic Probation</div>
+            <div class="stat-label">{{ t('academic_probation') }}</div>
             <div class="stat-value">{{ probation_count }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark border-opacity-10">
-                <span class="small text-dark-emphasis">12-credit cap enforced</span>
+                <span class="small text-dark-emphasis">{{ t('credit_cap_enforced') }}</span>
                 <span class="badge bg-dark bg-opacity-15 text-dark small">
-                    Article 14 Warning
+                    {{ t('article_14_warning') }}
                 </span>
             </div>
         </div>
@@ -88,12 +88,12 @@
     <div class="col-sm-6 col-xl-3">
         <div class="stat-widget stat-widget-danger">
             <i class="fas fa-shield-cat stat-bg-icon"></i>
-            <div class="stat-label">Strict Probation</div>
+            <div class="stat-label">{{ t('strict_probation') }}</div>
             <div class="stat-value">{{ strict_count }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
-                <span class="small text-white-50">Dismissal threshold</span>
+                <span class="small text-white-50">{{ t('dismissal_threshold') }}</span>
                 <a href="{{ url_for('main.students_at_risk') }}" class="text-white text-decoration-none small fw-semibold">
-                    Intervene now &rarr;
+                    {{ t('intervene_now') }} {% if is_rtl %}&larr;{% else %}&rarr;{% endif %}
                 </a>
             </div>
         </div>
@@ -112,10 +112,10 @@
             </div>
             <div>
                 <h5 class="mb-0 fw-bold text-white d-flex align-items-center gap-2">
-                    Advisor Action &amp; Notice Board
+                    {{ t('notice_board_title') }}
                     <span class="badge bg-warning text-dark rounded-pill" id="noticeCountBadge">{{ notices|length }}</span>
                 </h5>
-                <small class="text-light text-opacity-75">Prioritize advising tasks, pin student follow-ups, and organize next semester prep</small>
+                <small class="text-light text-opacity-75">{{ t('notice_board_subtitle') }}</small>
             </div>
         </div>
         
@@ -123,32 +123,32 @@
             <!-- Filter Dropdown -->
             <div class="btn-group btn-group-sm">
                 <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-filter me-1"></i> <span id="currentNoticeFilter">All Categories</span>
+                    <i class="fas fa-filter me-1"></i> <span id="currentNoticeFilter">{{ t('all_notes') }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li><a class="dropdown-item active" href="javascript:void(0)" onclick="filterNotices('all', this)"><i class="fas fa-layer-group me-2 text-primary"></i>All Notes</a></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('at_risk', this)"><i class="fas fa-triangle-exclamation me-2 text-danger"></i>At-Risk &amp; Probation</a></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('meeting', this)"><i class="fas fa-video me-2 text-success"></i>Meetings &amp; Office Hours</a></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('registration', this)"><i class="fas fa-calendar-check me-2 text-info"></i>Registration &amp; Plans</a></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('general', this)"><i class="fas fa-bookmark me-2 text-warning"></i>General &amp; Admin</a></li>
+                    <li><a class="dropdown-item active" href="javascript:void(0)" onclick="filterNotices('all', this)"><i class="fas fa-layer-group me-2 text-primary"></i>{{ t('all_notes') }}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('at_risk', this)"><i class="fas fa-triangle-exclamation me-2 text-danger"></i>{{ t('students_at_risk') }}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('meeting', this)"><i class="fas fa-video me-2 text-success"></i>{{ t('virtual_office') }}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('registration', this)"><i class="fas fa-calendar-check me-2 text-info"></i>{{ t('schedule') }}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('general', this)"><i class="fas fa-bookmark me-2 text-warning"></i>{{ t('policies') }}</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('pinned', this)"><i class="fas fa-thumbtack me-2 text-danger"></i>Pinned Only</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="filterNotices('pinned', this)"><i class="fas fa-thumbtack me-2 text-danger"></i>{{ t('pinned_only') }}</a></li>
                 </ul>
             </div>
 
             <!-- Auto-Suggest for At-Risk Button -->
-            <button class="btn btn-sm btn-outline-warning text-warning border-warning" onclick="autoGenerateRiskNotices()" title="Scan advisees on probation and auto-create action notes">
-                <i class="fas fa-wand-magic-sparkles me-1"></i> Auto-Detect At-Risk
+            <button class="btn btn-sm btn-outline-warning text-warning border-warning" onclick="autoGenerateRiskNotices()" title="{{ t('auto_detect_risk') }}">
+                <i class="fas fa-wand-magic-sparkles me-1"></i> {{ t('auto_detect_risk') }}
             </button>
 
             <!-- Interactive 80% Screen Studio Modal Button -->
-            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm" onclick="openNoticeStudioModal()" title="Open 80% screen full interactive whiteboard studio">
-                <i class="fas fa-expand me-1"></i> Interactive Studio
+            <button class="btn btn-sm btn-info text-dark fw-bold shadow-sm" onclick="openNoticeStudioModal()" title="{{ t('interactive_studio') }}">
+                <i class="fas fa-expand me-1"></i> {{ t('interactive_studio') }}
             </button>
 
             <!-- Add Note Button -->
             <button class="btn btn-sm btn-primary shadow-sm" onclick="openNewNoticeModal()">
-                <i class="fas fa-plus me-1"></i> Add Sticky Note
+                <i class="fas fa-plus me-1"></i> {{ t('add_sticky_note') }}
             </button>
 
             <!-- Board Collapse Toggle -->
@@ -165,7 +165,7 @@
             <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 360px;">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                    <input type="text" id="noticeSearchInput" class="form-control border-start-0" placeholder="Filter notes by keyword, student name or ID..." onkeyup="searchNotices()">
+                    <input type="text" id="noticeSearchInput" class="form-control border-start-0" placeholder="{{ t('filter_by_keyword') }}" onkeyup="searchNotices()">
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2 small text-muted">
@@ -508,21 +508,21 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
             <i class="fas fa-heart-pulse text-danger"></i>
-            <strong class="text-dark small text-uppercase" style="letter-spacing: 0.5px;">Cohort Health Distribution</strong>
+            <strong class="text-dark small text-uppercase" style="letter-spacing: 0.5px;">{{ t('cohort_health_distribution') }}</strong>
         </div>
         <div class="d-flex gap-3 small">
-            <span><span class="pulse-dot success"></span> Good Standing: <strong>{{ good_standing_count + cleared_count }}</strong></span>
-            <span><span class="pulse-dot warning"></span> Probation: <strong>{{ probation_count }}</strong></span>
-            <span><span class="pulse-dot danger"></span> Strict: <strong>{{ strict_count }}</strong></span>
+            <span><span class="pulse-dot success"></span> {{ t('good_standing_cleared') }}: <strong>{{ good_standing_count + cleared_count }}</strong></span>
+            <span><span class="pulse-dot warning"></span> {{ t('academic_probation') }}: <strong>{{ probation_count }}</strong></span>
+            <span><span class="pulse-dot danger"></span> {{ t('strict_probation') }}: <strong>{{ strict_count }}</strong></span>
         </div>
     </div>
     {% set good_pct = ((good_standing_count + cleared_count) / student_count * 100)|round(1) %}
     {% set prob_pct = (probation_count / student_count * 100)|round(1) %}
     {% set strict_pct = (strict_count / student_count * 100)|round(1) %}
     <div class="progress" style="height: 10px; border-radius: 6px; overflow: hidden; background-color: #f1f5f9;">
-        <div class="progress-bar bg-success" role="progressbar" style="width: {{ good_pct }}%;" title="Good Standing: {{ good_pct }}%"></div>
-        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ prob_pct }}%;" title="Probation: {{ prob_pct }}%"></div>
-        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ strict_pct }}%;" title="Strict: {{ strict_pct }}%"></div>
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ good_pct }}%;" title="{{ t('good_standing_cleared') }}: {{ good_pct }}%"></div>
+        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ prob_pct }}%;" title="{{ t('academic_probation') }}: {{ prob_pct }}%"></div>
+        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ strict_pct }}%;" title="{{ t('strict_probation') }}: {{ strict_pct }}%"></div>
     </div>
 </div>
 {% endif %}
@@ -537,8 +537,8 @@
                         <i class="fas fa-user-graduate"></i>
                     </div>
                     <div>
-                        <h6 class="mb-0 fw-bold">Advisee Cohort Overview</h6>
-                        <small class="text-muted">Showing <span id="filteredStudentCount">{{ student_count }}</span> advisees</small>
+                        <h6 class="mb-0 fw-bold">{{ t('advisee_cohort_overview') }}</h6>
+                        <small class="text-muted">{{ t('showing_advisees') }} <span id="filteredStudentCount">{{ student_count }}</span></small>
                     </div>
                 </div>
             </div>
@@ -547,10 +547,10 @@
                     <!-- Quick Live Search Input -->
                     <div class="du-search-bar" style="min-width: 240px;">
                         <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="dashboardSearchInput" class="form-control form-control-sm" placeholder="Search by name, ID, or program..." onkeyup="filterDashboardTable()">
+                        <input type="text" id="dashboardSearchInput" class="form-control form-control-sm" placeholder="{{ t('search_placeholder') }}" onkeyup="filterDashboardTable()">
                     </div>
                     <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-arrow-up-right-from-square me-1"></i> Full Directory
+                        <i class="fas fa-arrow-up-right-from-square me-1"></i> {{ t('full_directory') }}
                     </a>
                 </div>
             </div>
@@ -564,13 +564,13 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;"></th>
-                            <th>Student ID</th>
-                            <th>Name</th>
-                            <th>Program / Major</th>
-                            <th>Status / Standing</th>
-                            <th title="Cumulative GPA - Graduation Requirement >= 65.0%">CGPA</th>
-                            <th title="Latest Semester GPA - Probation Metric">SGPA</th>
-                            <th class="text-end pe-3">Actions</th>
+                            <th>{{ t('student_id') }}</th>
+                            <th>{{ t('name') }}</th>
+                            <th>{{ t('program_major') }}</th>
+                            <th>{{ t('standing_status') }}</th>
+                            <th title="Cumulative GPA - Graduation Requirement >= 65.0%">{{ t('cgpa') }}</th>
+                            <th title="Latest Semester GPA - Probation Metric">{{ t('sgpa') }}</th>
+                            <th class="text-end pe-3">{{ t('actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -591,23 +591,23 @@
                             <td>
                                 {% if 'Strict' in st or 'Third' in st %}
                                     <span class="du-status-pill du-status-strict">
-                                        <i class="fas fa-triangle-exclamation"></i>{{ st }}
+                                        <i class="fas fa-triangle-exclamation"></i>{{ t('status_strict_probation') if is_rtl else st }}
                                     </span>
                                 {% elif 'Second Probation' in st %}
                                     <span class="du-status-pill du-status-second">
-                                        <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                        <i class="fas fa-circle-exclamation"></i>{{ t('status_second_probation') if is_rtl else st }}
                                     </span>
                                 {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
                                     <span class="du-status-pill du-status-first">
-                                        <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                        <i class="fas fa-circle-exclamation"></i>{{ t('status_first_probation') if is_rtl else st }}
                                     </span>
                                 {% elif 'Removal' in st %}
                                     <span class="du-status-pill du-status-cleared">
-                                        <i class="fas fa-shield-halved"></i>{{ st }}
+                                        <i class="fas fa-shield-halved"></i>{{ t('status_cleared') if is_rtl else st }}
                                     </span>
                                 {% else %}
                                     <span class="du-status-pill du-status-good">
-                                        <i class="fas fa-circle-check"></i>{{ st }}
+                                        <i class="fas fa-circle-check"></i>{{ t('status_normal') if is_rtl else st }}
                                     </span>
                                 {% endif %}
                             </td>
@@ -634,7 +634,7 @@
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('main.student_detail', student_id=student.id) }}" 
                                        class="btn btn-outline-primary" title="View Student Academic Profile">
-                                        <i class="fas fa-id-card me-1"></i> Profile
+                                        <i class="fas fa-id-card me-1"></i> {{ t('profile') }}
                                     </a>
                                     <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
                                        target="_blank" class="btn btn-outline-danger" title="Open Official PDF Transcript">

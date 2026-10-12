@@ -8,19 +8,19 @@
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
             <span class="badge bg-primary px-2.5 py-1">
-                <i class="fas fa-graduation-cap me-1"></i> Dhofar University Cohort
+                <i class="fas fa-graduation-cap me-1"></i> {{ t('app_title') }}
             </span>
             <span class="badge bg-light text-dark border">
-                Total: <strong id="totalHeaderStudentCount">{{ students|length }}</strong> Advisees
+                {{ t('total_advisees') }}: <strong id="totalHeaderStudentCount">{{ students|length }}</strong>
             </span>
         </div>
         <h2 class="fw-bold mb-0 text-dark">
-            <i class="fas fa-users-viewfinder text-primary me-2"></i>My Advisees Roster
+            <i class="fas fa-users-viewfinder text-primary me-2"></i>{{ t('my_advisees') }}
         </h2>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadZipModal">
-            <i class="fas fa-file-arrow-up me-1"></i> Upload Transcripts (ZIP)
+            <i class="fas fa-file-arrow-up me-1"></i> {{ t('upload_document') if is_rtl else 'Upload Transcripts (ZIP)' }}
         </button>
         <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importHtmlModal">
             <i class="fas fa-paste me-1"></i> Paste Roster HTML
@@ -29,7 +29,7 @@
             <i class="fas fa-file-zipper me-1"></i> Download All (ZIP)
         </a>
         <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrows-rotate me-1"></i> Portal Sync
+            <i class="fas fa-arrows-rotate me-1"></i> {{ t('sync_roster') }}
         </a>
     </div>
 </div>
@@ -159,14 +159,14 @@
                         <th style="width: 44px;" class="text-center">
                             <input class="form-check-input" type="checkbox" id="selectAllTableCheckbox" onclick="toggleSelectAllTable(this)" title="Select all advisees">
                         </th>
-                        <th>Student ID</th>
-                        <th>Name</th>
-                        <th>Program / Major</th>
-                        <th>Status / Standing</th>
+                        <th>{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th>{{ t('standing_status') }}</th>
                         <th>Year</th>
-                        <th title="Cumulative GPA (Graduation Requirement >= 65.0%)">CGPA (Cum.)</th>
-                        <th title="Latest Semester GPA (Academic Probation Metric)">SGPA (Latest)</th>
-                        <th class="text-end pe-3">Actions</th>
+                        <th title="Cumulative GPA (Graduation Requirement >= 65.0%)">{{ t('cgpa') }}</th>
+                        <th title="Latest Semester GPA (Academic Probation Metric)">{{ t('sgpa') }}</th>
+                        <th class="text-end pe-3">{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>

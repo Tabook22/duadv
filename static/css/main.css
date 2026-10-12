@@ -1944,3 +1944,105 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 body, .card, .table, .form-control, .form-select, .notice-canvas-viewport, .modal-content, .dropdown-menu {
     transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
 }
+
+/* ==========================================================================
+   Bilingual & Right-To-Left (RTL) Arabic Support
+   ========================================================================== */
+html[dir="rtl"] {
+    font-family: 'Cairo', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-align: right;
+}
+
+html[dir="rtl"] body {
+    font-family: 'Cairo', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+
+.font-arabic {
+    font-family: 'Cairo', 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.du-lang-toggle-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #ffffff !important;
+    border-radius: 20px;
+    padding: 0.28rem 0.75rem;
+    font-size: 0.78rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    line-height: 1.2;
+}
+
+.du-lang-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+/* RTL Navbar and Layout alignments */
+html[dir="rtl"] .navbar-nav {
+    padding-right: 0;
+}
+
+html[dir="rtl"] .dropdown-menu {
+    text-align: right;
+}
+
+html[dir="rtl"] .dropdown-menu-end {
+    right: auto !important;
+    left: 0 !important;
+}
+
+html[dir="rtl"] .me-1, html[dir="rtl"] .me-2, html[dir="rtl"] .me-3 {
+    margin-right: 0 !important;
+}
+html[dir="rtl"] .me-1 { margin-left: 0.25rem !important; }
+html[dir="rtl"] .me-2 { margin-left: 0.5rem !important; }
+html[dir="rtl"] .me-3 { margin-left: 1rem !important; }
+
+html[dir="rtl"] .ms-1, html[dir="rtl"] .ms-2, html[dir="rtl"] .ms-3 {
+    margin-left: 0 !important;
+}
+html[dir="rtl"] .ms-1 { margin-right: 0.25rem !important; }
+html[dir="rtl"] .ms-2 { margin-right: 0.5rem !important; }
+html[dir="rtl"] .ms-3 { margin-right: 1rem !important; }
+
+html[dir="rtl"] .text-start {
+    text-align: right !important;
+}
+html[dir="rtl"] .text-end {
+    text-align: left !important;
+}
+html[dir="rtl"] .pe-3 {
+    padding-right: 0 !important;
+    padding-left: 1rem !important;
+}
+html[dir="rtl"] .ps-3 {
+    padding-left: 0 !important;
+    padding-right: 1rem !important;
+}
+
+html[dir="rtl"] .border-start {
+    border-left: 0 !important;
+    border-right: 1px solid var(--du-border) !important;
+}
+
+html[dir="rtl"] .border-end {
+    border-right: 0 !important;
+    border-left: 1px solid var(--du-border) !important;
+}
+
+html[dir="rtl"] .stat-bg-icon {
+    right: auto !important;
+    left: 14px !important;
+}
+
+html[dir="rtl"] .du-status-pill i {
+    margin-right: 0 !important;
+    margin-left: 6px !important;
+}

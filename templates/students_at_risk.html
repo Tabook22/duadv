@@ -5,25 +5,23 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="mb-1 text-danger fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Students at Risk</h2>
-        <p class="text-muted mb-0">Advisees requiring academic advising intervention due to probation status or GPA &lt; 65%</p>
+        <h2 class="mb-1 text-danger fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>{{ t('students_at_risk') }}</h2>
+        <p class="text-muted mb-0">{{ t('at_risk_subtitle') }}</p>
     </div>
-    <div class="d-flex gap-2 mt-2 mt-md-0">
+    <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
         <a href="{{ url_for('main.policies_library', q='probation') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-book-open me-1"></i> DU Probation Policies
+            <i class="fas fa-book-open me-1"></i> {{ t('du_probation_policies') }}
         </a>
         <a href="{{ url_for('main.students_at_risk_report') }}" target="_blank" class="btn btn-outline-primary">
-            <i class="fas fa-print me-1"></i> View / Print Report
+            <i class="fas fa-print me-1"></i> {{ t('view_print_report') }}
         </a>
         <a href="{{ url_for('main.students_at_risk_report_excel') }}" class="btn btn-success">
-            <i class="fas fa-file-excel me-1"></i> Download Excel (.xlsx)
+            <i class="fas fa-file-excel me-1"></i> {{ t('download_excel') }}
         </a>
         <a href="{{ url_for('main.students_at_risk_report_pdf') }}" class="btn btn-danger">
-            <i class="fas fa-file-pdf me-1"></i> Download Report PDF
+            <i class="fas fa-file-pdf me-1"></i> {{ t('download_report_pdf') }}
         </a>
     </div>
-
-
 </div>
 
 <!-- Summary Metric Cards -->

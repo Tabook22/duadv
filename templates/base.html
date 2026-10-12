@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Application Styles -->
@@ -38,7 +38,7 @@
                             <i class="fas {{ app_settings.branding.logo_icon }}"></i>
                         </div>
                     {% endif %}
-                    <span>{{ app_settings.branding.app_title }} <span class="badge bg-white bg-opacity-20 text-white fw-normal ms-1 fs-8" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ app_settings.branding.app_badge }}</span></span>
+                    <span>{{ t('app_title', app_settings.branding.app_title) }} <span class="badge bg-white bg-opacity-20 text-white fw-normal ms-1 fs-8" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ t('app_badge', app_settings.branding.app_badge) }}</span></span>
                 </a>
 
                 <!-- Mobile Hamburger Toggler -->
@@ -52,68 +52,81 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
                                 <i class="fas fa-chart-pie text-info"></i>
-                                <span>Dashboard</span>
+                                <span>{{ t('dashboard') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.students' %}active{% endif %}" href="{{ url_for('main.students') }}">
                                 <i class="fas fa-users text-primary"></i>
-                                <span>Advisees</span>
+                                <span>{{ t('advisees') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.section_schedule_view' %}active{% endif %}" href="{{ url_for('main.section_schedule_view') }}">
                                 <i class="fas fa-calendar-alt text-warning"></i>
-                                <span>Schedule</span>
+                                <span>{{ t('schedule') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.policies_library' %}active{% endif %}" href="{{ url_for('main.policies_library') }}">
                                 <i class="fas fa-book-bookmark text-success"></i>
-                                <span>Policies</span>
+                                <span>{{ t('policies') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.karpathy_wiki' %}active{% endif %}" href="{{ url_for('main.karpathy_wiki') }}">
                                 <i class="fas fa-brain text-warning"></i>
-                                <span>Advising Wiki</span>
+                                <span>{{ t('advising_wiki') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.meetings_hub' %}active{% endif %}" href="{{ url_for('main.meetings_hub') }}">
                                 <i class="fas fa-video text-success"></i>
-                                <span>Virtual Office</span>
+                                <span>{{ t('virtual_office') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.advisor_profile_view' %}active{% endif %}" href="{{ url_for('main.advisor_profile_view') }}">
                                 <i class="fas fa-user-tie text-info"></i>
-                                <span>Advisor</span>
+                                <span>{{ t('advisor_profile') }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'main.about_page' %}active{% endif %}" href="{{ url_for('main.about_page') }}">
                                 <i class="fas fa-circle-question text-info"></i>
-                                <span>About</span>
+                                <span>{{ t('about') }}</span>
                             </a>
                         </li>
                     </ul>
 
                     <!-- Right Side Actions & Risk Indicator -->
                     <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-                        <a class="nav-link nav-risk-pill" href="{{ url_for('main.students_at_risk') }}" title="Monitor students on academic probation">
-                            <i class="fas fa-shield-halved me-1"></i> Students at Risk
+                        <a class="nav-link nav-risk-pill" href="{{ url_for('main.students_at_risk') }}" title="{{ t('students_at_risk') }}">
+                            <i class="fas fa-shield-halved me-1"></i> {{ t('students_at_risk') }}
                         </a>
 
+                        <!-- Language Switcher Button (Bilingual Toggle) -->
+                        {% if current_lang == 'ar' %}
+                            <a href="{{ url_for('main.set_language', lang='en') }}" class="btn btn-sm du-lang-toggle-btn shadow-sm" title="Switch language to English">
+                                <i class="fas fa-globe me-1 text-info"></i>
+                                <span class="fw-semibold">English</span>
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('main.set_language', lang='ar') }}" class="btn btn-sm du-lang-toggle-btn shadow-sm" title="التحويل إلى اللغة العربية">
+                                <i class="fas fa-globe me-1 text-info"></i>
+                                <span class="fw-semibold font-arabic">العربية</span>
+                            </a>
+                        {% endif %}
+
                         <!-- Dark / Light Theme Toggle Button -->
-                        <button type="button" class="btn btn-sm du-theme-toggle-btn" id="duThemeToggleBtn" title="Switch between Dark and Light Mode" aria-label="Toggle theme">
+                        <button type="button" class="btn btn-sm du-theme-toggle-btn" id="duThemeToggleBtn" title="{{ t('theme_toggle') }}" aria-label="Toggle theme">
                             <i class="fas fa-moon" id="duThemeIcon"></i>
-                            <span class="d-none d-xl-inline ms-1 small" id="duThemeLabel">Dark</span>
+                            <span class="d-none d-xl-inline ms-1 small" id="duThemeLabel">{{ t('dark_mode') }}</span>
                         </button>
                         
                         <!-- Advisor / Admin Account Badge & Actions -->
                         <div class="d-flex align-items-center ms-2 text-white-50 border-start border-white border-opacity-20 ps-3 gap-2">
-                            <a href="{{ url_for('main.advisor_profile_view') }}" class="d-flex align-items-center text-decoration-none gap-2" title="View Advisor Profile & Biography">
+                            <a href="{{ url_for('main.advisor_profile_view') }}" class="d-flex align-items-center text-decoration-none gap-2" title="{{ t('advisor_profile') }}">
                                 <div class="avatar-badge avatar-sm">{{ app_settings.profile.avatar_initials or app_settings.admin.avatar_initials }}</div>
                                 <div class="d-none d-xl-flex flex-column" style="line-height: 1.1;">
                                     <span class="text-white small fw-bold">{{ app_settings.profile.full_name or app_settings.admin.display_name }}</span>
@@ -122,14 +135,14 @@
                             </a>
                             
                             {% if is_admin_logged_in %}
-                                <a href="{{ url_for('main.admin_settings') }}" class="btn btn-sm btn-outline-light ms-1" title="Admin Settings & Governance">
+                                <a href="{{ url_for('main.admin_settings') }}" class="btn btn-sm btn-outline-light ms-1" title="{{ t('admin_settings') }}">
                                     <i class="fas fa-sliders"></i>
                                 </a>
-                                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger" title="Sign Out">
+                                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger" title="{{ t('sign_out') }}">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </a>
                             {% else %}
-                                <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-info ms-1" title="Admin Sign In">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-info ms-1" title="{{ t('sign_in') }}">
                                     <i class="fas fa-lock"></i>
                                 </a>
                             {% endif %}
@@ -181,7 +194,7 @@
                     <div class="p-2 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-25 mt-2" style="max-width: 820px;">
                         <p class="text-white-50 small mb-0" style="font-size: 0.74rem; line-height: 1.45;">
                             <i class="fas fa-circle-info text-warning me-1"></i>
-                            <strong>Educational Disclaimer:</strong> {{ app_settings.footer.disclaimer }}
+                            <strong>{{ t('educational_disclaimer_title') }}:</strong> {{ t('institutional_disclaimer', app_settings.footer.disclaimer) }}
                         </p>
                     </div>
                     <div class="text-muted mt-2" style="font-size: 0.72rem;">{{ app_settings.footer.copyright }}</div>
@@ -190,16 +203,16 @@
                 <!-- Right: Navigation Links & Release Stamp -->
                 <div class="col-lg-5 text-center text-lg-end">
                     <div class="d-flex justify-content-center justify-content-lg-end gap-3 small flex-wrap mb-2">
-                        <a href="{{ url_for('main.dashboard') }}"><i class="fas fa-chart-line me-1"></i> Dashboard</a>
-                        <a href="{{ url_for('main.students') }}"><i class="fas fa-users me-1"></i> Advisees</a>
-                        <a href="{{ url_for('main.policies_library') }}"><i class="fas fa-book me-1"></i> Bylaws</a>
-                        <a href="{{ url_for('main.meetings_hub') }}"><i class="fas fa-headset me-1"></i> Virtual Office</a>
-                        <a href="{{ url_for('main.advisor_profile_view') }}"><i class="fas fa-user-tie me-1"></i> Advisor Profile</a>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#modalAboutApp" class="text-info"><i class="fas fa-circle-question me-1"></i> About</a>
+                        <a href="{{ url_for('main.dashboard') }}"><i class="fas fa-chart-line me-1"></i> {{ t('dashboard') }}</a>
+                        <a href="{{ url_for('main.students') }}"><i class="fas fa-users me-1"></i> {{ t('advisees') }}</a>
+                        <a href="{{ url_for('main.policies_library') }}"><i class="fas fa-book me-1"></i> {{ t('policies') }}</a>
+                        <a href="{{ url_for('main.meetings_hub') }}"><i class="fas fa-headset me-1"></i> {{ t('virtual_office') }}</a>
+                        <a href="{{ url_for('main.advisor_profile_view') }}"><i class="fas fa-user-tie me-1"></i> {{ t('advisor_profile') }}</a>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#modalAboutApp" class="text-info"><i class="fas fa-circle-question me-1"></i> {{ t('about') }}</a>
                         {% if is_admin_logged_in %}
-                            <a href="{{ url_for('main.admin_settings') }}" class="text-warning"><i class="fas fa-sliders me-1"></i> Admin Settings</a>
+                            <a href="{{ url_for('main.admin_settings') }}" class="text-warning"><i class="fas fa-sliders me-1"></i> {{ t('admin_settings') }}</a>
                         {% else %}
-                            <a href="{{ url_for('auth.login') }}" class="text-white-50"><i class="fas fa-lock me-1"></i> Admin Sign In</a>
+                            <a href="{{ url_for('auth.login') }}" class="text-white-50"><i class="fas fa-lock me-1"></i> {{ t('sign_in') }}</a>
                         {% endif %}
                     </div>
                     <div class="text-white-50" style="font-size: 0.72rem;">
