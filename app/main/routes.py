@@ -473,6 +473,21 @@ def students_at_risk_report():
     breakdown = get_students_at_risk_breakdown()
     return render_template('students_at_risk_report.html', breakdown=breakdown)
 
+@bp.route('/students-at-risk/chair-letter')
+def students_at_risk_chair_letter():
+    """Official academic briefing letter addressed to the Department Chair for students on probation"""
+    from app.chair_report_engine import generate_chair_advising_report
+    report = generate_chair_advising_report()
+    return render_template('chair_at_risk_letter.html', report=report)
+
+@bp.route('/api/students-at-risk/chair-letter/raw')
+def students_at_risk_chair_letter_raw():
+    """Return plain text official letter for direct clipboard copy / external systems"""
+    from app.chair_report_engine import generate_chair_advising_report
+    report = generate_chair_advising_report()
+    return report['letter_text'], 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
 @bp.route('/students-at-risk/report/pdf')
 def students_at_risk_report_pdf():
     """Download official report PDF for students on academic probation"""
