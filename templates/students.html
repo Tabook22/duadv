@@ -250,6 +250,11 @@
                                    title="Open Full Advising Dossier & Plan">
                                     <i class="fas fa-id-card me-1"></i> Profile
                                 </a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" 
+                                   target="_blank" class="btn btn-outline-info"
+                                   title="Generate Official Advisory Notice & Pre-filled Email">
+                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
                                    target="_blank" class="btn btn-outline-danger"
                                    title="Download Official PDF Transcript">

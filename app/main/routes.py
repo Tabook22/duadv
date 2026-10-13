@@ -830,6 +830,27 @@ def student_advising_plan(student_id):
     except ValueError:
         abort(404)
 
+@bp.route('/student/<student_id>/official-notice')
+def student_official_notice(student_id):
+    """Generate and display official individual academic notice and email for a student"""
+    from app.student_notice_engine import generate_student_official_notice
+    from flask import abort
+    try:
+        notice = generate_student_official_notice(student_id)
+        return render_template('student_notice_letter.html', notice=notice)
+    except ValueError:
+        abort(404)
+
+@bp.route('/api/student/<student_id>/official-notice/raw')
+def student_official_notice_raw(student_id):
+    """Return plain-text email body for a student notice"""
+    from app.student_notice_engine import generate_student_official_notice
+    try:
+        notice = generate_student_official_notice(student_id)
+        return notice['plain_text_email'], 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    except ValueError as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 404
+
 # -------------------------------------------------------------------------
 # Andrej Karpathy LLM Wiki Architecture Routes
 # -------------------------------------------------------------------------

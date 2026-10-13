@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Official Academic Notice &amp; Registration Directives - {{ notice.student_name }} ({{ notice.student_id }}) | Dhofar University{% endblock %}
+
+{% block styles %}
+<style>
+    .notice-container {
+        max-width: 960px;
+        margin: 20px auto 50px auto;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .notice-paper {
+        padding: 45px 55px;
+        background: #ffffff;
+        color: #0f172a;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    .letterhead-top {
+        border-bottom: 3px double #1e3a8a;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .memo-meta-table {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        font-size: 0.88rem;
+    }
+
+    .memo-meta-table th {
+        width: 110px;
+        color: #475569;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        vertical-align: top;
+        padding: 3px 0;
+    }
+
+    .memo-meta-table td {
+        color: #0f172a;
+        padding: 3px 0;
+    }
+
+    .status-highlight-box {
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 22px;
+    }
+
+    .status-box-danger {
+        background: #fee2e2;
+        border: 1px solid #f87171;
+        color: #991b1b;
+    }
+
+    .status-box-warning {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        color: #92400e;
+    }
+
+    .status-box-success {
+        background: #ecfdf5;
+        border: 1px solid #6ee7b7;
+        color: #065f46;
+    }
+
+    .arabic-guidance-card {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin-top: 25px;
+        margin-bottom: 25px;
+        direction: rtl;
+        text-align: right;
+        font-family: 'Cairo', system-ui, sans-serif;
+    }
+
+    .signature-block {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .sig-line {
+        width: 220px;
+        height: 1px;
+        background: #94a3b8;
+        margin: 20px 0 8px 0;
+    }
+
+    /* Print Optimization */
+    @media print {
+        header, .navbar, .btn-toolbar-top, .du-footer, #toastAlert, .nav-tabs {
+            display: none !important;
+        }
+        body {
+            background: #ffffff !important;
+            padding: 0 !important;
+            font-size: 11pt !important;
+        }
+        .notice-container {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+        .notice-paper {
+            padding: 0 !important;
+        }
+        .tab-pane {
+            display: block !important;
+            opacity: 1 !important;
+        }
+        #emailPreviewTab {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Action Toolbar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 btn-toolbar-top gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('main.student_detail', student_id=notice.student_id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Student Profile
+        </a>
+        <span class="badge bg-{{ 'danger' if notice.is_probation else 'primary' }} px-2.5 py-1.5 fs-7">
+            <i class="fas fa-envelope-open-text me-1"></i> Official Student Notice: {{ notice.urgency_label }}
+        </span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ notice.mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" title="Launch Outlook/Gmail with pre-filled message">
+            <i class="fas fa-paper-plane me-1"></i> Open in Email Client
+        </a>
+        <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="copyStudentNoticeText()">
+            <i class="fas fa-copy me-1"></i> Copy Email Text
+        </button>
+        <button type="button" class="btn btn-outline-dark btn-sm fw-semibold" onclick="window.print()">
+            <i class="fas fa-print me-1"></i> Print / Save PDF
+        </button>
+    </div>
+</div>
+
+<!-- Copy Success Alert Toast -->
+<div id="copySuccessAlert" class="alert alert-success alert-dismissible fade d-none mb-3 shadow-sm" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    <strong>Official Email Text Copied!</strong> The complete message has been copied to your clipboard. You can paste it directly into your email client, WhatsApp, or LMS messaging.
+    <button type="button" class="btn-close" onclick="dismissCopyAlert()"></button>
+</div>
+
+<!-- Nav Tabs: Letter View vs Raw Email View -->
+<ul class="nav nav-tabs mb-3 btn-toolbar-top" id="noticeTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold" id="letter-tab" data-bs-toggle="tab" data-bs-target="#letterView" type="button" role="tab">
+            <i class="fas fa-file-invoice me-1"></i> Official Academic Notice Letter (Print &amp; PDF)
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="email-tab" data-bs-toggle="tab" data-bs-target="#emailView" type="button" role="tab">
+            <i class="fas fa-envelope me-1"></i> Email Dispatch Format (Ready-to-Send)
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="noticeTabContent">
+    <!-- TAB 1: FORMAL ACADEMIC LETTER -->
+    <div class="tab-pane fade show active" id="letterView" role="tabpanel">
+        <div class="notice-container">
+            <div class="notice-paper">
+                <!-- University Letterhead -->
+                <div class="letterhead-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 54px; height: 54px; background: #1e3a8a; font-size: 1.4rem;">
+                                DU
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">DHOFAR UNIVERSITY</h4>
+                                <div class="fw-semibold text-secondary small">COLLEGE OF ARTS AND APPLIED SCIENCES</div>
+                                <div class="text-primary small fw-bold">Department of Computer Science &mdash; Academic Advising Unit</div>
+                            </div>
+                        </div>
+                        <div class="text-end d-none d-sm-block">
+                            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Cairo', sans-serif;">جامعة ظفار</h5>
+                            <div class="small text-secondary" style="font-family: 'Cairo', sans-serif;">كلية الآداب والعلوم التطبيقية</div>
+                            <div class="small text-primary fw-bold" style="font-family: 'Cairo', sans-serif;">قسم علوم الحاسوب &mdash; الإرشاد الأكاديمي</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Memorandum Meta Block -->
+                <div class="memo-meta-table">
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <th>REF:</th>
+                                <td class="font-monospace fw-bold text-primary">{{ notice.ref_num }}</td>
+                                <th class="ps-3">DATE:</th>
+                                <td class="fw-semibold">{{ notice.date_str }}</td>
+                            </tr>
+                            <tr>
+                                <th>TO:</th>
+                                <td class="fw-bold text-dark">{{ notice.student_name }} <span class="font-monospace text-muted">(ID: {{ notice.student_id }})</span></td>
+                                <th class="ps-3">STUDENT EMAIL:</th>
+                                <td><a href="mailto:{{ notice.student_email }}">{{ notice.student_email }}</a></td>
+                            </tr>
+                            <tr>
+                                <th>FROM:</th>
+                                <td class="fw-bold text-dark">{{ notice.advisor_name }}, <span class="text-muted fw-normal">{{ notice.advisor_title }}</span></td>
+                                <th class="ps-3">OFFICE:</th>
+                                <td>Dept. of Computer Science (CAAS)</td>
+                            </tr>
+                            <tr>
+                                <th>SUBJECT:</th>
+                                <td colspan="3" class="fw-bold text-{{ 'danger' if notice.is_probation else 'primary' }} pt-1">
+                                    {{ notice.subject_line }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Status Callout Banner -->
+                <div class="status-highlight-box status-box-{{ 'danger' if notice.is_probation else 'success' }}">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="fs-6">
+                            <i class="fas fa-{{ 'exclamation-triangle' if notice.is_probation else 'check-circle' }} me-2"></i>
+                            Current Standing: {{ notice.standing }}
+                        </strong>
+                        <span class="badge bg-{{ 'danger' if notice.is_probation else 'success' }} fs-7">
+                            CGPA: {{ "%.2f"|format(notice.cgpa) }}%
+                        </span>
+                    </div>
+                    <div class="small" style="line-height: 1.5;">
+                        {% if notice.is_probation %}
+                            Your cumulative GPA is currently <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>, which is <strong>{{ "%.2f"|format(notice.gpa_deficit) }} points below</strong> the mandatory 65.0% Good Standing mark. Under Dhofar University Academic Regulations Article 14 &amp; 22, your registration is capped at <strong>{{ notice.credit_cap }} credit hours</strong> this term.
+                        {% else %}
+                            Your academic performance is currently in Good Standing with a cumulative GPA of <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>. You have completed <strong>{{ notice.completed_credits }}</strong> of {{ notice.total_credits }} required credits towards your {{ notice.degree_title }}.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Salutation & Narrative -->
+                <div class="mb-4 text-dark" style="line-height: 1.7; font-size: 0.95rem;">
+                    <p class="mb-3">Dear <strong>{{ notice.student_name }}</strong>,</p>
+                    <p class="mb-3">
+                        As your assigned Academic Advisor in the Department of Computer Science, I am sending you this official notice to ensure you have complete clarity regarding your academic record, your degree progress, and the exact courses you must register for in the upcoming semester.
+                    </p>
+                    <p class="mb-3">
+                        {% if notice.is_probation %}
+                            It is imperative that you take immediate corrective action this semester. Postponing required courses or registering for unapproved electives will jeopardize your academic standing and may lead to formal probation escalation or dismissal under university bylaws.
+                        {% else %}
+                            Please follow the recommended study plan sequencing below to ensure smooth progress toward graduation clearance.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Prescribed Registration Schedule -->
+                <h6 class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                    <i class="fas fa-list-check text-primary me-2"></i>Prescribed Course Registration Schedule (Max {{ notice.credit_cap }} Credits)
+                </h6>
+                <div class="table-responsive bg-white rounded border mb-4">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light small text-muted">
+                            <tr>
+                                <th style="width: 15%;">Course Code</th>
+                                <th style="width: 35%;">Course Title</th>
+                                <th style="width: 10%; text-align: center;">Credits</th>
+                                <th style="width: 40%;">Registration Directive / Policy Rationale</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            {% for c in notice.prescribed_courses %}
+                            <tr>
+                                <td class="fw-bold font-monospace text-primary">{{ c.code }}</td>
+                                <td class="fw-semibold text-dark">{{ c.name }}</td>
+                                <td class="text-center">{{ c.credits }} hrs</td>
+                                <td class="text-secondary" style="font-size: 0.8rem;">
+                                    <span class="badge bg-{{ 'danger' if 'REPEAT' in c.type else 'primary' }} py-0 px-1 me-1" style="font-size: 0.68rem;">{{ c.type }}</span>
+                                    {{ c.instruction }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mandatory Action Items -->
+                <h6 class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
+                    <i class="fas fa-tasks text-danger me-2"></i>Mandatory Directives (What You Must Do Now)
+                </h6>
+                <div class="p-3 rounded border bg-light mb-4">
+                    <ul class="mb-0 ps-3 small text-dark d-flex flex-column gap-2" style="line-height: 1.6;">
+                        {% for item in notice.student_action_items %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Bilingual Arabic Guidance Box -->
+                <div class="arabic-guidance-card shadow-2xs">
+                    <h6 class="fw-bold text-success mb-2" style="font-family: 'Cairo', sans-serif;">
+                        <i class="fas fa-language me-1"></i> ملخص الإرشاد الأكاديمي الرسمي باللغة العربية
+                    </h6>
+                    <p class="small text-dark mb-2">
+                        عزيزي الطالب / عزيزتي الطالبة <strong>{{ notice.student_name }}</strong>،
+                    </p>
+                    <div class="p-2 bg-white rounded border mb-2 small text-dark">
+                        <strong>حالتك الأكاديمية الحالية:</strong> {{ notice.arabic_standing }} &mdash; المعدل التراكمي: <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>.
+                    </div>
+                    <ul class="mb-0 pe-3 small text-dark d-flex flex-column gap-1">
+                        {% for a_item in notice.arabic_actions %}
+                        <li>{{ a_item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Office Hours & Meeting Directive -->
+                <div class="p-3 rounded border bg-white small mb-4">
+                    <strong class="text-primary d-block mb-1"><i class="fas fa-calendar-check me-1"></i>Mandatory Advisor Meeting Directive:</strong>
+                    <p class="mb-1 text-dark">
+                        You must meet with Dr. Nasser Tabook in the Department of Computer Science (or during scheduled Office Hours) to review your schedule.
+                    </p>
+                    <div class="text-muted" style="font-size: 0.8rem;">
+                        <span><i class="fas fa-envelope me-1"></i>{{ notice.advisor_email }}</span> |
+                        <span class="ms-2"><i class="fas fa-globe me-1"></i>Portal: https://nasserdiary.com/duadv/student/{{ notice.student_id }}</span>
+                    </div>
+                </div>
+
+                <!-- Formal Closing & Signature Block -->
+                <div class="signature-block">
+                    <div class="d-flex justify-content-between align-items-end">
+                        <div>
+                            <div class="fw-bold text-dark fs-6">{{ notice.advisor_name }}</div>
+                            <div class="text-secondary small">{{ notice.advisor_title }}</div>
+                            <div class="text-muted small">{{ notice.dept_name }} | {{ notice.college_name }}</div>
+                            <div class="text-muted small">{{ notice.university_name }}</div>
+                            <div class="sig-line"></div>
+                            <small class="text-muted">Academic Advisor Signature &amp; Seal</small>
+                        </div>
+                        <div class="text-end text-muted small">
+                            <div>Ref: {{ notice.ref_num }}</div>
+                            <div>Date Issued: {{ notice.date_str }}</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: EMAIL DISPATCH FORMAT -->
+    <div class="tab-pane fade" id="emailView" role="tabpanel">
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 10px; overflow: hidden;">
+            <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-paper-plane text-success"></i>
+                    <span class="fw-bold">Ready-to-Send Email Dispatch</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ notice.mailto_url }}" class="btn btn-sm btn-success fw-bold">
+                        <i class="fas fa-external-link-alt me-1"></i> Open in Outlook / Mail
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="copyStudentNoticeText()">
+                        <i class="fas fa-copy me-1"></i> Copy Text
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-4 bg-light">
+                <div class="bg-white p-3 rounded border mb-3">
+                    <div class="row g-2 small text-dark">
+                        <div class="col-sm-2 text-muted fw-bold">TO:</div>
+                        <div class="col-sm-10 font-monospace text-primary fw-bold">{{ notice.student_email }}</div>
+                        <div class="col-sm-2 text-muted fw-bold">FROM:</div>
+                        <div class="col-sm-10 text-dark">{{ notice.advisor_name }} &lt;{{ notice.advisor_email }}&gt;</div>
+                        <div class="col-sm-2 text-muted fw-bold">SUBJECT:</div>
+                        <div class="col-sm-10 fw-bold text-dark">{{ notice.subject_line }}</div>
+                    </div>
+                </div>
+
+                <div class="position-relative">
+                    <textarea class="form-control font-monospace small bg-white text-dark p-3" id="noticeEmailText" rows="22" readonly style="line-height: 1.5; font-size: 0.85rem;">{{ notice.plain_text_email }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyStudentNoticeText() {
+        const textElement = document.getElementById('noticeEmailText');
+        if (!textElement) return;
+
+        textElement.select();
+        navigator.clipboard.writeText(textElement.value).then(function() {
+            showCopyAlert();
+        }).catch(function(err) {
+            // Fallback
+            document.execCommand('copy');
+            showCopyAlert();
+        });
+    }
+
+    function showCopyAlert() {
+        const alertBox = document.getElementById('copySuccessAlert');
+        if (alertBox) {
+            alertBox.classList.remove('d-none');
+            alertBox.classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(dismissCopyAlert, 8000);
+        }
+    }
+
+    function dismissCopyAlert() {
+        const alertBox = document.getElementById('copySuccessAlert');
+        if (alertBox) {
+            alertBox.classList.add('d-none');
+            alertBox.classList.remove('show');
+        }
+    }
+</script>
+{% endblock %}

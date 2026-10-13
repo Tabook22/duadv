@@ -25,6 +25,9 @@
         <button type="button" class="btn btn-success fw-bold text-white shadow-sm" onclick="startStudentMeeting('{{ student.id }}', '{{ student.name }}')">
             <i class="fas fa-video me-1"></i> Meet with Student
         </button>
+        <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-primary fw-bold text-white shadow-sm">
+            <i class="fas fa-envelope-open-text me-1"></i> Official Notice &amp; Email
+        </a>
         <a href="{{ url_for('main.student_advising_plan', student_id=student.id) }}" target="_blank" class="btn btn-warning fw-bold text-dark shadow-sm">
             <i class="fas fa-print me-1"></i> Advising Action Plan
         </a>
@@ -319,9 +322,14 @@
                         <small class="text-muted">Tailored communication strategy for this specific student persona</small>
                     </div>
                 </div>
-                <span class="badge bg-primary px-2 py-1 small">
-                    <i class="fas fa-calendar-check me-1"></i> {{ persona.advisor_brief.cadence }}
-                </span>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+                    <span class="badge bg-primary px-2 py-1 small">
+                        <i class="fas fa-calendar-check me-1"></i> {{ persona.advisor_brief.cadence }}
+                    </span>
+                    <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-sm btn-primary fw-bold text-white shadow-xs">
+                        <i class="fas fa-paper-plane me-1"></i> Dispatch Official Notice
+                    </a>
+                </div>
             </div>
             <div class="card-body p-3">
                 <div class="row g-3">
