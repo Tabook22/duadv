@@ -79,10 +79,12 @@ def student_detail(student_id):
         
     from app.utils import get_student_semesters, get_student_study_plan
     from app.advising_engine import audit_student_degree, generate_student_advising_dossier
+    from app.persona_engine import generate_student_persona
     semesters = get_student_semesters(student.id)
     study_plan = get_student_study_plan(student)
     audit = audit_student_degree(student.id)
     dossier = generate_student_advising_dossier(student.id)
+    persona = generate_student_persona(student.id)
     
     return render_template(
         'student_detail.html',
@@ -90,8 +92,35 @@ def student_detail(student_id):
         semesters=semesters,
         study_plan=study_plan,
         audit=audit,
-        dossier=dossier
+        dossier=dossier,
+        persona=persona
     )
+
+@bp.route('/api/student/<student_id>/persona')
+def student_persona_api(student_id):
+    """JSON API endpoint returning 360-degree Student Academic Persona diagnostics"""
+    students = load_students_from_file()
+    student = next((s for s in students if s.id == student_id), None)
+    if not student:
+        return jsonify({'status': 'error', 'message': f'Student {student_id} not found'}), 404
+        
+    from app.persona_engine import generate_student_persona
+    persona = generate_student_persona(student.id)
+    
+    # Return serializable summary
+    return jsonify({
+        'status': 'success',
+        'student_id': student.id,
+        'student_name': student.name,
+        'archetype': persona['archetype'],
+        'strengths': persona['strengths'],
+        'weaknesses': persona['weaknesses'],
+        'what_the_student_does': persona['what_the_student_does'],
+        'what_the_student_must_do': persona['what_the_student_must_do'],
+        'roadmap': persona['roadmap'],
+        'advisor_brief': persona['advisor_brief']
+    })
+
 
 @bp.route('/api/sync-students/stream', methods=['POST'])
 def sync_students_stream():
