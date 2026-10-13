@@ -17,6 +17,11 @@
                 <span class="badge bg-primary fs-7 font-monospace">ID: {{ student.id }}</span>
                 <span class="badge bg-secondary fs-7">{{ audit.program_title }}</span>
                 <span class="badge bg-light text-dark border fs-7">{{ audit.degree_type }} ({{ audit.total_plan_credits }} Credits)</span>
+                {% if outreach %}
+                <span class="badge bg-{{ outreach.status_color }} fs-7 shadow-xs">
+                    <i class="fas {{ outreach.status_icon }} me-1"></i> {{ outreach.status }}
+                </span>
+                {% endif %}
             </div>
             <h2 class="fw-bold mb-0 text-dark">{{ student.name }}</h2>
         </div>

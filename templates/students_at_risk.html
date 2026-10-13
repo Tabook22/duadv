@@ -12,6 +12,9 @@
         <a href="{{ url_for('main.students_at_risk_chair_letter') }}" class="btn btn-danger fw-bold shadow-sm">
             <i class="fas fa-file-signature me-1"></i> Official Letter to Dept Chair
         </a>
+        <a href="{{ url_for('main.students_at_risk_batch_notices') }}" class="btn btn-warning fw-bold shadow-sm text-dark">
+            <i class="fas fa-mail-bulk me-1"></i> Batch Outreach &amp; Notices Hub
+        </a>
         <a href="{{ url_for('main.policies_library', q='probation') }}" class="btn btn-outline-secondary">
             <i class="fas fa-book-open me-1"></i> {{ t('du_probation_policies') }}
         </a>
@@ -136,6 +139,9 @@
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-user me-1"></i> Profile & Plan
                                 </a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
+                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
                                     <i class="fas fa-file-pdf me-1"></i> Transcript
                                 </a>
@@ -210,6 +216,9 @@
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-user me-1"></i> Profile & Plan
+                                </a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
+                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
                                 </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
                                     <i class="fas fa-file-pdf me-1"></i> Transcript
@@ -286,6 +295,9 @@
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-user me-1"></i> Profile & Plan
                                 </a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
+                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
                                     <i class="fas fa-file-pdf me-1"></i> Transcript
                                 </a>
@@ -353,6 +365,7 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">Profile</a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Notice">Notice</a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">PDF</a>
                             </div>
                         </td>

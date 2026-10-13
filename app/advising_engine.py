@@ -7,10 +7,22 @@ and generates policy-referenced advising action plans.
 import os
 import re
 import math
+import copy
+import time
 from typing import Dict, List, Any, Optional
 from app.models import Student
 from app.utils import load_students_from_file, get_student_semesters
 from app.study_plans_registry import resolve_study_plan
+
+_AUDIT_CACHE: Dict[str, Dict[str, Any]] = {}
+
+def invalidate_audit_cache(student_id: Optional[str] = None) -> None:
+    """Invalidate cached degree audit results."""
+    global _AUDIT_CACHE
+    if student_id and student_id in _AUDIT_CACHE:
+        del _AUDIT_CACHE[student_id]
+    elif student_id is None:
+        _AUDIT_CACHE.clear()
 
 def normalize_course_code(code: str) -> str:
     """Normalize course codes (e.g., 'CMPS 110N' -> 'CMPS110N')"""
@@ -60,14 +72,22 @@ def extract_numerical_grade(grade_str: Any) -> Optional[float]:
             pass
     return None
 
-def audit_student_degree(student_id: str, transcripts_dir: str = None) -> Dict[str, Any]:
+def audit_student_degree(student_id: str, transcripts_dir: str = None, force_refresh: bool = False) -> Dict[str, Any]:
     """
     Perform deep degree audit for a student:
     - Match historical courses against the official study plan.
     - Identify completed, missing, failed, and low-grade repeat courses.
     - Check prerequisite readiness for missing courses.
     - Calculate credit limits and GPA recovery targets according to DU regulations.
+    Cached in-memory for 300 seconds for high-speed responsiveness.
     """
+    now_ts = time.time()
+    cache_key = f"{student_id}_{transcripts_dir or ''}"
+    if not force_refresh and cache_key in _AUDIT_CACHE:
+        entry = _AUDIT_CACHE[cache_key]
+        if now_ts - entry.get('timestamp', 0) < 300:
+            return copy.deepcopy(entry['data'])
+
     students = load_students_from_file()
     student = next((s for s in students if s.id == student_id), None)
     if not student:
@@ -292,6 +312,12 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None) -> Dict[s
         'low_grade_repeats': low_grade_repeats,
         'category_summary': category_summary
     }
+
+    _AUDIT_CACHE[cache_key] = {
+        'data': result,
+        'timestamp': now_ts
+    }
+    return result
 
 
 def analyze_semester_progression(student_id: str) -> Dict[str, Any]:

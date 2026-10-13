@@ -138,12 +138,33 @@
         <a href="{{ url_for('main.student_detail', student_id=notice.student_id) }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1"></i> Back to Student Profile
         </a>
+        <a href="{{ url_for('main.students_at_risk_batch_notices') }}" class="btn btn-outline-warning btn-sm text-dark">
+            <i class="fas fa-mail-bulk me-1"></i> Batch Outreach Hub
+        </a>
         <span class="badge bg-{{ 'danger' if notice.is_probation else 'primary' }} px-2.5 py-1.5 fs-7">
             <i class="fas fa-envelope-open-text me-1"></i> Official Student Notice: {{ notice.urgency_label }}
         </span>
     </div>
-    <div class="d-flex flex-wrap gap-2">
-        <a href="{{ notice.mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" title="Launch Outlook/Gmail with pre-filled message">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <!-- Outreach Status Indicator & Quick Changer -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" id="outreachStatusDropdownBtn">
+                <span id="currentStatusBadge" class="badge bg-{{ notice.outreach.status_color }} me-1">
+                    <i class="fas {{ notice.outreach.status_icon }}"></i> {{ notice.outreach.status }}
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><h6 class="dropdown-header">Update Advising Status</h6></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Notice Sent via Email')"><i class="fas fa-paper-plane me-2 text-primary"></i>Notice Sent via Email</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Student Responded')"><i class="fas fa-reply me-2 text-warning"></i>Student Responded</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Meeting Completed')"><i class="fas fa-handshake me-2 text-success"></i>Meeting Completed</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Plan Signed & Approved')"><i class="fas fa-file-signature me-2 text-info"></i>Plan Signed &amp; Approved</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Pending Outreach')"><i class="fas fa-clock me-2 text-secondary"></i>Reset to Pending Outreach</a></li>
+            </ul>
+        </div>
+
+        <a href="{{ notice.mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" onclick="recordEmailDispatched()" title="Launch Outlook/Gmail with pre-filled message">
             <i class="fas fa-paper-plane me-1"></i> Open in Email Client
         </a>
         <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="copyStudentNoticeText()">
@@ -400,6 +421,41 @@
     </div>
 </div>
 
+<!-- Advisor Outreach & Communication Touchpoint History -->
+<div class="card border-0 shadow-sm mt-4 p-4 bg-white btn-toolbar-top" style="max-width: 960px; margin: 0 auto 50px auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h6 class="fw-bold mb-0 text-dark">
+                <i class="fas fa-comments text-primary me-2"></i>Advisor Outreach &amp; Consultation Touchpoints
+            </h6>
+            <small class="text-muted">Audit log of communications, emails sent, student responses, and advising agreements.</small>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" onclick="quickUpdateStatus('Meeting Completed')">
+            <i class="fas fa-plus me-1"></i> Log Advising Meeting
+        </button>
+    </div>
+    <div id="touchpointHistoryList">
+        {% for h in notice.outreach.history %}
+        <div class="d-flex align-items-start gap-2 border-bottom py-2.5 small">
+            <span class="badge bg-primary-subtle text-primary border px-2 py-1 mt-0.5">{{ h.status }}</span>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between">
+                    <strong class="text-dark"><i class="fas fa-tag me-1 text-muted"></i>{{ h.method }}</strong>
+                    <span class="text-muted font-monospace" style="font-size: 0.76rem;"><i class="far fa-clock me-1"></i>{{ h.formatted_time }}</span>
+                </div>
+                {% if h.notes %}
+                    <div class="text-secondary mt-1 bg-light p-2 rounded">{{ h.notes }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-muted small py-3 text-center bg-light rounded" id="noTouchpointsPlaceholder">
+            <i class="fas fa-info-circle me-1"></i>No previous outreach touchpoints logged. Clicking <strong>"Open in Email Client"</strong> will automatically log this initial advising notice.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <script>
     function copyStudentNoticeText() {
         const textElement = document.getElementById('noticeEmailText');
@@ -407,17 +463,65 @@
 
         textElement.select();
         navigator.clipboard.writeText(textElement.value).then(function() {
-            showCopyAlert();
+            showCopyAlert("Official Email Text Copied! The complete message has been copied to your clipboard.");
         }).catch(function(err) {
             // Fallback
             document.execCommand('copy');
-            showCopyAlert();
+            showCopyAlert("Official Email Text Copied! The complete message has been copied to your clipboard.");
         });
     }
 
-    function showCopyAlert() {
+    function recordEmailDispatched() {
+        fetch('/api/student/{{ notice.student_id }}/outreach-status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                status: 'Notice Sent via Email',
+                method: 'Email',
+                notes: 'Dispatched official individual notice to {{ notice.student_email }}.'
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.status === 'success') {
+                updateBadgeDisplay(data.outreach);
+            }
+        });
+    }
+
+    function quickUpdateStatus(newStatus) {
+        const note = prompt(`Update status to "${newStatus}"?\nEnter optional advisor follow-up note:`, "");
+        if (note === null) return;
+
+        fetch('/api/student/{{ notice.student_id }}/outreach-status', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                status: newStatus,
+                method: newStatus.includes('Meeting') ? 'Office Visit (Office 214)' : 'Email',
+                notes: note || ''
+            })
+        }).then(res => res.json()).then(data => {
+            if (data.status === 'success') {
+                updateBadgeDisplay(data.outreach);
+                showCopyAlert(`Advising status updated to "${newStatus}"!`);
+                setTimeout(() => location.reload(), 1000);
+            }
+        });
+    }
+
+    function updateBadgeDisplay(o) {
+        const badge = document.getElementById('currentStatusBadge');
+        if (badge) {
+            badge.className = `badge bg-${o.status_color} me-1`;
+            badge.innerHTML = `<i class="fas ${o.status_icon}"></i> ${o.status}`;
+        }
+    }
+
+    function showCopyAlert(msg) {
         const alertBox = document.getElementById('copySuccessAlert');
         if (alertBox) {
+            if (msg) {
+                alertBox.querySelector('strong').innerText = msg;
+            }
             alertBox.classList.remove('d-none');
             alertBox.classList.add('show');
             window.scrollTo({ top: 0, behavior: 'smooth' });

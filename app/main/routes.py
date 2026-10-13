@@ -80,11 +80,13 @@ def student_detail(student_id):
     from app.utils import get_student_semesters, get_student_study_plan
     from app.advising_engine import audit_student_degree, generate_student_advising_dossier
     from app.persona_engine import generate_student_persona
+    from app.outreach_tracker import get_student_outreach_status
     semesters = get_student_semesters(student.id)
     study_plan = get_student_study_plan(student)
     audit = audit_student_degree(student.id)
     dossier = generate_student_advising_dossier(student.id)
     persona = generate_student_persona(student.id)
+    outreach = get_student_outreach_status(student.id)
     
     return render_template(
         'student_detail.html',
@@ -93,7 +95,8 @@ def student_detail(student_id):
         study_plan=study_plan,
         audit=audit,
         dossier=dossier,
-        persona=persona
+        persona=persona,
+        outreach=outreach
     )
 
 @bp.route('/api/student/<student_id>/persona')
@@ -850,6 +853,85 @@ def student_official_notice_raw(student_id):
         return notice['plain_text_email'], 200, {'Content-Type': 'text/plain; charset=utf-8'}
     except ValueError as e:
         return jsonify({'status': 'error', 'message': str(e)}), 404
+
+@bp.route('/students-at-risk/batch-notices')
+def students_at_risk_batch_notices():
+    """Batch student notice and advising email outreach hub for at-risk advisees"""
+    from app.student_notice_engine import generate_batch_student_notices
+    batch_data = generate_batch_student_notices()
+    return render_template('batch_notices.html', batch=batch_data)
+
+@bp.route('/api/students-at-risk/batch-notices')
+def students_at_risk_batch_notices_api():
+    """JSON API returning batch at-risk student notices and outreach statuses"""
+    from app.student_notice_engine import generate_batch_student_notices
+    batch_data = generate_batch_student_notices()
+    return jsonify(batch_data)
+
+@bp.route('/students-at-risk/export-notices-txt')
+def students_at_risk_export_notices_txt():
+    """Download consolidated plain-text dossier containing all individual student notices"""
+    from app.student_notice_engine import generate_batch_student_notices
+    from flask import Response
+    batch_data = generate_batch_student_notices()
+    
+    output_lines = [
+        "================================================================================",
+        "DHOFAR UNIVERSITY — DEPARTMENT OF COMPUTER SCIENCE",
+        "ACADEMIC ADVISING UNIT | OFFICIAL NOTICES CONSOLIDATED BATCH DOSSIER",
+        f"GENERATED: {batch_data.get('generated_at', '')}",
+        f"TOTAL AT-RISK ADVISEES: {batch_data.get('total_at_risk', 0)}",
+        "================================================================================\n"
+    ]
+    
+    for idx, s in enumerate(batch_data.get('students', []), 1):
+        output_lines.append("################################################################################")
+        output_lines.append(f"DOSSIER ITEM #{idx}: {s['student_name']} (ID: {s['student_id']}) — {s['standing']}")
+        output_lines.append("################################################################################\n")
+        output_lines.append(s['plain_text_email'])
+        output_lines.append("\n\n" + "-" * 80 + "\n")
+        
+    content = "\n".join(output_lines)
+    return Response(
+        content,
+        mimetype="text/plain; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=DU_At_Risk_Official_Notices_Batch.txt"}
+    )
+
+@bp.route('/api/student/<student_id>/outreach-status', methods=['GET', 'POST'])
+def student_outreach_status_api(student_id):
+    """Retrieve or update advising outreach and contact status for an individual student"""
+    from app.outreach_tracker import get_student_outreach_status, update_student_outreach_status
+    from app.student_notice_engine import invalidate_notice_cache
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or request.form.to_dict()
+        status = data.get('status', 'Notice Sent via Email')
+        method = data.get('method', 'Email')
+        notes = data.get('notes', '')
+        advisor = data.get('advisor', 'Dr. Nasser Tabook')
+        updated = update_student_outreach_status(student_id, status, method, notes, advisor)
+        invalidate_notice_cache(student_id)
+        return jsonify({'status': 'success', 'outreach': updated})
+    
+    outreach = get_student_outreach_status(student_id)
+    return jsonify({'status': 'success', 'outreach': outreach})
+
+@bp.route('/api/students-at-risk/batch-outreach-status', methods=['POST'])
+def batch_outreach_status_api():
+    """Batch update advising contact status across multiple students"""
+    from app.outreach_tracker import batch_update_outreach_status
+    from app.student_notice_engine import invalidate_notice_cache
+    data = request.get_json(silent=True) or request.form.to_dict()
+    student_ids = data.get('student_ids', [])
+    if isinstance(student_ids, str):
+        student_ids = [s.strip() for s in student_ids.split(',') if s.strip()]
+    status = data.get('status', 'Notice Sent via Email')
+    method = data.get('method', 'Email')
+    notes = data.get('notes', '')
+    count = batch_update_outreach_status(student_ids, status, method, notes)
+    invalidate_notice_cache()
+    return jsonify({'status': 'success', 'updated_count': count})
+
 
 # -------------------------------------------------------------------------
 # Andrej Karpathy LLM Wiki Architecture Routes

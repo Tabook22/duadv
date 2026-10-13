@@ -6,26 +6,58 @@ Provides transparent status briefing, mandatory course registration directives,
 Dhofar University regulatory citations (Articles 14, 18, 22, 24), and 1-click mailto links.
 """
 
+import time
 import urllib.parse
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.models import Student
 from app.utils import load_students_from_file
 from app.advising_engine import audit_student_degree
-from app.persona_engine import generate_student_persona
+from app.outreach_tracker import get_student_outreach_status
 
-def generate_student_official_notice(student_id: str) -> Dict[str, Any]:
+# In-memory caches for fast sub-millisecond responses
+_SINGLE_NOTICE_CACHE: Dict[str, Dict[str, Any]] = {}
+_BATCH_NOTICES_CACHE: Dict[str, Any] = {'data': None, 'timestamp': 0.0}
+
+def invalidate_notice_cache(student_id: Optional[str] = None) -> None:
+    """Invalidate cached notice data when status or transcripts change."""
+    global _SINGLE_NOTICE_CACHE, _BATCH_NOTICES_CACHE
+    if student_id and student_id in _SINGLE_NOTICE_CACHE:
+        del _SINGLE_NOTICE_CACHE[student_id]
+    elif student_id is None:
+        _SINGLE_NOTICE_CACHE.clear()
+    _BATCH_NOTICES_CACHE = {'data': None, 'timestamp': 0.0}
+
+def generate_student_official_notice(
+    student_id: str,
+    force_refresh: bool = False,
+    include_persona: bool = False
+) -> Dict[str, Any]:
     """
     Generate an official, policy-referenced individual academic notice and email
     addressed directly from Dr. Nasser Tabook to a specific advisee.
     """
+    now_ts = time.time()
+    cached = _SINGLE_NOTICE_CACHE.get(student_id)
+    if not force_refresh and cached and (now_ts - cached.get('_cached_at', 0) < 600):
+        # Refresh current outreach status live
+        cached['data']['outreach'] = get_student_outreach_status(student_id)
+        return cached['data']
+
     students = load_students_from_file()
     student = next((s for s in students if s.id == student_id), None)
     if not student:
         raise ValueError(f"Student with ID '{student_id}' not found.")
         
     audit = audit_student_degree(student.id)
-    persona = generate_student_persona(student.id)
+    
+    persona = None
+    if include_persona:
+        try:
+            from app.persona_engine import generate_student_persona
+            persona = generate_student_persona(student.id)
+        except Exception:
+            persona = None
     
     st = student.status or 'Normal / Good Standing'
     cgpa = audit['current_gpa'] or 0.0
@@ -35,10 +67,24 @@ def generate_student_official_notice(student_id: str) -> Dict[str, Any]:
     remaining_cr = audit['remaining_credits']
     total_cr = audit['total_plan_credits']
     student_email = student.email or f"{student.id}@du.edu.om"
-    advisor_name = "Dr. Nasser Tabook"
-    advisor_title = "Assistant Professor of Computer Science & Academic Advisor"
-    dept_name = "Department of Computer Science"
-    college_name = "College of Arts and Applied Sciences"
+    
+    # Load dynamic advisor settings if available
+    try:
+        from app.settings_manager import load_settings
+        settings = load_settings()
+        profile = settings.get('profile', {})
+        advisor_name = profile.get('full_name') or "Dr. Nasser Tabook"
+        advisor_title = profile.get('title') or "Assistant Professor of Computer Science & Academic Advisor"
+        advisor_email = profile.get('email_primary') or "ntabook@du.edu.om"
+        dept_name = profile.get('department') or "Department of Computer Science"
+        college_name = profile.get('college') or "College of Arts and Applied Sciences"
+    except Exception:
+        advisor_name = "Dr. Nasser Tabook"
+        advisor_title = "Assistant Professor of Computer Science & Academic Advisor"
+        advisor_email = "ntabook@du.edu.om"
+        dept_name = "Department of Computer Science"
+        college_name = "College of Arts and Applied Sciences"
+        
     university_name = "Dhofar University"
     
     is_strict = ('Strict' in st or 'Third' in st)
@@ -206,7 +252,7 @@ def generate_student_official_notice(student_id: str) -> Dict[str, Any]:
     email_lines.append(f"Please meet with me during office hours or in the Department of Computer Science to finalize your registration. Do not submit course registrations that deviate from this approved plan.")
     email_lines.append("")
     email_lines.append("Office: Department of Computer Science, College of Arts and Applied Sciences")
-    email_lines.append(f"Email:  ntabook@du.edu.om | Portal: https://nasserdiary.com/duadv/student/{student.id}")
+    email_lines.append(f"Email:  {advisor_email} | Portal: https://nasserdiary.com/duadv/student/{student.id}")
     email_lines.append("")
     email_lines.append("Best regards,")
     email_lines.append(f"{advisor_name}")
@@ -224,7 +270,9 @@ def generate_student_official_notice(student_id: str) -> Dict[str, Any]:
     encoded_body = urllib.parse.quote(plain_text_email)
     mailto_url = f"mailto:{student_email}?subject={encoded_subject}&body={encoded_body}"
 
-    return {
+    outreach = get_student_outreach_status(student.id)
+
+    result = {
         'student': student,
         'student_id': student.id,
         'student_name': student.name,
@@ -250,11 +298,164 @@ def generate_student_official_notice(student_id: str) -> Dict[str, Any]:
         'arabic_actions': arabic_actions,
         'advisor_name': advisor_name,
         'advisor_title': advisor_title,
-        'advisor_email': 'ntabook@du.edu.om',
+        'advisor_email': advisor_email,
         'dept_name': dept_name,
         'college_name': college_name,
         'university_name': university_name,
         'plain_text_email': plain_text_email,
         'mailto_url': mailto_url,
-        'persona': persona
+        'persona': persona,
+        'outreach': outreach
     }
+    
+    _SINGLE_NOTICE_CACHE[student_id] = {
+        'data': result,
+        '_cached_at': now_ts
+    }
+    return result
+
+
+def generate_batch_student_notices(force_refresh: bool = False) -> Dict[str, Any]:
+    """
+    Generate batch advising notices and contact records for all students at risk.
+    Provides email rosters, outreach status tracking, mail-merge data, and bulk mailto dispatch.
+    Cached for 180 seconds for instantaneous UI interactions.
+    """
+    global _BATCH_NOTICES_CACHE
+    now_ts = time.time()
+    if not force_refresh and _BATCH_NOTICES_CACHE['data'] is not None and (now_ts - _BATCH_NOTICES_CACHE['timestamp'] < 600):
+        # Refresh dynamic outreach status in cached batch items
+        for item in _BATCH_NOTICES_CACHE['data']['students']:
+            item['outreach'] = get_student_outreach_status(item['student_id'])
+        return _BATCH_NOTICES_CACHE['data']
+
+    students = load_students_from_file()
+    at_risk_items: List[Dict[str, Any]] = []
+    
+    strict_count = 0
+    second_count = 0
+    first_count = 0
+    warning_count = 0
+    
+    all_emails: List[str] = []
+    
+    for s in students:
+        st = s.status or ''
+        cgpa = s.cgpa if s.cgpa is not None else s.gpa
+        
+        is_strict = ('Strict' in st or 'Third' in st)
+        is_second = ('Second Probation' in st)
+        is_first = ('First Probation' in st or ('Probation' in st and 'Removal' not in st and not is_strict and not is_second))
+        is_warning = (cgpa is not None and cgpa < 65.0 and not is_strict and not is_second and not is_first and 'Removal' not in st and 'Good' not in st)
+        
+        if not (is_strict or is_second or is_first or is_warning):
+            continue
+            
+        if is_strict:
+            tier = 'strict'
+            tier_label = 'Strict Probation (Critical)'
+            tier_badge = 'danger'
+            strict_count += 1
+        elif is_second:
+            tier = 'second'
+            tier_label = 'Second Probation'
+            tier_badge = 'warning text-dark'
+            second_count += 1
+        elif is_first:
+            tier = 'first'
+            tier_label = 'First Probation'
+            tier_badge = 'warning text-dark'
+            first_count += 1
+        else:
+            tier = 'warning'
+            tier_label = 'Borderline Warning (CGPA < 65%)'
+            tier_badge = 'secondary'
+            warning_count += 1
+            
+        # Fast notice generation (without heavy persona)
+        try:
+            notice = generate_student_official_notice(s.id, force_refresh=force_refresh, include_persona=False)
+        except Exception:
+            notice = {}
+            
+        student_email = s.email or f"{s.id}@du.edu.om"
+        all_emails.append(student_email)
+        
+        prescribed_courses = notice.get('prescribed_courses', [])
+        prescribed_summary = ", ".join([c['code'] for c in prescribed_courses]) if prescribed_courses else "General Study Plan Courses"
+        
+        outreach = get_student_outreach_status(s.id)
+        
+        at_risk_items.append({
+            'student_id': s.id,
+            'student_name': s.name,
+            'student_email': student_email,
+            'program': s.program or 'Computer Science',
+            'standing': s.status or 'Academic Probation',
+            'tier': tier,
+            'tier_label': tier_label,
+            'tier_badge': tier_badge,
+            'cgpa': cgpa or 0.0,
+            'semester_gpa': s.semester_gpa,
+            'earned_credits': s.credits or 0,
+            'credit_cap': notice.get('credit_cap', 12),
+            'prescribed_courses': prescribed_courses,
+            'prescribed_summary': prescribed_summary,
+            'urgency_label': notice.get('urgency_label', 'Academic Warning'),
+            'subject_line': notice.get('subject_line', 'Academic Advising Notice'),
+            'mailto_url': notice.get('mailto_url', f"mailto:{student_email}"),
+            'plain_text_email': notice.get('plain_text_email', ''),
+            'outreach': outreach,
+            'notice_view_url': f"/student/{s.id}/official-notice",
+            'raw_notice_url': f"/api/student/{s.id}/official-notice/raw"
+        })
+        
+    # Sort order: strict first, then second, then first, then warning; within tier by lowest GPA
+    tier_priority = {'strict': 0, 'second': 1, 'first': 2, 'warning': 3}
+    at_risk_items.sort(key=lambda x: (tier_priority.get(x['tier'], 9), x['cgpa']))
+    
+    # Outreach metrics
+    outreach_counts = {
+        'pending': sum(1 for item in at_risk_items if item['outreach']['status'] == 'Pending Outreach'),
+        'emailed': sum(1 for item in at_risk_items if item['outreach']['status'] == 'Notice Sent via Email'),
+        'responded': sum(1 for item in at_risk_items if item['outreach']['status'] == 'Student Responded'),
+        'completed': sum(1 for item in at_risk_items if item['outreach']['status'] == 'Meeting Completed'),
+        'signed': sum(1 for item in at_risk_items if item['outreach']['status'] == 'Plan Signed & Approved'),
+    }
+    
+    emails_comma = ", ".join(all_emails)
+    emails_semicolon = "; ".join(all_emails)
+    
+    # Group Mailto dispatch with BCC
+    group_subject = urllib.parse.quote("[URGENT & MANDATORY] Dhofar University Academic Advising: Pre-Registration & Academic Warning Notice")
+    group_body = urllib.parse.quote(
+        "Dear Advisees,\n\n"
+        "As your Academic Advisor in the Department of Computer Science, this is an official advising notification regarding your academic standing and registration for the upcoming semester.\n\n"
+        "Please check your individual academic notice on the portal or visit me in Office 214 immediately to review and approve your course schedule before the deadline.\n\n"
+        "Best regards,\nDr. Nasser Tabook\nAcademic Advisor | Department of Computer Science\nDhofar University\n"
+    )
+    group_mailto_url = f"mailto:ntabook@du.edu.om?bcc={urllib.parse.quote(emails_comma)}&subject={group_subject}&body={group_body}"
+    
+    result = {
+        'total_at_risk': len(at_risk_items),
+        'students': at_risk_items,
+        'counts': {
+            'total': len(at_risk_items),
+            'strict': strict_count,
+            'second': second_count,
+            'first': first_count,
+            'warning': warning_count
+        },
+        'outreach_counts': outreach_counts,
+        'all_emails': all_emails,
+        'emails_comma': emails_comma,
+        'emails_semicolon': emails_semicolon,
+        'group_mailto_url': group_mailto_url,
+        'generated_at': datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    }
+    
+    _BATCH_NOTICES_CACHE = {
+        'data': result,
+        'timestamp': now_ts
+    }
+    return result
