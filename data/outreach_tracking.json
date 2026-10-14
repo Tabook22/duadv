@@ -3,6 +3,110 @@
     "student_id": "202310720",
     "history": [
       {
+        "timestamp": "2026-10-14T23:09:01.255083",
+        "formatted_time": "Oct 14, 2026 at 11:09 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T23:09:01.237436",
+        "formatted_time": "Oct 14, 2026 at 11:09 PM",
+        "status": "Student Responded",
+        "method": "Office Visit (Office 214)",
+        "notes": "Route test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T23:09:01.016401",
+        "formatted_time": "Oct 14, 2026 at 11:09 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Automated test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T22:54:00.515525",
+        "formatted_time": "Oct 14, 2026 at 10:54 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T22:54:00.498055",
+        "formatted_time": "Oct 14, 2026 at 10:54 PM",
+        "status": "Student Responded",
+        "method": "Office Visit (Office 214)",
+        "notes": "Route test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T22:53:59.995029",
+        "formatted_time": "Oct 14, 2026 at 10:53 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Automated test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T22:52:53.251462",
+        "formatted_time": "Oct 14, 2026 at 10:52 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Automated test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T09:25:23.568322",
+        "formatted_time": "Oct 14, 2026 at 09:25 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T09:25:23.546655",
+        "formatted_time": "Oct 14, 2026 at 09:25 AM",
+        "status": "Student Responded",
+        "method": "Office Visit (Office 214)",
+        "notes": "Route test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T09:25:23.410531",
+        "formatted_time": "Oct 14, 2026 at 09:25 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Automated test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T08:52:23.315701",
+        "formatted_time": "Oct 14, 2026 at 08:52 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T08:52:23.291436",
+        "formatted_time": "Oct 14, 2026 at 08:52 AM",
+        "status": "Student Responded",
+        "method": "Office Visit (Office 214)",
+        "notes": "Route test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T08:52:23.071197",
+        "formatted_time": "Oct 14, 2026 at 08:52 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Automated test note",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
         "timestamp": "2026-10-14T00:00:18.288494",
         "formatted_time": "Oct 14, 2026 at 12:00 AM",
         "status": "Notice Sent via Email",
@@ -52,13 +156,45 @@
       }
     ],
     "status": "Notice Sent via Email",
-    "last_contacted_at": "Oct 14, 2026 at 12:00 AM",
+    "last_contacted_at": "Oct 14, 2026 at 11:09 PM",
     "contact_method": "Email",
     "notes": "Batch route test"
   },
   "202211549": {
     "student_id": "202211549",
     "history": [
+      {
+        "timestamp": "2026-10-14T23:09:01.276779",
+        "formatted_time": "Oct 14, 2026 at 11:09 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T22:54:00.529796",
+        "formatted_time": "Oct 14, 2026 at 10:54 PM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T09:25:23.591747",
+        "formatted_time": "Oct 14, 2026 at 09:25 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
+      {
+        "timestamp": "2026-10-14T08:52:23.348934",
+        "formatted_time": "Oct 14, 2026 at 08:52 AM",
+        "status": "Notice Sent via Email",
+        "method": "Email",
+        "notes": "Batch route test",
+        "advisor": "Dr. Nasser Tabook"
+      },
       {
         "timestamp": "2026-10-14T00:00:18.303965",
         "formatted_time": "Oct 14, 2026 at 12:00 AM",
@@ -77,7 +213,7 @@
       }
     ],
     "status": "Notice Sent via Email",
-    "last_contacted_at": "Oct 14, 2026 at 12:00 AM",
+    "last_contacted_at": "Oct 14, 2026 at 11:09 PM",
     "contact_method": "Email",
     "notes": "Batch route test"
   }

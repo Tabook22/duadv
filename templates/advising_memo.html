@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Official Academic Advising Plan - {{ student.name }} ({{ student.id }}) - Dhofar University</title>
+    <title>{{ 'خطة الإرشاد الأكاديمي الرسمية وتدقيق الخطة الدراسية' if is_rtl else 'Official Academic Advising Plan' }} - {{ student.name }} ({{ student.id }}) - {{ t('dhofar_university') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: {% if is_rtl %}'Cairo', system-ui, sans-serif{% else %}'Plus Jakarta Sans', system-ui, sans-serif{% endif %};
             background-color: #f1f5f9;
             color: #1e293b;
             padding-bottom: 40px;
         }
         .memo-container {
-            max-width: 900px;
+            max-width: 920px;
             margin: 30px auto;
             background: #ffffff;
             border-radius: 8px;
@@ -64,6 +67,12 @@
             margin-bottom: 12px;
             text-transform: uppercase;
         }
+        html[dir="rtl"] .section-header {
+            border-left: none;
+            border-right: 4px solid #1e3a8a;
+            padding-left: 0;
+            padding-right: 10px;
+        }
         .table-custom th {
             background-color: #1e3a8a;
             color: #ffffff;
@@ -81,6 +90,11 @@
             top: 10px;
             z-index: 100;
             margin-bottom: 15px;
+        }
+        .font-monospace {
+            font-family: 'JetBrains Mono', monospace !important;
+            direction: ltr !important;
+            display: inline-block;
         }
         @media print {
             body {
@@ -102,17 +116,17 @@
 <body>
     <div class="container action-bar no-print">
         <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border">
-            <div>
+            <div class="d-flex align-items-center gap-2">
                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Student Profile
+                    <i class="fas fa-arrow-left me-1"></i> {{ 'العودة لملف الطالب' if is_rtl else 'Back to Student Profile' }}
                 </a>
-                <a href="{{ url_for('main.advising_wiki') }}" class="btn btn-sm btn-outline-primary ms-2">
-                    <i class="fas fa-atlas me-1"></i> Advising Wiki
+                <a href="{{ url_for('main.advising_wiki') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-atlas me-1"></i> {{ 'ويكي الإرشاد الأكاديمي' if is_rtl else 'Advising Wiki' }}
                 </a>
             </div>
             <div>
                 <button onclick="window.print()" class="btn btn-sm btn-primary px-3 shadow-sm">
-                    <i class="fas fa-print me-1"></i> Print / Save as PDF
+                    <i class="fas fa-print me-1"></i> {{ 'طباعة / حفظ كملف PDF' if is_rtl else 'Print / Save as PDF' }}
                 </button>
             </div>
         </div>
@@ -121,142 +135,147 @@
     <div class="memo-container">
         <!-- Official Dhofar University Header -->
         <div class="memo-header text-center">
-            <div class="uni-title">DHOFAR UNIVERSITY</div>
-            <div class="dept-title">College of Arts and Applied Sciences &bull; Department of Computer Science</div>
-            <div class="dept-title">Academic Advising Unit &bull; Academic Year 2025/2026</div>
-            <div class="report-title">Official Academic Advising Action Plan &amp; Degree Audit</div>
+            <div class="uni-title">{{ 'جامعة ظفار' if is_rtl else 'DHOFAR UNIVERSITY' }}</div>
+            <div class="dept-title">{{ 'كلية الآداب والعلوم التطبيقية • قسم علوم الحاسوب' if is_rtl else 'College of Arts and Applied Sciences • Department of Computer Science' }}</div>
+            <div class="dept-title">{{ 'وحدة الإرشاد الأكاديمي • العام الأكاديمي 2026/2027' if is_rtl else 'Academic Advising Unit • Academic Year 2026/2027' }}</div>
+            <div class="report-title">{{ 'خطة العمل الإرشادية الرسمية والتدقيق الأكاديمي للشهادة' if is_rtl else 'Official Academic Advising Action Plan & Degree Audit' }}</div>
         </div>
 
         <!-- Student & Roster Metadata -->
         <div class="info-box">
             <div class="row g-2">
                 <div class="col-sm-6 col-md-3">
-                    <small class="text-muted d-block">Student ID:</small>
+                    <small class="text-muted d-block">{{ t('student_id') }}:</small>
                     <strong class="text-primary font-monospace">{{ student.id }}</strong>
                 </div>
                 <div class="col-sm-6 col-md-5">
-                    <small class="text-muted d-block">Full Name:</small>
+                    <small class="text-muted d-block">{{ t('student_name') }}:</small>
                     <strong class="text-dark">{{ student.name }}</strong>
                 </div>
                 <div class="col-sm-6 col-md-4">
-                    <small class="text-muted d-block">Degree Program:</small>
-                    <strong class="text-dark">{{ audit.program_title }}</strong>
+                    <small class="text-muted d-block">{{ t('program') }}:</small>
+                    <strong class="text-dark">{{ localize_program(audit.program_title) }}</strong>
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <small class="text-muted d-block">Current Standing:</small>
+                    <small class="text-muted d-block">{{ t('standing') }}:</small>
                     <span class="badge bg-{{ 'danger' if 'Strict' in (student.status or '') else 'warning text-dark' if 'Probation' in (student.status or '') else 'success' }}">
-                        {{ student.status or 'Normal / Good Standing' }}
+                        {{ localize_standing(student.status) }}
                     </span>
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <small class="text-muted d-block">Cumulative GPA (CGPA):</small>
+                    <small class="text-muted d-block">{{ t('cgpa') }}:</small>
                     <strong class="text-{{ 'danger' if audit.current_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(audit.current_gpa) }}%</strong>
-                    <span class="badge bg-light text-dark border small ms-1">&ge;65% Grad</span>
+                    <span class="badge bg-light text-dark border small ms-1 me-1">&ge;65%</span>
                     {% if audit.gpa_deficit > 0 %}
-                    <small class="text-danger d-block">(-{{ audit.gpa_deficit }} to 65%)</small>
+                    <small class="text-danger d-block">(-{{ audit.gpa_deficit }} {{ 'نقطة دون 65%' if is_rtl else 'to 65%' }})</small>
                     {% endif %}
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <small class="text-muted d-block">Latest Semester GPA (SGPA):</small>
+                    <small class="text-muted d-block">{{ t('semester_gpa') }}:</small>
                     {% if audit.semester_gpa is not none %}
                         <strong class="text-{{ 'danger' if audit.semester_gpa < 65.0 else 'warning text-dark' if audit.semester_gpa < 75.0 else 'success' }}">
                             {{ "%.2f"|format(audit.semester_gpa) }}%
                         </strong>
-                        <span class="badge bg-light text-dark border small ms-1">Probation Metric</span>
+                        <span class="badge bg-light text-dark border small ms-1 me-1">{{ 'مقياس الملاحظة' if is_rtl else 'Probation Metric' }}</span>
                     {% else %}
-                        <span class="text-muted">N/A</span>
+                        <span class="text-muted">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                     {% endif %}
                 </div>
                 <div class="col-sm-6 col-md-3">
-                    <small class="text-muted d-block">Earned Credits:</small>
-                    <strong>{{ audit.completed_credits }} / {{ audit.total_plan_credits }} hrs</strong>
+                    <small class="text-muted d-block">{{ t('earned_credits') }}:</small>
+                    <strong>{{ audit.completed_credits }} / {{ audit.total_plan_credits }} {{ t('credits') }}</strong>
                 </div>
             </div>
             <div class="row g-2 mt-1 pt-2 border-top">
                 <div class="col-sm-6 col-md-6">
-                    <small class="text-muted">Academic Advisor: </small>
-                    <strong>{{ student.advisor or 'Dr. Nasser Tabook' }} (Faculty ID: 001097)</strong>
+                    <small class="text-muted">{{ 'المرشد الأكاديمي:' if is_rtl else 'Academic Advisor:' }} </small>
+                    <strong>{{ 'د. ناصر طمطيم تبوك' if is_rtl else (student.advisor or 'Dr. Nasser Tabook') }} ({{ 'الرقم الوظيفي:' if is_rtl else 'Faculty ID:' }} 001097)</strong>
                 </div>
                 <div class="col-sm-6 col-md-6 text-md-end">
-                    <small class="text-muted">Regulatory Benchmark: </small>
-                    <span class="badge bg-light text-dark border">CGPA &ge; 65.0% Good Standing / Graduation</span>
+                    <small class="text-muted">{{ 'المعيار اللائحي:' if is_rtl else 'Regulatory Benchmark:' }} </small>
+                    <span class="badge bg-light text-dark border">{{ 'المعدل التراكمي >= 65.0% للوضع السليم والتخرج' if is_rtl else 'CGPA >= 65.0% Good Standing / Graduation' }}</span>
                 </div>
             </div>
         </div>
 
         <!-- 1. Executive Situation Diagnosis -->
-        <div class="section-header">1. Executive Situation Diagnosis &amp; Academic Status</div>
-        <div class="p-3 bg-light rounded border mb-3 small" style="line-height: 1.6;">
+        <div class="section-header">{{ '١. التشخيص التنفيذي للحالة والوضع الأكاديمي' if is_rtl else '1. Executive Situation Diagnosis & Academic Status' }}</div>
+        <div class="p-3 bg-light rounded border mb-3 small" style="line-height: 1.7;">
             {% for para in dossier.analysis_summary %}
             <p class="mb-2">{{ para|replace('**', '<strong>')|replace('**', '</strong>')|safe }}</p>
             {% endfor %}
             <div class="mt-2 pt-2 border-top text-muted">
-                <strong>Degree Plan Pace:</strong> {{ audit.completed_credits }} completed out of {{ audit.total_plan_credits }} credit hours ({{ audit.completion_percentage }}%). Remaining to complete: {{ audit.remaining_credits }} hours (~{{ audit.semesters_remaining }} semester(s)).
+                <strong>{{ 'معدل إنجاز الخطة الدراسية:' if is_rtl else 'Degree Plan Pace:' }}</strong>
+                {% if is_rtl %}
+                    {{ audit.completed_credits }} ساعة منجزة من أصل {{ audit.total_plan_credits }} ساعة معتمدة ({{ audit.completion_percentage }}%). الساعات المتبقية: {{ audit.remaining_credits }} ساعة (~{{ audit.semesters_remaining }} فصول متبقية).
+                {% else %}
+                    {{ audit.completed_credits }} completed out of {{ audit.total_plan_credits }} credit hours ({{ audit.completion_percentage }}%). Remaining to complete: {{ audit.remaining_credits }} hours (~{{ audit.semesters_remaining }} semester(s)).
+                {% endif %}
             </div>
         </div>
 
         <!-- 2. Semester-by-Semester Progression Trajectory & Root-Cause Breakdown -->
         <div class="section-header d-flex justify-content-between align-items-center">
-            <span>2. Semester-by-Semester Academic Trajectory &amp; Root-Cause Analysis</span>
-            <span class="badge bg-{{ dossier.progression.trend_badge }}">{{ dossier.progression.overall_trend }}</span>
+            <span>{{ '٢. المسار الأكاديمي فصلاً بفصل والتحليل الجذري للأداء' if is_rtl else '2. Semester-by-Semester Academic Trajectory & Root-Cause Analysis' }}</span>
+            <span class="badge bg-{{ dossier.progression.trend_badge }}">{{ localize_risk_level(dossier.progression.overall_trend) }}</span>
         </div>
         <div class="table-responsive mb-3">
             <table class="table table-bordered table-sm small mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 20%;">Term</th>
-                        <th style="width: 12%; text-align: center;">Term GPA (Δ)</th>
-                        <th style="width: 12%; text-align: center;">Cum. GPA (Δ)</th>
-                        <th style="width: 16%;">Standing &amp; Load</th>
-                        <th style="width: 40%;">Root-Cause Performance Analysis</th>
+                        <th style="width: 20%;">{{ 'الفصل الدراسي' if is_rtl else 'Term' }}</th>
+                        <th style="width: 12%; text-align: center;">{{ 'المعدل الفصلي (Δ)' if is_rtl else 'Term GPA (Δ)' }}</th>
+                        <th style="width: 12%; text-align: center;">{{ 'المعدل التراكمي (Δ)' if is_rtl else 'Cum. GPA (Δ)' }}</th>
+                        <th style="width: 16%;">{{ 'الوضع والعبء' if is_rtl else 'Standing & Load' }}</th>
+                        <th style="width: 40%;">{{ 'التحليل الجذري للأداء الأكاديمي' if is_rtl else 'Root-Cause Performance Analysis' }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in dossier.progression.terms %}
+                    {% for t_item in dossier.progression.terms %}
                     <tr>
                         <td class="fw-bold text-dark">
-                            {{ t.term }}
-                            {% if t.status == 'IMPROVED' %}
-                                <span class="badge bg-success ms-1">Improved</span>
-                            {% elif t.status == 'DECLINED' %}
-                                <span class="badge bg-danger ms-1">Declined</span>
+                            {{ localize_term(t_item.term) }}
+                            {% if t_item.status == 'IMPROVED' %}
+                                <span class="badge bg-success ms-1 me-1">{{ 'تحسن' if is_rtl else 'Improved' }}</span>
+                            {% elif t_item.status == 'DECLINED' %}
+                                <span class="badge bg-danger ms-1 me-1">{{ 'تراجع' if is_rtl else 'Declined' }}</span>
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            {% if t.semester_gpa is not none and t.semester_gpa > 0 %}
-                                <strong>{{ "%.2f"|format(t.semester_gpa) }}%</strong>
-                                {% if t.delta_semester_gpa is not none %}
-                                    <div class="text-{{ 'success' if t.delta_semester_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
-                                        {{ '+' if t.delta_semester_gpa > 0 else '' }}{{ t.delta_semester_gpa }}%
+                            {% if t_item.semester_gpa is not none and t_item.semester_gpa > 0 %}
+                                <strong>{{ "%.2f"|format(t_item.semester_gpa) }}%</strong>
+                                {% if t_item.delta_semester_gpa is not none %}
+                                    <div class="text-{{ 'success' if t_item.delta_semester_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
+                                        {{ '+' if t_item.delta_semester_gpa > 0 else '' }}{{ t_item.delta_semester_gpa }}%
                                     </div>
                                 {% endif %}
                             {% else %}
-                                <span class="text-muted">N/A</span>
+                                <span class="text-muted">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            {% if t.cumulative_gpa is not none and t.cumulative_gpa > 0 %}
-                                <strong class="text-{{ 'danger' if t.cumulative_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(t.cumulative_gpa) }}%</strong>
-                                {% if t.delta_cumulative_gpa is not none %}
-                                    <div class="text-{{ 'success' if t.delta_cumulative_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
-                                        {{ '+' if t.delta_cumulative_gpa > 0 else '' }}{{ t.delta_cumulative_gpa }}%
+                            {% if t_item.cumulative_gpa is not none and t_item.cumulative_gpa > 0 %}
+                                <strong class="text-{{ 'danger' if t_item.cumulative_gpa < 65.0 else 'success' }}">{{ "%.2f"|format(t_item.cumulative_gpa) }}%</strong>
+                                {% if t_item.delta_cumulative_gpa is not none %}
+                                    <div class="text-{{ 'success' if t_item.delta_cumulative_gpa >= 0 else 'danger' }}" style="font-size: 10px;">
+                                        {{ '+' if t_item.delta_cumulative_gpa > 0 else '' }}{{ t_item.delta_cumulative_gpa }}%
                                     </div>
                                 {% endif %}
                             {% else %}
-                                <span class="text-muted">N/A</span>
+                                <span class="text-muted">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'danger' if 'Strict' in t.standing else 'warning text-dark' if 'Probation' in t.standing else 'success' }}">
-                                {{ t.standing }}
+                            <span class="badge bg-{{ 'danger' if 'Strict' in t_item.standing else 'warning text-dark' if 'Probation' in t_item.standing else 'success' }}">
+                                {{ localize_standing(t_item.standing) }}
                             </span>
-                            <div class="text-muted" style="font-size: 10px;">{{ t.total_credits }} hrs ({{ t.passed_count }}/{{ t.courses_count }} passed)</div>
+                            <div class="text-muted" style="font-size: 10px;">{{ t_item.total_credits }} {{ 'ساعات' if is_rtl else 'hrs' }} ({{ t_item.passed_count }}/{{ t_item.courses_count }} {{ 'ناجح' if is_rtl else 'passed' }})</div>
                         </td>
-                        <td class="text-secondary" style="line-height: 1.4;">
-                            {{ t.root_cause_explanation }}
-                            {% if t.repeated_courses %}
+                        <td class="text-secondary" style="line-height: 1.5;">
+                            {{ t_item.root_cause_explanation }}
+                            {% if t_item.repeated_courses %}
                             <div class="mt-1 font-monospace text-primary" style="font-size: 10px;">
-                                Repeated: {{ t.repeated_courses|map(attribute='code')|join(', ') }} (Article 18)
+                                {{ 'المساقات المعادة:' if is_rtl else 'Repeated:' }} {{ t_item.repeated_courses|map(attribute='code')|join(', ') }} ({{ 'المادة 18' if is_rtl else 'Article 18' }})
                             </div>
                             {% endif %}
                         </td>
@@ -266,45 +285,54 @@
             </table>
         </div>
 
-        <!-- 3. GPA Recovery Blueprint (What the student should do to increase GPA) -->
-        <div class="section-header">3. What the Student Must Do to Increase GPA (DU Article 18 Recovery Path)</div>
+        <!-- 3. GPA Recovery Blueprint -->
+        <div class="section-header">{{ '٣. ما يجب على الطالب فعله لرفع المعدل التراكمي (مسار التعافي وفق المادة 18)' if is_rtl else '3. What the Student Must Do to Increase GPA (DU Article 18 Recovery Path)' }}</div>
         <div class="p-3 bg-light rounded border mb-3 small">
             <p class="mb-2">
-                Under Dhofar University Article 18, repeating courses previously failed (< 60% or F) replaces the lower grade in the student's cumulative GPA calculation. The table below simulates the mathematical leverage of retaking these courses:
+                {% if is_rtl %}
+                    بموجب المادة 18 من لوائح جامعة ظفار الأكاديمية، فإن إعادة المقررات التي رسب فيها الطالب سابقاً (أقل من 60% أو F) تستبدل الدرجة القديمة في احتساب المعدل التراكمي. يوضح الجدول التالي المحاكاة الرقمية لأثر إعادة هذه المساقات:
+                {% else %}
+                    Under Dhofar University Article 18, repeating courses previously failed (< 60% or F) replaces the lower grade in the student's cumulative GPA calculation. The table below simulates the mathematical leverage of retaking these courses:
+                {% endif %}
             </p>
             {% if dossier.recovery_plan.repeat_items %}
             <table class="table table-sm table-bordered bg-white mb-2">
                 <thead class="table-light">
                     <tr>
-                        <th>Course Code</th>
-                        <th>Credits</th>
-                        <th>Old Grade</th>
-                        <th class="text-success text-center">Gain if 75% achieved</th>
-                        <th class="text-primary text-center">Gain if 80% achieved</th>
+                        <th>{{ 'رمز المساق واسمه' if is_rtl else 'Course Code' }}</th>
+                        <th>{{ 'الساعات' if is_rtl else 'Credits' }}</th>
+                        <th>{{ 'الدرجة السابقة' if is_rtl else 'Old Grade' }}</th>
+                        <th class="text-success text-center">{{ 'الزيادة عند تحقيق 75%' if is_rtl else 'Gain if 75% achieved' }}</th>
+                        <th class="text-primary text-center">{{ 'الزيادة عند تحقيق 80%' if is_rtl else 'Gain if 80% achieved' }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for r in dossier.recovery_plan.repeat_items %}
                     <tr>
                         <td class="fw-bold font-monospace">{{ r.code }} - {{ r.name }}</td>
-                        <td>{{ r.credits }} hrs</td>
+                        <td>{{ r.credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</td>
                         <td><span class="badge bg-danger">{{ r.old_grade }}</span></td>
-                        <td class="text-success fw-bold text-center">+{{ r.projected_gain_75 }}% to CGPA</td>
-                        <td class="text-primary fw-bold text-center">+{{ r.projected_gain_80 }}% to CGPA</td>
+                        <td class="text-success fw-bold text-center">+{{ r.projected_gain_75 }}% {{ 'في التراكمي' if is_rtl else 'to CGPA' }}</td>
+                        <td class="text-primary fw-bold text-center">+{{ r.projected_gain_80 }}% {{ 'في التراكمي' if is_rtl else 'to CGPA' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             <div class="p-2 rounded bg-white border small text-dark mb-2">
-                <strong>Projected Outcome:</strong> Achieving 75% in repeated courses will inject an estimated <strong>+{{ dossier.recovery_plan.total_potential_gain }}%</strong> into the student's cumulative GPA, raising it to approximately <strong>{{ dossier.recovery_plan.projected_cgpa_at_75 }}%</strong> 
-                {% if dossier.recovery_plan.recovers_good_standing %}
-                <span class="badge bg-success ms-1">Recovers Good Standing (>= 65.0%)</span>
+                <strong>{{ 'النتيجة المتوقعة:' if is_rtl else 'Projected Outcome:' }}</strong>
+                {% if is_rtl %}
+                    تحقيق 75% في المقررات المعادة سيضخ زيادة متوقعة قدرها <strong>+{{ dossier.recovery_plan.total_potential_gain }}%</strong> في المعدل التراكمي، ليرتفع إلى نحو <strong>{{ dossier.recovery_plan.projected_cgpa_at_75 }}%</strong>.
                 {% else %}
-                <span class="badge bg-warning text-dark ms-1">Key Step to Exiting Probation</span>
+                    Achieving 75% in repeated courses will inject an estimated <strong>+{{ dossier.recovery_plan.total_potential_gain }}%</strong> into the student's cumulative GPA, raising it to approximately <strong>{{ dossier.recovery_plan.projected_cgpa_at_75 }}%</strong>.
+                {% endif %}
+                {% if dossier.recovery_plan.recovers_good_standing %}
+                <span class="badge bg-success ms-1 me-1">{{ 'يستعيد الوضع السليم (>= 65.0%)' if is_rtl else 'Recovers Good Standing (>= 65.0%)' }}</span>
+                {% else %}
+                <span class="badge bg-warning text-dark ms-1 me-1">{{ 'خطوة حاسمة للخروج من الملاحظة' if is_rtl else 'Key Step to Exiting Probation' }}</span>
                 {% endif %}
             </div>
             {% endif %}
-            <ul class="mb-0 ps-3">
+            <ul class="mb-0 ps-3 pe-3">
                 {% for act in dossier.recovery_plan.action_steps %}
                 <li>{{ act }}</li>
                 {% endfor %}
@@ -313,26 +341,26 @@
 
         <!-- 4. Academic Advisor Consultation Protocol & Counseling Script -->
         <div class="section-header d-flex justify-content-between align-items-center">
-            <span>4. Academic Advisor Consultation Protocol &amp; Dialogue Script</span>
-            <span class="badge bg-{{ dossier.consultation_guide.urgency_badge }}">{{ dossier.consultation_guide.urgency }}</span>
+            <span>{{ '٤. بروتوكول المقابلة الإرشادية وحوار المرشد الأكاديمي' if is_rtl else '4. Academic Advisor Consultation Protocol & Dialogue Script' }}</span>
+            <span class="badge bg-{{ dossier.consultation_guide.urgency_badge }}">{{ localize_priority(dossier.consultation_guide.urgency) }}</span>
         </div>
         <div class="p-3 bg-light rounded border mb-3 small">
             <div class="alert alert-warning py-1 px-2 mb-2 small">
-                <strong>Mandatory Advising Window:</strong> {{ dossier.consultation_guide.schedule_window }} &bull; 
-                <strong>Required Meeting Frequency:</strong> {{ dossier.consultation_guide.frequency }}
+                <strong>{{ 'فترة المقابلة الإلزامية:' if is_rtl else 'Mandatory Advising Window:' }}</strong> {{ dossier.consultation_guide.schedule_window }} &bull; 
+                <strong>{{ 'دورية اللقاءات المطلوبة:' if is_rtl else 'Required Meeting Frequency:' }}</strong> {{ dossier.consultation_guide.frequency }}
             </div>
-            <h6 class="fw-bold text-primary small mb-2"><i class="fas fa-user-tie me-1"></i> What Dr. Nasser Tabook (Advisor) Should Say to the Student:</h6>
+            <h6 class="fw-bold text-primary small mb-2"><i class="fas fa-user-tie me-1"></i> {{ 'ما يجب أن يطرحه الدكتور ناصر طمطيم تبوك (المرشد الأكاديمي) على الطالب:' if is_rtl else 'What Dr. Nasser Tabook (Advisor) Should Say to the Student:' }}</h6>
             {% for sp in dossier.consultation_guide.advisor_script %}
             <div class="p-2 rounded bg-white border mb-2">
                 <strong class="text-dark d-block mb-1">{{ sp.phase }} ({{ sp.speaker }}):</strong>
-                <div class="text-secondary fst-italic" style="line-height: 1.45;">
+                <div class="text-secondary fst-italic" style="line-height: 1.5;">
                     "{{ sp.dialogue|replace('**', '<strong>')|replace('**', '</strong>')|safe }}"
                 </div>
             </div>
             {% endfor %}
 
-            <h6 class="fw-bold text-dark small mt-3 mb-1"><i class="fas fa-clipboard-check text-info me-1"></i> What the Student Must Prepare and Ask Dr. Nasser:</h6>
-            <ul class="mb-0 text-secondary ps-3">
+            <h6 class="fw-bold text-dark small mt-3 mb-1"><i class="fas fa-clipboard-check text-info me-1"></i> {{ 'ما يجب أن يجهزه الطالب ويسأله للمرشد الأكاديمي:' if is_rtl else 'What the Student Must Prepare and Ask Dr. Nasser:' }}</h6>
+            <ul class="mb-0 text-secondary ps-3 pe-3">
                 {% for stp in dossier.consultation_guide.student_talking_points %}
                 <li>{{ stp }}</li>
                 {% endfor %}
@@ -341,21 +369,25 @@
 
         <!-- 5. Recommended Next-Semester Schedule -->
         <div class="section-header d-flex justify-content-between align-items-center">
-            <span>2. Recommended Next-Semester Course Schedule</span>
-            <span class="badge bg-primary">Cap: {{ audit.credit_cap }} Credit Hours Max</span>
+            <span>{{ '٥. جدول المقررات الموصى بها للفصل الدراسي القادم' if is_rtl else '5. Recommended Next-Semester Course Schedule' }}</span>
+            <span class="badge bg-primary">{{ 'السقف: ' ~ audit.credit_cap ~ ' ساعة معتمدة كحد أقصى' if is_rtl else 'Cap: ' ~ audit.credit_cap ~ ' Credit Hours Max' }}</span>
         </div>
         <p class="text-muted small mb-2">
-            Strictly tailored to Dhofar University course load regulations. Course repeat priorities are placed first to eliminate prerequisite locks and recover cumulative GPA.
+            {% if is_rtl %}
+                محكوم بدقة بلوائح العبء الدراسي بجامعة ظفار. توضع أولويات إعادة المقررات أولاً لإزالة قيود المتطلبات السابقة واستعادة المعدل التراكمي.
+            {% else %}
+                Strictly tailored to Dhofar University course load regulations. Course repeat priorities are placed first to eliminate prerequisite locks and recover cumulative GPA.
+            {% endif %}
         </p>
         <div class="table-responsive mb-3">
             <table class="table table-bordered table-custom mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 12%;">Course Code</th>
-                        <th style="width: 22%;">Course Title</th>
-                        <th style="width: 8%; text-align: center;">Credits</th>
-                        <th style="width: 28%;">Offered Section &amp; Schedule</th>
-                        <th style="width: 30%;">Advising Priority &amp; Role</th>
+                        <th style="width: 12%;">{{ 'رمز المساق' if is_rtl else 'Course Code' }}</th>
+                        <th style="width: 22%;">{{ 'اسم المساق' if is_rtl else 'Course Title' }}</th>
+                        <th style="width: 8%; text-align: center;">{{ 'الساعات' if is_rtl else 'Credits' }}</th>
+                        <th style="width: 28%;">{{ 'الشعبة والموعد المتاح' if is_rtl else 'Offered Section & Schedule' }}</th>
+                        <th style="width: 30%;">{{ 'أولوية الإرشاد والتوجيه' if is_rtl else 'Advising Priority & Role' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -367,9 +399,9 @@
                         <td>
                             {% if c.is_offered %}
                                 <div>
-                                    <span class="badge bg-primary text-white">Sec {{ c.primary_section.section }}</span>
+                                    <span class="badge bg-primary text-white">{{ 'شعبة' if is_rtl else 'Sec' }} {{ c.primary_section.section }}</span>
                                     <span class="badge bg-light text-dark border">{{ c.primary_section.room }}</span>
-                                    <span class="badge {{ 'bg-success' if c.seat_status == 'Open' else 'bg-danger' }}">{{ c.seat_status }}</span>
+                                    <span class="badge {{ 'bg-success' if c.seat_status == 'Open' else 'bg-danger' }}">{{ 'متاح' if (c.seat_status == 'Open' and is_rtl) else c.seat_status }}</span>
                                 </div>
                                 <div class="small fw-semibold text-dark mt-1" style="font-size: 0.76rem;">
                                     {{ c.primary_section.days }} &bull; {{ c.primary_section.time }}
@@ -378,13 +410,13 @@
                                     {{ c.primary_section.instructor }}
                                 </div>
                             {% else %}
-                                <span class="badge bg-warning text-dark">Not Offered Current Term</span>
+                                <span class="badge bg-warning text-dark">{{ 'غير مطروح في الفصل الحالي' if is_rtl else 'Not Offered Current Term' }}</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="mb-1">
                                 <span class="badge bg-{{ 'danger' if 'Mandatory' in c.priority else 'success' if 'Core' in c.priority else 'warning text-dark' }}">
-                                    {{ c.priority }}
+                                    {{ localize_priority(c.priority) }}
                                 </span>
                             </div>
                             <div class="small text-secondary">{{ c.reason }}</div>
@@ -392,8 +424,8 @@
                     </tr>
                     {% endfor %}
                     <tr class="table-light">
-                        <td colspan="2" class="text-end fw-bold">Total Recommended Semester Course Load:</td>
-                        <td class="text-center fw-bold text-primary fs-6">{{ dossier.total_recommended_credits }} hrs</td>
+                        <td colspan="2" class="text-end fw-bold">{{ 'إجمالي العبء الفصلي الموصى به:' if is_rtl else 'Total Recommended Semester Course Load:' }}</td>
+                        <td class="text-center fw-bold text-primary fs-6">{{ dossier.total_recommended_credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</td>
                         <td colspan="2" class="small text-muted">
                             {{ audit.credit_cap_reason }}
                         </td>
@@ -402,17 +434,17 @@
             </table>
         </div>
 
-        <!-- 3. Prerequisite Readiness & Blocked Courses -->
+        <!-- 6. Prerequisite Readiness & Blocked Courses -->
         {% if audit.blocked_courses %}
-        <div class="section-header">6. Prerequisite Roadblocks (Locked Downstream Courses)</div>
+        <div class="section-header">{{ '٦. مقررات مغلقة بسبب المتطلبات السابقة المتعثرة' if is_rtl else '6. Prerequisite Roadblocks (Locked Downstream Courses)' }}</div>
         <div class="table-responsive mb-3">
             <table class="table table-sm table-bordered small mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 15%;">Locked Course</th>
-                        <th>Course Title</th>
-                        <th style="width: 25%;">Required Prerequisite(s)</th>
-                        <th>Unmet Prerequisite Status</th>
+                        <th style="width: 15%;">{{ 'المساق المغلق' if is_rtl else 'Locked Course' }}</th>
+                        <th>{{ 'اسم المساق' if is_rtl else 'Course Title' }}</th>
+                        <th style="width: 25%;">{{ 'المتطلبات السابقة المطلوبة' if is_rtl else 'Required Prerequisite(s)' }}</th>
+                        <th>{{ 'حالة المتطلب المعلق' if is_rtl else 'Unmet Prerequisite Status' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -421,7 +453,7 @@
                         <td class="fw-bold text-danger font-monospace">{{ b.code }}</td>
                         <td>{{ b.name }}</td>
                         <td>{{ b.prerequisites|join(', ') }}</td>
-                        <td class="text-danger fw-semibold"><i class="fas fa-lock me-1"></i>Missing: {{ b.unmet_prerequisites|join(', ') }}</td>
+                        <td class="text-danger fw-semibold"><i class="fas fa-lock me-1 ms-1"></i>{{ 'مطلوب إنجاز:' if is_rtl else 'Missing:' }} {{ b.unmet_prerequisites|join(', ') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -429,23 +461,23 @@
         </div>
         {% endif %}
 
-        <!-- 4. Policy Citations & Bylaw Links -->
-        <div class="section-header">7. University Academic Policies &amp; Bylaws Applied</div>
+        <!-- 7. Policy Citations & Bylaw Links -->
+        <div class="section-header">{{ '٧. لوائح وسياسات جامعة ظفار الأكاديمية المطبقة' if is_rtl else '7. University Academic Policies & Bylaws Applied' }}</div>
         <div class="list-group list-group-flush border rounded mb-3 small">
             {% for pol in dossier.policy_citations %}
             <div class="list-group-item p-2 px-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="text-dark"><i class="fas fa-book-reader text-primary me-1"></i>{{ pol.bylaw }}</strong>
-                    <span class="badge bg-light text-secondary border">{{ pol.source_doc }} (Page {{ pol.page }})</span>
+                    <strong class="text-dark"><i class="fas fa-book-reader text-primary me-1 ms-1"></i>{{ pol.bylaw }}</strong>
+                    <span class="badge bg-light text-secondary border">{{ pol.source_doc }} ({{ 'صفحة' if is_rtl else 'Page' }} {{ pol.page }})</span>
                 </div>
                 <div class="text-secondary small">{{ pol.summary }}</div>
             </div>
             {% endfor %}
         </div>
 
-        <!-- 5. Student Recovery Agreement & Action Items -->
-        <div class="section-header">5. Action Items &amp; Advising Agreement</div>
-        <ul class="small mb-4 text-dark ps-3">
+        <!-- 8. Student Recovery Agreement & Action Items -->
+        <div class="section-header">{{ '٨. بنود خطة العمل واتفاقية الإرشاد' if is_rtl else '8. Action Items & Advising Agreement' }}</div>
+        <ul class="small mb-4 text-dark ps-3 pe-3">
             {% for act in dossier.action_items %}
             <li class="mb-1">{{ act }}</li>
             {% endfor %}
@@ -454,24 +486,24 @@
         <!-- Official Signatures Block -->
         <div class="row pt-4 mt-4 border-top text-center" style="font-size: 11px;">
             <div class="col-4">
-                <div class="mb-5 text-muted">Academic Advisor</div>
+                <div class="mb-5 text-muted">{{ 'المرشد الأكاديمي' if is_rtl else 'Academic Advisor' }}</div>
                 <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
-                    Dr. Nasser Tabook
-                    <div class="text-muted small fw-normal">Department of Computer Science</div>
+                    {{ 'د. ناصر طمطيم تبوك' if is_rtl else 'Dr. Nasser Tabook' }}
+                    <div class="text-muted small fw-normal">{{ 'قسم علوم الحاسوب' if is_rtl else 'Department of Computer Science' }}</div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="mb-5 text-muted">Student Signature of Agreement</div>
+                <div class="mb-5 text-muted">{{ 'توقيع الطالب بالالتزام والموافقة' if is_rtl else 'Student Signature of Agreement' }}</div>
                 <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
                     {{ student.name }}
-                    <div class="text-muted small fw-normal">Date: _____ / _____ / 2026</div>
+                    <div class="text-muted small fw-normal">{{ 'التاريخ: _____ / _____ / 2026' if is_rtl else 'Date: _____ / _____ / 2026' }}</div>
                 </div>
             </div>
             <div class="col-4">
-                <div class="mb-5 text-muted">Department Chairperson</div>
+                <div class="mb-5 text-muted">{{ 'رئيس قسم علوم الحاسوب' if is_rtl else 'Department Chairperson' }}</div>
                 <div class="border-top border-dark mx-3 pt-1 fw-bold text-dark">
-                    Chairperson, Dept. of Computer Science
-                    <div class="text-muted small fw-normal">College of Arts and Applied Sciences</div>
+                    {{ 'رئيس قسم علوم الحاسوب' if is_rtl else 'Chairperson, Dept. of Computer Science' }}
+                    <div class="text-muted small fw-normal">{{ 'كلية الآداب والعلوم التطبيقية' if is_rtl else 'College of Arts and Applied Sciences' }}</div>
                 </div>
             </div>
         </div>

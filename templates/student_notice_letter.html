@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Official Academic Notice &amp; Registration Directives - {{ notice.student_name }} ({{ notice.student_id }}) | Dhofar University{% endblock %}
+{% block title %}{{ 'إخطار إرشادي أكاديمي رسمي وتوجيهات التسجيل' if is_rtl else 'Official Academic Notice & Registration Directives' }} - {{ notice.student_name }} ({{ notice.student_id }}) | {{ t('dhofar_university') }}{% endblock %}
 
 {% block styles %}
 <style>
@@ -18,7 +18,7 @@
         padding: 45px 55px;
         background: #ffffff;
         color: #0f172a;
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        font-family: inherit;
     }
 
     .letterhead-top {
@@ -37,7 +37,7 @@
     }
 
     .memo-meta-table th {
-        width: 110px;
+        width: 120px;
         color: #475569;
         font-weight: 700;
         text-transform: uppercase;
@@ -136,13 +136,13 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 btn-toolbar-top gap-2">
     <div class="d-flex align-items-center gap-2">
         <a href="{{ url_for('main.student_detail', student_id=notice.student_id) }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left me-1"></i> Back to Student Profile
+            <i class="fas fa-arrow-left me-1"></i> {{ 'العودة لملف الطالب' if is_rtl else 'Back to Student Profile' }}
         </a>
         <a href="{{ url_for('main.students_at_risk_batch_notices') }}" class="btn btn-outline-warning btn-sm text-dark">
-            <i class="fas fa-mail-bulk me-1"></i> Batch Outreach Hub
+            <i class="fas fa-mail-bulk me-1"></i> {{ 'مركز التواصل الجماعي' if is_rtl else 'Batch Outreach Hub' }}
         </a>
         <span class="badge bg-{{ 'danger' if notice.is_probation else 'primary' }} px-2.5 py-1.5 fs-7">
-            <i class="fas fa-envelope-open-text me-1"></i> Official Student Notice: {{ notice.urgency_label }}
+            <i class="fas fa-envelope-open-text me-1"></i> {{ 'إخطار إرشادي رسمي:' if is_rtl else 'Official Student Notice:' }} {{ notice.urgency_label }}
         </span>
     </div>
     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -150,28 +150,28 @@
         <div class="dropdown">
             <button class="btn btn-outline-secondary btn-sm dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" id="outreachStatusDropdownBtn">
                 <span id="currentStatusBadge" class="badge bg-{{ notice.outreach.status_color }} me-1">
-                    <i class="fas {{ notice.outreach.status_icon }}"></i> {{ notice.outreach.status }}
+                    <i class="fas {{ notice.outreach.status_icon }}"></i> {{ localize_outreach_status(notice.outreach.status) }}
                 </span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow">
-                <li><h6 class="dropdown-header">Update Advising Status</h6></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Notice Sent via Email')"><i class="fas fa-paper-plane me-2 text-primary"></i>Notice Sent via Email</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Student Responded')"><i class="fas fa-reply me-2 text-warning"></i>Student Responded</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Meeting Completed')"><i class="fas fa-handshake me-2 text-success"></i>Meeting Completed</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Plan Signed & Approved')"><i class="fas fa-file-signature me-2 text-info"></i>Plan Signed &amp; Approved</a></li>
+                <li><h6 class="dropdown-header">{{ 'تحديث حالة التواصل' if is_rtl else 'Update Advising Status' }}</h6></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Notice Sent via Email')"><i class="fas fa-paper-plane me-2 text-primary"></i>{{ 'تم إرسال الإخطار بالبريد' if is_rtl else 'Notice Sent via Email' }}</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Student Responded')"><i class="fas fa-reply me-2 text-warning"></i>{{ 'استجاب الطالب' if is_rtl else 'Student Responded' }}</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Meeting Completed')"><i class="fas fa-handshake me-2 text-success"></i>{{ 'تمت المقابلة الإرشادية' if is_rtl else 'Meeting Completed' }}</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Plan Signed & Approved')"><i class="fas fa-file-signature me-2 text-info"></i>{{ 'تم توقيع واعتماد الخطة' if is_rtl else 'Plan Signed & Approved' }}</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Pending Outreach')"><i class="fas fa-clock me-2 text-secondary"></i>Reset to Pending Outreach</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="quickUpdateStatus('Pending Outreach')"><i class="fas fa-clock me-2 text-secondary"></i>{{ 'إعادة تعيين إلى قيد الانتظار' if is_rtl else 'Reset to Pending Outreach' }}</a></li>
             </ul>
         </div>
 
         <a href="{{ notice.mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" onclick="recordEmailDispatched()" title="Launch Outlook/Gmail with pre-filled message">
-            <i class="fas fa-paper-plane me-1"></i> Open in Email Client
+            <i class="fas fa-paper-plane me-1"></i> {{ 'فتح في تطبيق البريد' if is_rtl else 'Open in Email Client' }}
         </a>
         <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="copyStudentNoticeText()">
-            <i class="fas fa-copy me-1"></i> Copy Email Text
+            <i class="fas fa-copy me-1"></i> {{ 'نسخ نص الرسالة' if is_rtl else 'Copy Email Text' }}
         </button>
         <button type="button" class="btn btn-outline-dark btn-sm fw-semibold" onclick="window.print()">
-            <i class="fas fa-print me-1"></i> Print / Save PDF
+            <i class="fas fa-print me-1"></i> {{ 'طباعة / حفظ كملف PDF' if is_rtl else 'Print / Save PDF' }}
         </button>
     </div>
 </div>
@@ -179,7 +179,11 @@
 <!-- Copy Success Alert Toast -->
 <div id="copySuccessAlert" class="alert alert-success alert-dismissible fade d-none mb-3 shadow-sm" role="alert">
     <i class="fas fa-check-circle me-2"></i>
-    <strong>Official Email Text Copied!</strong> The complete message has been copied to your clipboard. You can paste it directly into your email client, WhatsApp, or LMS messaging.
+    {% if is_rtl %}
+        <strong>تم نسخ نص الرسالة بنجاح!</strong> تم نسخ نص الإخطار الكامل إلى الحافظة. يمكنك الآن لصقه مباشرة في برنامج البريد، الواتساب، أو نظام إدارة التعلم.
+    {% else %}
+        <strong>Official Email Text Copied!</strong> The complete message has been copied to your clipboard. You can paste it directly into your email client, WhatsApp, or LMS messaging.
+    {% endif %}
     <button type="button" class="btn-close" onclick="dismissCopyAlert()"></button>
 </div>
 
@@ -187,12 +191,12 @@
 <ul class="nav nav-tabs mb-3 btn-toolbar-top" id="noticeTab" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active fw-bold" id="letter-tab" data-bs-toggle="tab" data-bs-target="#letterView" type="button" role="tab">
-            <i class="fas fa-file-invoice me-1"></i> Official Academic Notice Letter (Print &amp; PDF)
+            <i class="fas fa-file-invoice me-1"></i> {{ 'خطاب الإخطار الأكاديمي الرسمي (طباعة وPDF)' if is_rtl else 'Official Academic Notice Letter (Print & PDF)' }}
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link fw-bold" id="email-tab" data-bs-toggle="tab" data-bs-target="#emailView" type="button" role="tab">
-            <i class="fas fa-envelope me-1"></i> Email Dispatch Format (Ready-to-Send)
+            <i class="fas fa-envelope me-1"></i> {{ 'صيغة البريد الإلكتروني الجاهزة للإرسال' if is_rtl else 'Email Dispatch Format (Ready-to-Send)' }}
         </button>
     </li>
 </ul>
@@ -210,15 +214,15 @@
                                 DU
                             </div>
                             <div>
-                                <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">DHOFAR UNIVERSITY</h4>
-                                <div class="fw-semibold text-secondary small">COLLEGE OF ARTS AND APPLIED SCIENCES</div>
-                                <div class="text-primary small fw-bold">Department of Computer Science &mdash; Academic Advising Unit</div>
+                                <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">{{ 'جامعة ظفار' if is_rtl else 'DHOFAR UNIVERSITY' }}</h4>
+                                <div class="fw-semibold text-secondary small">{{ 'كلية الآداب والعلوم التطبيقية' if is_rtl else 'COLLEGE OF ARTS AND APPLIED SCIENCES' }}</div>
+                                <div class="text-primary small fw-bold">{{ 'قسم علوم الحاسوب — وحدة الإرشاد الأكاديمي' if is_rtl else 'Department of Computer Science — Academic Advising Unit' }}</div>
                             </div>
                         </div>
                         <div class="text-end d-none d-sm-block">
-                            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Cairo', sans-serif;">جامعة ظفار</h5>
-                            <div class="small text-secondary" style="font-family: 'Cairo', sans-serif;">كلية الآداب والعلوم التطبيقية</div>
-                            <div class="small text-primary fw-bold" style="font-family: 'Cairo', sans-serif;">قسم علوم الحاسوب &mdash; الإرشاد الأكاديمي</div>
+                            <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Cairo', sans-serif;">{{ 'DHOFAR UNIVERSITY' if is_rtl else 'جامعة ظفار' }}</h5>
+                            <div class="small text-secondary" style="font-family: 'Cairo', sans-serif;">{{ 'COLLEGE OF ARTS AND APPLIED SCIENCES' if is_rtl else 'كلية الآداب والعلوم التطبيقية' }}</div>
+                            <div class="small text-primary fw-bold" style="font-family: 'Cairo', sans-serif;">{{ 'Dept. of Computer Science' if is_rtl else 'قسم علوم الحاسوب — الإرشاد الأكاديمي' }}</div>
                         </div>
                     </div>
                 </div>
@@ -228,25 +232,25 @@
                     <table class="table table-borderless mb-0">
                         <tbody>
                             <tr>
-                                <th>REF:</th>
+                                <th>{{ 'المرجع:' if is_rtl else 'REF:' }}</th>
                                 <td class="font-monospace fw-bold text-primary">{{ notice.ref_num }}</td>
-                                <th class="ps-3">DATE:</th>
+                                <th class="ps-3">{{ 'التاريخ:' if is_rtl else 'DATE:' }}</th>
                                 <td class="fw-semibold">{{ notice.date_str }}</td>
                             </tr>
                             <tr>
-                                <th>TO:</th>
-                                <td class="fw-bold text-dark">{{ notice.student_name }} <span class="font-monospace text-muted">(ID: {{ notice.student_id }})</span></td>
-                                <th class="ps-3">STUDENT EMAIL:</th>
+                                <th>{{ 'إلى الطالب:' if is_rtl else 'TO:' }}</th>
+                                <td class="fw-bold text-dark">{{ notice.student_name }} <span class="font-monospace text-muted">({{ 'الرقم:' if is_rtl else 'ID:' }} {{ notice.student_id }})</span></td>
+                                <th class="ps-3">{{ 'البريد الجامعي:' if is_rtl else 'STUDENT EMAIL:' }}</th>
                                 <td><a href="mailto:{{ notice.student_email }}">{{ notice.student_email }}</a></td>
                             </tr>
                             <tr>
-                                <th>FROM:</th>
+                                <th>{{ 'من المرشد:' if is_rtl else 'FROM:' }}</th>
                                 <td class="fw-bold text-dark">{{ notice.advisor_name }}, <span class="text-muted fw-normal">{{ notice.advisor_title }}</span></td>
-                                <th class="ps-3">OFFICE:</th>
-                                <td>Dept. of Computer Science (CAAS)</td>
+                                <th class="ps-3">{{ 'المكتب:' if is_rtl else 'OFFICE:' }}</th>
+                                <td>{{ 'قسم علوم الحاسوب (كلية الآداب والعلوم التطبيقية)' if is_rtl else 'Dept. of Computer Science (CAAS)' }}</td>
                             </tr>
                             <tr>
-                                <th>SUBJECT:</th>
+                                <th>{{ 'الموضوع:' if is_rtl else 'SUBJECT:' }}</th>
                                 <td colspan="3" class="fw-bold text-{{ 'danger' if notice.is_probation else 'primary' }} pt-1">
                                     {{ notice.subject_line }}
                                 </td>
@@ -260,48 +264,71 @@
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <strong class="fs-6">
                             <i class="fas fa-{{ 'exclamation-triangle' if notice.is_probation else 'check-circle' }} me-2"></i>
-                            Current Standing: {{ notice.standing }}
+                            {{ 'الوضع الأكاديمي الحالي:' if is_rtl else 'Current Standing:' }} {{ localize_standing(notice.standing) }}
                         </strong>
                         <span class="badge bg-{{ 'danger' if notice.is_probation else 'success' }} fs-7">
-                            CGPA: {{ "%.2f"|format(notice.cgpa) }}%
+                            {{ 'المعدل التراكمي:' if is_rtl else 'CGPA:' }} {{ "%.2f"|format(notice.cgpa) }}%
                         </span>
                     </div>
-                    <div class="small" style="line-height: 1.5;">
-                        {% if notice.is_probation %}
-                            Your cumulative GPA is currently <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>, which is <strong>{{ "%.2f"|format(notice.gpa_deficit) }} points below</strong> the mandatory 65.0% Good Standing mark. Under Dhofar University Academic Regulations Article 14 &amp; 22, your registration is capped at <strong>{{ notice.credit_cap }} credit hours</strong> this term.
+                    <div class="small" style="line-height: 1.6;">
+                        {% if is_rtl %}
+                            {% if notice.is_probation %}
+                                معدلك التراكمي الحالي هو <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>، وهو ما يعادل <strong>عجزاً قدره {{ "%.2f"|format(notice.gpa_deficit) }} نقطة</strong> دون الحد الأدنى المطلوب للوضع السليم (65.0%). وبموجب المادتين 14 و22 من لوائح جامعة ظفار الأكاديمية، تم تحديد سقف تسجيلك الفصلي عند <strong>{{ notice.credit_cap }} ساعة معتمدة كحد أقصى</strong> هذا الفصل.
+                            {% else %}
+                                وضعك الأكاديمي سليم ومستوفٍ للشروط بمعدل تراكمي <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>. لقد أنجزت <strong>{{ notice.completed_credits }}</strong> من أصل {{ notice.total_credits }} ساعة معتمدة مطلوبة لنيل درجة {{ notice.degree_title }}.
+                            {% endif %}
                         {% else %}
-                            Your academic performance is currently in Good Standing with a cumulative GPA of <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>. You have completed <strong>{{ notice.completed_credits }}</strong> of {{ notice.total_credits }} required credits towards your {{ notice.degree_title }}.
+                            {% if notice.is_probation %}
+                                Your cumulative GPA is currently <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>, which is <strong>{{ "%.2f"|format(notice.gpa_deficit) }} points below</strong> the mandatory 65.0% Good Standing mark. Under Dhofar University Academic Regulations Article 14 &amp; 22, your registration is capped at <strong>{{ notice.credit_cap }} credit hours</strong> this term.
+                            {% else %}
+                                Your academic performance is currently in Good Standing with a cumulative GPA of <strong>{{ "%.2f"|format(notice.cgpa) }}%</strong>. You have completed <strong>{{ notice.completed_credits }}</strong> of {{ notice.total_credits }} required credits towards your {{ notice.degree_title }}.
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Salutation & Narrative -->
-                <div class="mb-4 text-dark" style="line-height: 1.7; font-size: 0.95rem;">
-                    <p class="mb-3">Dear <strong>{{ notice.student_name }}</strong>,</p>
-                    <p class="mb-3">
-                        As your assigned Academic Advisor in the Department of Computer Science, I am sending you this official notice to ensure you have complete clarity regarding your academic record, your degree progress, and the exact courses you must register for in the upcoming semester.
-                    </p>
-                    <p class="mb-3">
-                        {% if notice.is_probation %}
-                            It is imperative that you take immediate corrective action this semester. Postponing required courses or registering for unapproved electives will jeopardize your academic standing and may lead to formal probation escalation or dismissal under university bylaws.
-                        {% else %}
-                            Please follow the recommended study plan sequencing below to ensure smooth progress toward graduation clearance.
-                        {% endif %}
-                    </p>
+                <div class="mb-4 text-dark" style="line-height: 1.8; font-size: 0.95rem;">
+                    {% if is_rtl %}
+                        <p class="mb-2">عزيزي الطالب / عزيزتي الطالبة <strong>{{ notice.student_name }}</strong>،</p>
+                        <p class="mb-2">السلام عليكم ورحمة الله وبركاته، وبعد:</p>
+                        <p class="mb-3">
+                            بصفتي مرشدك الأكاديمي المعتمد في قسم علوم الحاسوب بجامعة ظفار، أرسل إليك هذا الإخطار الرسمي لضمان وضوح سجلك الأكاديمي، ونسبة إنجازك في الخطة الدراسية، وقائمة المقررات المحددة التي يتوجب عليك تسجيلها للفصل الدراسي القادم بدقة.
+                        </p>
+                        <p class="mb-3">
+                            {% if notice.is_probation %}
+                                من الضروري جداً اتخاذ إجراءات تصحيحية فورية هذا الفصل. إن تأجيل المقررات الأساسية الإلزامية المتعثرة أو تسجيل مواد اختيارية غير معتمدة سيعرض مستقبلك الأكاديمي للخطر وقد يؤدي لتصاعد الملاحظة الأكاديمية أو الفصل بموجب لوائح الجامعة.
+                            {% else %}
+                                يرجى الالتزام بتسلسل الخطة الدراسية المعتمدة والمبينة أدناه لضمان التقدم السلس نحو التخرج.
+                            {% endif %}
+                        </p>
+                    {% else %}
+                        <p class="mb-3">Dear <strong>{{ notice.student_name }}</strong>,</p>
+                        <p class="mb-3">
+                            As your assigned Academic Advisor in the Department of Computer Science, I am sending you this official notice to ensure you have complete clarity regarding your academic record, your degree progress, and the exact courses you must register for in the upcoming semester.
+                        </p>
+                        <p class="mb-3">
+                            {% if notice.is_probation %}
+                                It is imperative that you take immediate corrective action this semester. Postponing required courses or registering for unapproved electives will jeopardize your academic standing and may lead to formal probation escalation or dismissal under university bylaws.
+                            {% else %}
+                                Please follow the recommended study plan sequencing below to ensure smooth progress toward graduation clearance.
+                            {% endif %}
+                        </p>
+                    {% endif %}
                 </div>
 
                 <!-- Prescribed Registration Schedule -->
                 <h6 class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fas fa-list-check text-primary me-2"></i>Prescribed Course Registration Schedule (Max {{ notice.credit_cap }} Credits)
+                    <i class="fas fa-list-check text-primary me-2"></i>{{ 'جدول المقررات الموصى بها للتسجيل الإلزامي (سقف ' ~ notice.credit_cap ~ ' ساعة معتمدة)' if is_rtl else 'Prescribed Course Registration Schedule (Max ' ~ notice.credit_cap ~ ' Credits)' }}
                 </h6>
                 <div class="table-responsive bg-white rounded border mb-4">
                     <table class="table table-sm table-hover mb-0 align-middle">
                         <thead class="table-light small text-muted">
                             <tr>
-                                <th style="width: 15%;">Course Code</th>
-                                <th style="width: 35%;">Course Title</th>
-                                <th style="width: 10%; text-align: center;">Credits</th>
-                                <th style="width: 40%;">Registration Directive / Policy Rationale</th>
+                                <th style="width: 15%;">{{ 'رمز المساق' if is_rtl else 'Course Code' }}</th>
+                                <th style="width: 35%;">{{ 'اسم المساق' if is_rtl else 'Course Title' }}</th>
+                                <th style="width: 10%; text-align: center;">{{ 'الساعات' if is_rtl else 'Credits' }}</th>
+                                <th style="width: 40%;">{{ 'توجيه التسجيل والسند اللائحي' if is_rtl else 'Registration Directive / Policy Rationale' }}</th>
                             </tr>
                         </thead>
                         <tbody class="small">
@@ -309,9 +336,9 @@
                             <tr>
                                 <td class="fw-bold font-monospace text-primary">{{ c.code }}</td>
                                 <td class="fw-semibold text-dark">{{ c.name }}</td>
-                                <td class="text-center">{{ c.credits }} hrs</td>
+                                <td class="text-center">{{ c.credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</td>
                                 <td class="text-secondary" style="font-size: 0.8rem;">
-                                    <span class="badge bg-{{ 'danger' if 'REPEAT' in c.type else 'primary' }} py-0 px-1 me-1" style="font-size: 0.68rem;">{{ c.type }}</span>
+                                    <span class="badge bg-{{ 'danger' if ('إعادة' in c.type or 'REPEAT' in c.type) else 'primary' }} py-0 px-1 me-1 ms-1" style="font-size: 0.68rem;">{{ c.type }}</span>
                                     {{ c.instruction }}
                                 </td>
                             </tr>
@@ -322,17 +349,18 @@
 
                 <!-- Mandatory Action Items -->
                 <h6 class="fw-bold text-dark text-uppercase mb-2" style="font-size: 0.85rem; letter-spacing: 0.5px;">
-                    <i class="fas fa-tasks text-danger me-2"></i>Mandatory Directives (What You Must Do Now)
+                    <i class="fas fa-tasks text-danger me-2"></i>{{ 'الواجبات والتوجيهات الإلزامية (ما يتوجب عليك فعله الآن)' if is_rtl else 'Mandatory Directives (What You Must Do Now)' }}
                 </h6>
                 <div class="p-3 rounded border bg-light mb-4">
-                    <ul class="mb-0 ps-3 small text-dark d-flex flex-column gap-2" style="line-height: 1.6;">
+                    <ul class="mb-0 ps-3 pe-3 small text-dark d-flex flex-column gap-2" style="line-height: 1.7;">
                         {% for item in notice.student_action_items %}
                         <li>{{ item }}</li>
                         {% endfor %}
                     </ul>
                 </div>
 
-                <!-- Bilingual Arabic Guidance Box -->
+                {% if not is_rtl %}
+                <!-- Bilingual Arabic Guidance Box (shown when in English mode for student reference) -->
                 <div class="arabic-guidance-card shadow-2xs">
                     <h6 class="fw-bold text-success mb-2" style="font-family: 'Cairo', sans-serif;">
                         <i class="fas fa-language me-1"></i> ملخص الإرشاد الأكاديمي الرسمي باللغة العربية
@@ -349,16 +377,21 @@
                         {% endfor %}
                     </ul>
                 </div>
+                {% endif %}
 
                 <!-- Office Hours & Meeting Directive -->
                 <div class="p-3 rounded border bg-white small mb-4">
-                    <strong class="text-primary d-block mb-1"><i class="fas fa-calendar-check me-1"></i>Mandatory Advisor Meeting Directive:</strong>
+                    <strong class="text-primary d-block mb-1"><i class="fas fa-calendar-check me-1"></i>{{ 'توجيه المقابلة الإرشادية الإلزامية:' if is_rtl else 'Mandatory Advisor Meeting Directive:' }}</strong>
                     <p class="mb-1 text-dark">
-                        You must meet with Dr. Nasser Tabook in the Department of Computer Science (or during scheduled Office Hours) to review your schedule.
+                        {% if is_rtl %}
+                            يتوجب عليك مراجعة الدكتور ناصر طمطيم تبوك شخصياً في قسم علوم الحاسوب (أو خلال الساعات المكتبية المحددة) لمراجعة جدولك واعتماده نهائياً.
+                        {% else %}
+                            You must meet with Dr. Nasser Tabook in the Department of Computer Science (or during scheduled Office Hours) to review your schedule.
+                        {% endif %}
                     </p>
                     <div class="text-muted" style="font-size: 0.8rem;">
                         <span><i class="fas fa-envelope me-1"></i>{{ notice.advisor_email }}</span> |
-                        <span class="ms-2"><i class="fas fa-globe me-1"></i>Portal: https://nasserdiary.com/duadv/student/{{ notice.student_id }}</span>
+                        <span class="ms-2 me-2"><i class="fas fa-globe me-1"></i>{{ 'البوابة:' if is_rtl else 'Portal:' }} https://nasserdiary.com/duadv/student/{{ notice.student_id }}</span>
                     </div>
                 </div>
 
@@ -371,11 +404,11 @@
                             <div class="text-muted small">{{ notice.dept_name }} | {{ notice.college_name }}</div>
                             <div class="text-muted small">{{ notice.university_name }}</div>
                             <div class="sig-line"></div>
-                            <small class="text-muted">Academic Advisor Signature &amp; Seal</small>
+                            <small class="text-muted">{{ 'توقيع وختم المرشد الأكاديمي' if is_rtl else 'Academic Advisor Signature & Seal' }}</small>
                         </div>
                         <div class="text-end text-muted small">
-                            <div>Ref: {{ notice.ref_num }}</div>
-                            <div>Date Issued: {{ notice.date_str }}</div>
+                            <div>{{ 'المرجع:' if is_rtl else 'Ref:' }} {{ notice.ref_num }}</div>
+                            <div>{{ 'تاريخ الإصدار:' if is_rtl else 'Date Issued:' }} {{ notice.date_str }}</div>
                         </div>
                     </div>
                 </div>
@@ -390,31 +423,31 @@
             <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-paper-plane text-success"></i>
-                    <span class="fw-bold">Ready-to-Send Email Dispatch</span>
+                    <span class="fw-bold">{{ 'صيغة البريد الإلكتروني الجاهزة للإرسال' if is_rtl else 'Ready-to-Send Email Dispatch' }}</span>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ notice.mailto_url }}" class="btn btn-sm btn-success fw-bold">
-                        <i class="fas fa-external-link-alt me-1"></i> Open in Outlook / Mail
+                        <i class="fas fa-external-link-alt me-1"></i> {{ 'فتح في تطبيق البريد' if is_rtl else 'Open in Outlook / Mail' }}
                     </a>
                     <button type="button" class="btn btn-sm btn-outline-light" onclick="copyStudentNoticeText()">
-                        <i class="fas fa-copy me-1"></i> Copy Text
+                        <i class="fas fa-copy me-1"></i> {{ 'نسخ النص' if is_rtl else 'Copy Text' }}
                     </button>
                 </div>
             </div>
             <div class="card-body p-4 bg-light">
                 <div class="bg-white p-3 rounded border mb-3">
                     <div class="row g-2 small text-dark">
-                        <div class="col-sm-2 text-muted fw-bold">TO:</div>
+                        <div class="col-sm-2 text-muted fw-bold">{{ 'إلى الطالب:' if is_rtl else 'TO:' }}</div>
                         <div class="col-sm-10 font-monospace text-primary fw-bold">{{ notice.student_email }}</div>
-                        <div class="col-sm-2 text-muted fw-bold">FROM:</div>
+                        <div class="col-sm-2 text-muted fw-bold">{{ 'من المرشد:' if is_rtl else 'FROM:' }}</div>
                         <div class="col-sm-10 text-dark">{{ notice.advisor_name }} &lt;{{ notice.advisor_email }}&gt;</div>
-                        <div class="col-sm-2 text-muted fw-bold">SUBJECT:</div>
+                        <div class="col-sm-2 text-muted fw-bold">{{ 'الموضوع:' if is_rtl else 'SUBJECT:' }}</div>
                         <div class="col-sm-10 fw-bold text-dark">{{ notice.subject_line }}</div>
                     </div>
                 </div>
 
                 <div class="position-relative">
-                    <textarea class="form-control font-monospace small bg-white text-dark p-3" id="noticeEmailText" rows="22" readonly style="line-height: 1.5; font-size: 0.85rem;">{{ notice.plain_text_email }}</textarea>
+                    <textarea class="form-control font-monospace small bg-white text-dark p-3" id="noticeEmailText" rows="22" readonly style="line-height: 1.6; font-size: 0.85rem; direction: {{ 'rtl' if is_rtl else 'ltr' }}; text-align: {{ 'right' if is_rtl else 'left' }};">{{ notice.plain_text_email }}</textarea>
                 </div>
             </div>
         </div>
@@ -426,18 +459,18 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h6 class="fw-bold mb-0 text-dark">
-                <i class="fas fa-comments text-primary me-2"></i>Advisor Outreach &amp; Consultation Touchpoints
+                <i class="fas fa-comments text-primary me-2"></i>{{ 'سجل التواصل والمقابلات الإرشادية' if is_rtl else 'Advisor Outreach & Consultation Touchpoints' }}
             </h6>
-            <small class="text-muted">Audit log of communications, emails sent, student responses, and advising agreements.</small>
+            <small class="text-muted">{{ 'سجل تدقيق لكافة المراسلات، رسائل البريد المرسلة، استجابات الطالب، والاتفاقيات الإرشادية.' if is_rtl else 'Audit log of communications, emails sent, student responses, and advising agreements.' }}</small>
         </div>
         <button type="button" class="btn btn-outline-primary btn-sm fw-semibold" onclick="quickUpdateStatus('Meeting Completed')">
-            <i class="fas fa-plus me-1"></i> Log Advising Meeting
+            <i class="fas fa-plus me-1"></i> {{ 'تسجيل مقابلة إرشادية' if is_rtl else 'Log Advising Meeting' }}
         </button>
     </div>
     <div id="touchpointHistoryList">
         {% for h in notice.outreach.history %}
         <div class="d-flex align-items-start gap-2 border-bottom py-2.5 small">
-            <span class="badge bg-primary-subtle text-primary border px-2 py-1 mt-0.5">{{ h.status }}</span>
+            <span class="badge bg-primary-subtle text-primary border px-2 py-1 mt-0.5">{{ localize_outreach_status(h.status) }}</span>
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between">
                     <strong class="text-dark"><i class="fas fa-tag me-1 text-muted"></i>{{ h.method }}</strong>
@@ -449,8 +482,9 @@
             </div>
         </div>
         {% else %}
-        <div class="text-muted small py-3 text-center bg-light rounded" id="noTouchpointsPlaceholder">
-            <i class="fas fa-info-circle me-1"></i>No previous outreach touchpoints logged. Clicking <strong>"Open in Email Client"</strong> will automatically log this initial advising notice.
+        <div class="text-center text-muted py-4 small">
+            <i class="far fa-clock fs-4 d-block mb-2"></i>
+            {{ 'لا توجد سجلات تواصل مسجلة بعد لهذا الطالب.' if is_rtl else 'No outreach touchpoints logged yet for this student.' }}
         </div>
         {% endfor %}
     </div>
@@ -461,72 +495,23 @@
         const textElement = document.getElementById('noticeEmailText');
         if (!textElement) return;
 
-        textElement.select();
         navigator.clipboard.writeText(textElement.value).then(function() {
-            showCopyAlert("Official Email Text Copied! The complete message has been copied to your clipboard.");
+            const alertBox = document.getElementById('copySuccessAlert');
+            if (alertBox) {
+                alertBox.classList.remove('d-none');
+                alertBox.classList.add('show');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(dismissCopyAlert, 8000);
+            }
         }).catch(function(err) {
-            // Fallback
+            textElement.select();
             document.execCommand('copy');
-            showCopyAlert("Official Email Text Copied! The complete message has been copied to your clipboard.");
-        });
-    }
-
-    function recordEmailDispatched() {
-        fetch('/api/student/{{ notice.student_id }}/outreach-status', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                status: 'Notice Sent via Email',
-                method: 'Email',
-                notes: 'Dispatched official individual notice to {{ notice.student_email }}.'
-            })
-        }).then(res => res.json()).then(data => {
-            if (data.status === 'success') {
-                updateBadgeDisplay(data.outreach);
+            const alertBox = document.getElementById('copySuccessAlert');
+            if (alertBox) {
+                alertBox.classList.remove('d-none');
+                alertBox.classList.add('show');
             }
         });
-    }
-
-    function quickUpdateStatus(newStatus) {
-        const note = prompt(`Update status to "${newStatus}"?\nEnter optional advisor follow-up note:`, "");
-        if (note === null) return;
-
-        fetch('/api/student/{{ notice.student_id }}/outreach-status', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                status: newStatus,
-                method: newStatus.includes('Meeting') ? 'Office Visit (Office 214)' : 'Email',
-                notes: note || ''
-            })
-        }).then(res => res.json()).then(data => {
-            if (data.status === 'success') {
-                updateBadgeDisplay(data.outreach);
-                showCopyAlert(`Advising status updated to "${newStatus}"!`);
-                setTimeout(() => location.reload(), 1000);
-            }
-        });
-    }
-
-    function updateBadgeDisplay(o) {
-        const badge = document.getElementById('currentStatusBadge');
-        if (badge) {
-            badge.className = `badge bg-${o.status_color} me-1`;
-            badge.innerHTML = `<i class="fas ${o.status_icon}"></i> ${o.status}`;
-        }
-    }
-
-    function showCopyAlert(msg) {
-        const alertBox = document.getElementById('copySuccessAlert');
-        if (alertBox) {
-            if (msg) {
-                alertBox.querySelector('strong').innerText = msg;
-            }
-            alertBox.classList.remove('d-none');
-            alertBox.classList.add('show');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(dismissCopyAlert, 8000);
-        }
     }
 
     function dismissCopyAlert() {
@@ -535,6 +520,32 @@
             alertBox.classList.add('d-none');
             alertBox.classList.remove('show');
         }
+    }
+
+    function recordEmailDispatched() {
+        quickUpdateStatus('Notice Sent via Email');
+    }
+
+    function quickUpdateStatus(newStatus) {
+        const studentId = "{{ notice.student_id }}";
+        fetch(`/api/student/${studentId}/outreach-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: newStatus,
+                method: 'Email Notice Dispatched',
+                notes: 'Official academic notice and registration directives dispatched via portal mailto/copy.'
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            }
+        })
+        .catch(err => console.error('Outreach status update error:', err));
     }
 </script>
 {% endblock %}

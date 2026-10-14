@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Students at Risk - Academic Probation Management{% endblock %}
+{% block title %}{{ t('students_at_risk') }} - {{ 'إدارة الملاحظة الأكاديمية' if is_rtl else 'Academic Probation Management' }}{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -10,10 +10,10 @@
     </div>
     <div class="d-flex flex-wrap gap-2 mt-2 mt-md-0">
         <a href="{{ url_for('main.students_at_risk_chair_letter') }}" class="btn btn-danger fw-bold shadow-sm">
-            <i class="fas fa-file-signature me-1"></i> Official Letter to Dept Chair
+            <i class="fas fa-file-signature me-1"></i> {{ t('chair_briefing_letter_btn') }}
         </a>
         <a href="{{ url_for('main.students_at_risk_batch_notices') }}" class="btn btn-warning fw-bold shadow-sm text-dark">
-            <i class="fas fa-mail-bulk me-1"></i> Batch Outreach &amp; Notices Hub
+            <i class="fas fa-mail-bulk me-1"></i> {{ t('batch_outreach_hub_btn') }}
         </a>
         <a href="{{ url_for('main.policies_library', q='probation') }}" class="btn btn-outline-secondary">
             <i class="fas fa-book-open me-1"></i> {{ t('du_probation_policies') }}
@@ -35,11 +35,11 @@
     <div class="col-md-3">
         <div class="stat-widget stat-widget-danger">
             <i class="fas fa-triangle-exclamation stat-bg-icon"></i>
-            <div class="stat-label">Strict Probation</div>
+            <div class="stat-label">{{ t('strict_probation') }}</div>
             <div class="stat-value">{{ breakdown.counts.strict }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
-                <small class="text-white-50">Critical dismissal warning</small>
-                <a href="#section-strict" class="text-white text-decoration-none small fw-semibold">Scroll &darr;</a>
+                <small class="text-white-50">{{ 'إنذار بالفصل الأكاديمي الحرج' if is_rtl else 'Critical dismissal warning' }}</small>
+                <a href="#section-strict" class="text-white text-decoration-none small fw-semibold">{{ 'انتقال &darr;' if is_rtl else 'Scroll &darr;' }}</a>
             </div>
         </div>
     </div>
@@ -47,11 +47,11 @@
     <div class="col-md-3">
         <div class="stat-widget" style="background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%);">
             <i class="fas fa-circle-exclamation stat-bg-icon"></i>
-            <div class="stat-label">Second Probation</div>
+            <div class="stat-label">{{ t('status_second_probation') }}</div>
             <div class="stat-value">{{ breakdown.counts.second }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
-                <small class="text-white-50">Consecutive warning term</small>
-                <a href="#section-second" class="text-white text-decoration-none small fw-semibold">Scroll &darr;</a>
+                <small class="text-white-50">{{ 'فصل ثانٍ متتالٍ تحت الملاحظة' if is_rtl else 'Consecutive warning term' }}</small>
+                <a href="#section-second" class="text-white text-decoration-none small fw-semibold">{{ 'انتقال &darr;' if is_rtl else 'Scroll &darr;' }}</a>
             </div>
         </div>
     </div>
@@ -59,11 +59,11 @@
     <div class="col-md-3">
         <div class="stat-widget stat-widget-warning">
             <i class="fas fa-bell stat-bg-icon"></i>
-            <div class="stat-label">First Probation</div>
+            <div class="stat-label">{{ t('status_first_probation') }}</div>
             <div class="stat-value">{{ breakdown.counts.first }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-dark border-opacity-10">
-                <small class="text-dark-emphasis">Initial probation advising</small>
-                <a href="#section-first" class="text-dark text-decoration-none small fw-semibold">Scroll &darr;</a>
+                <small class="text-dark-emphasis">{{ 'إرشاد أولي تحت الملاحظة' if is_rtl else 'Initial probation advising' }}</small>
+                <a href="#section-first" class="text-dark text-decoration-none small fw-semibold">{{ 'انتقال &darr;' if is_rtl else 'Scroll &darr;' }}</a>
             </div>
         </div>
     </div>
@@ -71,10 +71,10 @@
     <div class="col-md-3">
         <div class="stat-widget" style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%);">
             <i class="fas fa-shield-halved stat-bg-icon"></i>
-            <div class="stat-label">Total At-Risk</div>
+            <div class="stat-label">{{ 'إجمالي الطلبة تحت الملاحظة' if is_rtl else 'Total At-Risk' }}</div>
             <div class="stat-value">{{ breakdown.counts.total }}</div>
             <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top border-white border-opacity-20">
-                <small class="text-white-50">of {{ breakdown.total_advisees }} total advisees</small>
+                <small class="text-white-50">{{ ('من إجمالي ' ~ breakdown.total_advisees ~ ' طالب مرشد') if is_rtl else ('of ' ~ breakdown.total_advisees ~ ' total advisees') }}</small>
                 <span class="text-white small fw-bold">{{ ((breakdown.counts.total / breakdown.total_advisees) * 100)|round(1) if breakdown.total_advisees > 0 else 0 }}%</span>
             </div>
         </div>
@@ -85,72 +85,72 @@
 <div class="card border-danger shadow-sm mb-4" id="section-strict">
     <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0">
-            <i class="fas fa-exclamation-triangle me-2"></i>Stage 1: Strict Probation (Critical Risk)
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ t('stage_1_strict') }}
         </h5>
-        <span class="badge bg-white text-danger fw-bold fs-6">{{ breakdown.counts.strict }} Students</span>
+        <span class="badge bg-white text-danger fw-bold fs-6">{{ breakdown.counts.strict }} {{ 'طالب' if is_rtl else 'Students' }}</span>
     </div>
     <div class="card-body p-0">
         <div class="alert alert-danger mb-0 border-0 rounded-0 py-2 px-3 small">
-            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Students in this group are at immediate risk of academic dismissal. Mandatory maximum credit limit is 12 credit hours. Priority must be given to repeating failed and low-grade courses.
+            <strong><i class="fas fa-info-circle me-1"></i>{{ 'متطلب الإرشاد الإلزامي:' if is_rtl else 'Advising Requirement:' }}</strong> {{ t('probation_advising_note') }}
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program / Major</th>
-                        <th>Current Standing</th>
-                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
-                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
-                        <th>Earned Credits</th>
-                        <th>Actions</th>
+                        <th>{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th title="{{ 'المعدل التراكمي - متطلب تخرج جامعة ظفار >= 65%' if is_rtl else 'Cumulative GPA - DU Graduation Requirement >= 65.0%' }}">{{ 'المعدل التراكمي (التخرج)' if is_rtl else 'CGPA (Graduation)' }}</th>
+                        <th title="{{ 'المعدل الفصلي الأخير - معيار الملاحظة (المادة 14)' if is_rtl else 'Latest Semester GPA - Probation Metric (Article 14)' }}">{{ 'المعدل الفصلي (الأخير)' if is_rtl else 'SGPA (Latest Sem.)' }}</th>
+                        <th>{{ t('earned_credits') }}</th>
+                        <th>{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for student in breakdown.strict_probation %}
                     <tr>
-                        <td class="fw-bold text-danger">{{ student.id }}</td>
+                        <td class="fw-bold text-danger font-monospace">{{ student.id }}</td>
                         <td class="fw-semibold">{{ student.name }}</td>
-                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td><span class="small">{{ localize_program(student.program) }}</span></td>
                         <td>
                             <span class="badge bg-danger text-white px-2 py-1 shadow-sm">
-                                <i class="fas fa-exclamation-triangle me-1"></i>{{ student.status }}
+                                <i class="fas fa-exclamation-triangle me-1"></i>{{ localize_standing(student.status) }}
                             </span>
                         </td>
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
-                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
                                 {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
                             </span>
                         </td>
                         <td>
                             {% if student.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6 font-monospace">
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
                                 <span class="text-muted small">N/A</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                    <i class="fas fa-user me-1"></i> {{ 'الملف والخطة' if is_rtl else 'Profile & Plan' }}
                                 </a>
-                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
-                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="{{ 'إخطار أكاديمي رسمي وبريد إلكتروني جاهز' if is_rtl else 'Official Academic Notice & Pre-filled Email' }}">
+                                    <i class="fas fa-envelope-open-text me-1"></i> {{ 'إخطار' if is_rtl else 'Notice' }}
                                 </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
-                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                    <i class="fas fa-file-pdf me-1"></i> {{ 'السجل' if is_rtl else 'Transcript' }}
                                 </a>
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-3 text-muted">No students currently in Strict Probation.</td>
+                        <td colspan="8" class="text-center py-3 text-muted">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الصارمة.' if is_rtl else 'No students currently in Strict Probation.' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -163,72 +163,72 @@
 <div class="card shadow-sm mb-4 border-warning" id="section-second">
     <div class="card-header text-white d-flex justify-content-between align-items-center py-3" style="background-color: #fd7e14;">
         <h5 class="mb-0">
-            <i class="fas fa-exclamation-circle me-2"></i>Stage 2: Second Probation (High Risk)
+            <i class="fas fa-exclamation-circle me-2"></i>{{ t('stage_2_second') }}
         </h5>
-        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.second }} Students</span>
+        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.second }} {{ 'طالب' if is_rtl else 'Students' }}</span>
     </div>
     <div class="card-body p-0">
         <div class="alert mb-0 border-0 rounded-0 py-2 px-3 small" style="background-color: #fff3cd; color: #664d03;">
-            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Student has spent 2 consecutive terms on probation. If GPA does not rise above 65.0, they will advance to Strict Probation. Course load restricted to 12-15 credit hours.
+            <strong><i class="fas fa-info-circle me-1"></i>{{ 'متطلب الإرشاد الإلزامي:' if is_rtl else 'Advising Requirement:' }}</strong> {{ t('second_probation_note') }}
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program / Major</th>
-                        <th>Current Standing</th>
-                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
-                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
-                        <th>Earned Credits</th>
-                        <th>Actions</th>
+                        <th>{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th title="{{ 'المعدل التراكمي - متطلب تخرج جامعة ظفار >= 65%' if is_rtl else 'Cumulative GPA - DU Graduation Requirement >= 65.0%' }}">{{ 'المعدل التراكمي (التخرج)' if is_rtl else 'CGPA (Graduation)' }}</th>
+                        <th title="{{ 'المعدل الفصلي الأخير - معيار الملاحظة (المادة 14)' if is_rtl else 'Latest Semester GPA - Probation Metric (Article 14)' }}">{{ 'المعدل الفصلي (الأخير)' if is_rtl else 'SGPA (Latest Sem.)' }}</th>
+                        <th>{{ t('earned_credits') }}</th>
+                        <th>{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for student in breakdown.second_probation %}
                     <tr>
-                        <td class="fw-bold text-primary">{{ student.id }}</td>
+                        <td class="fw-bold text-primary font-monospace">{{ student.id }}</td>
                         <td class="fw-semibold">{{ student.name }}</td>
-                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td><span class="small">{{ localize_program(student.program) }}</span></td>
                         <td>
                             <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: #fd7e14;">
-                                <i class="fas fa-exclamation-circle me-1"></i>{{ student.status }}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ localize_standing(student.status) }}
                             </span>
                         </td>
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
-                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
                                 {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
                             </span>
                         </td>
                         <td>
                             {% if student.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6 font-monospace">
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
                                 <span class="text-muted small">N/A</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                    <i class="fas fa-user me-1"></i> {{ 'الملف والخطة' if is_rtl else 'Profile & Plan' }}
                                 </a>
-                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
-                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="{{ 'إخطار أكاديمي رسمي وبريد إلكتروني جاهز' if is_rtl else 'Official Academic Notice & Pre-filled Email' }}">
+                                    <i class="fas fa-envelope-open-text me-1"></i> {{ 'إخطار' if is_rtl else 'Notice' }}
                                 </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
-                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                    <i class="fas fa-file-pdf me-1"></i> {{ 'السجل' if is_rtl else 'Transcript' }}
                                 </a>
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-3 text-muted">No students currently in Second Probation.</td>
+                        <td colspan="8" class="text-center py-3 text-muted">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الثانية.' if is_rtl else 'No students currently in Second Probation.' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -241,72 +241,72 @@
 <div class="card shadow-sm mb-4 border-warning" id="section-first">
     <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0">
-            <i class="fas fa-exclamation me-2"></i>Stage 3: First Probation (Moderate Risk)
+            <i class="fas fa-exclamation me-2"></i>{{ t('stage_3_first') }}
         </h5>
-        <span class="badge bg-dark text-white fw-bold fs-6">{{ breakdown.counts.first }} Students</span>
+        <span class="badge bg-dark text-white fw-bold fs-6">{{ breakdown.counts.first }} {{ 'طالب' if is_rtl else 'Students' }}</span>
     </div>
     <div class="card-body p-0">
         <div class="alert alert-warning mb-0 border-0 rounded-0 py-2 px-3 small">
-            <strong><i class="fas fa-info-circle me-1"></i>Advising Requirement:</strong> Student entered probation due to semester/cumulative GPA falling below 65.0. Immediate advising review needed to repeat failed subjects before probation elevates.
+            <strong><i class="fas fa-info-circle me-1"></i>{{ 'متطلب الإرشاد الإلزامي:' if is_rtl else 'Advising Requirement:' }}</strong> {{ t('first_probation_note') }}
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program / Major</th>
-                        <th>Current Standing</th>
-                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
-                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
-                        <th>Earned Credits</th>
-                        <th>Actions</th>
+                        <th>{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th title="{{ 'المعدل التراكمي - متطلب تخرج جامعة ظفار >= 65%' if is_rtl else 'Cumulative GPA - DU Graduation Requirement >= 65.0%' }}">{{ 'المعدل التراكمي (التخرج)' if is_rtl else 'CGPA (Graduation)' }}</th>
+                        <th title="{{ 'المعدل الفصلي الأخير - معيار الملاحظة (المادة 14)' if is_rtl else 'Latest Semester GPA - Probation Metric (Article 14)' }}">{{ 'المعدل الفصلي (الأخير)' if is_rtl else 'SGPA (Latest Sem.)' }}</th>
+                        <th>{{ t('earned_credits') }}</th>
+                        <th>{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for student in breakdown.first_probation %}
                     <tr>
-                        <td class="fw-bold text-primary">{{ student.id }}</td>
+                        <td class="fw-bold text-primary font-monospace">{{ student.id }}</td>
                         <td class="fw-semibold">{{ student.name }}</td>
-                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
+                        <td><span class="small">{{ localize_program(student.program) }}</span></td>
                         <td>
                             <span class="badge bg-warning text-dark px-2 py-1 shadow-sm">
-                                <i class="fas fa-exclamation-circle me-1"></i>{{ student.status }}
+                                <i class="fas fa-exclamation-circle me-1"></i>{{ localize_standing(student.status) }}
                             </span>
                         </td>
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
-                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6">
+                            <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
                                 {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
                             </span>
                         </td>
                         <td>
                             {% if student.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6 font-monospace">
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
                                 <span class="text-muted small">N/A</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">
-                                    <i class="fas fa-user me-1"></i> Profile & Plan
+                                    <i class="fas fa-user me-1"></i> {{ 'الملف والخطة' if is_rtl else 'Profile & Plan' }}
                                 </a>
-                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Official Academic Notice & Pre-filled Email">
-                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="{{ 'إخطار أكاديمي رسمي وبريد إلكتروني جاهز' if is_rtl else 'Official Academic Notice & Pre-filled Email' }}">
+                                    <i class="fas fa-envelope-open-text me-1"></i> {{ 'إخطار' if is_rtl else 'Notice' }}
                                 </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">
-                                    <i class="fas fa-file-pdf me-1"></i> Transcript
+                                    <i class="fas fa-file-pdf me-1"></i> {{ 'السجل' if is_rtl else 'Transcript' }}
                                 </a>
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-3 text-muted">No students currently in First Probation.</td>
+                        <td colspan="8" class="text-center py-3 text-muted">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الأولى.' if is_rtl else 'No students currently in First Probation.' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -320,53 +320,53 @@
 <div class="card shadow-sm mb-4 border-secondary">
     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-3">
         <h5 class="mb-0">
-            <i class="fas fa-bell me-2"></i>Pre-Probation Warning: GPA &lt; 65% (Borderline Students)
+            <i class="fas fa-bell me-2"></i>{{ 'إنذار ما قبل الملاحظة: المعدل أقل من ٦٥٪ (حالات حرجة)' if is_rtl else 'Pre-Probation Warning: GPA < 65% (Borderline Students)' }}
         </h5>
-        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.warning }} Students</span>
+        <span class="badge bg-white text-dark fw-bold fs-6">{{ breakdown.counts.warning }} {{ 'طالب' if is_rtl else 'Students' }}</span>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program / Major</th>
-                        <th>Current Standing</th>
-                        <th title="Cumulative GPA - DU Graduation Requirement >= 65.0%">CGPA (Graduation)</th>
-                        <th title="Latest Semester GPA - Probation Metric (Article 14)">SGPA (Latest Sem.)</th>
-                        <th>Earned Credits</th>
-                        <th>Actions</th>
+                        <th>{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th title="{{ 'المعدل التراكمي - متطلب تخرج جامعة ظفار >= 65%' if is_rtl else 'Cumulative GPA - DU Graduation Requirement >= 65.0%' }}">{{ 'المعدل التراكمي (التخرج)' if is_rtl else 'CGPA (Graduation)' }}</th>
+                        <th title="{{ 'المعدل الفصلي الأخير - معيار الملاحظة (المادة 14)' if is_rtl else 'Latest Semester GPA - Probation Metric (Article 14)' }}">{{ 'المعدل الفصلي (الأخير)' if is_rtl else 'SGPA (Latest Sem.)' }}</th>
+                        <th>{{ t('earned_credits') }}</th>
+                        <th>{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for student in breakdown.low_gpa_warning %}
                     <tr>
-                        <td class="fw-bold text-secondary">{{ student.id }}</td>
+                        <td class="fw-bold text-secondary font-monospace">{{ student.id }}</td>
                         <td class="fw-semibold">{{ student.name }}</td>
-                        <td><span class="small">{{ student.program or 'Computer Science' }}</span></td>
-                        <td><span class="badge bg-secondary">{{ student.status }}</span></td>
+                        <td><span class="small">{{ localize_program(student.program) }}</span></td>
+                        <td><span class="badge bg-secondary">{{ localize_standing(student.status) }}</span></td>
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
-                            <span class="badge bg-warning text-dark fs-6">
+                            <span class="badge bg-warning text-dark fs-6 font-monospace">
                                 {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
                             </span>
                         </td>
                         <td>
                             {% if student.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6">
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} fs-6 font-monospace">
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
                                 <span class="text-muted small">N/A</span>
                             {% endif %}
                         </td>
-                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} hrs</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">Profile</a>
-                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="Notice">Notice</a>
-                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">PDF</a>
+                                <a href="{{ url_for('main.student_detail', student_id=student.id) }}" class="btn btn-outline-primary">{{ 'الملف' if is_rtl else 'Profile' }}</a>
+                                <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" target="_blank" class="btn btn-outline-info" title="{{ 'إخطار' if is_rtl else 'Notice' }}">{{ 'إخطار' if is_rtl else 'Notice' }}</a>
+                                <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" target="_blank" class="btn btn-outline-danger">{{ 'السجل' if is_rtl else 'PDF' }}</a>
                             </div>
                         </td>
                     </tr>

@@ -12,7 +12,7 @@ credit_cap: 12
 urgency: "HIGH"
 cgpa: 65.44
 semester_gpa: 55.8
-last_updated: "2026-10-08"
+last_updated: "2026-10-14"
 ---
 
 # Student Advising Dossier: Ahmed Younis Ahmed Al Mujaini

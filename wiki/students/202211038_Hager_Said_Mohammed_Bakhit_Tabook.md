@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 66.0
 semester_gpa: 60.0
-last_updated: "2026-10-08"
+last_updated: "2026-10-14"
 ---
 
 # Student Advising Dossier: Hager Said Mohammed Bakhit Tabook

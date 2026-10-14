@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Advisees Directory - Dhofar University{% endblock %}
+{% block title %}{{ t('my_advisees') }} - {{ t('app_title') }}{% endblock %}
 
 {% block content %}
 <!-- Page Header -->
@@ -20,13 +20,13 @@
     </div>
     <div class="d-flex flex-wrap gap-2">
         <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadZipModal">
-            <i class="fas fa-file-arrow-up me-1"></i> {{ t('upload_document') if is_rtl else 'Upload Transcripts (ZIP)' }}
+            <i class="fas fa-file-arrow-up me-1"></i> {{ 'رفع السجلات (ZIP)' if is_rtl else 'Upload Transcripts (ZIP)' }}
         </button>
         <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importHtmlModal">
-            <i class="fas fa-paste me-1"></i> Paste Roster HTML
+            <i class="fas fa-paste me-1"></i> {{ 'لصق جدول HTML' if is_rtl else 'Paste Roster HTML' }}
         </button>
         <a href="{{ url_for('main.download_transcripts_zip') }}" class="btn btn-outline-danger">
-            <i class="fas fa-file-zipper me-1"></i> Download All (ZIP)
+            <i class="fas fa-file-zipper me-1"></i> {{ 'تنزيل الكل (ZIP)' if is_rtl else 'Download All (ZIP)' }}
         </a>
         <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrows-rotate me-1"></i> {{ t('sync_roster') }}
@@ -43,41 +43,39 @@
                     <div class="icon-box icon-box-sm icon-box-primary text-white bg-white bg-opacity-20 border-0">
                         <i class="fas fa-file-zipper"></i>
                     </div>
-                    <h5 class="modal-title mb-0 fw-bold">Upload Student Transcripts (ZIP)</h5>
+                    <h5 class="modal-title mb-0 fw-bold">{{ 'رفع السجلات الأكاديمية للطلبة (ZIP)' if is_rtl else 'Upload Student Transcripts (ZIP)' }}</h5>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-3">
-                    Upload a <code>.zip</code> file containing official Dhofar University transcript PDFs.
-                    The system will automatically parse student identities, courses, cumulative GPAs, and 
-                    <b>chronological academic standings</b> (Strict Probation, Second Probation, First Probation, Probation Removal, Good Standing).
+                    {{ 'قم برفع ملف مضغوط .zip يحتوي على كشوف الدرجات الرسمية لجامعة ظفار بصيغة PDF. سيقوم النظام تلقائياً باستخراج بيانات الطلبة، المقررات، المعدل التراكمي، والحالة الأكاديمية الزمنية بدقة.' if is_rtl else 'Upload a .zip file containing official Dhofar University transcript PDFs. The system will automatically parse student identities, courses, cumulative GPAs, and chronological academic standings (Strict Probation, Second Probation, First Probation, Probation Removal, Good Standing).' }}
                 </p>
                 <div class="mb-4">
-                    <label for="zipFileInput" class="form-label fw-bold text-dark">Select ZIP File</label>
+                    <label for="zipFileInput" class="form-label fw-bold text-dark">{{ 'اختر ملف ZIP' if is_rtl else 'Select ZIP File' }}</label>
                     <input class="form-control" type="file" id="zipFileInput" accept=".zip" required>
                 </div>
                 
                 <div class="mb-3 p-3 bg-light rounded border">
-                    <label class="form-label fw-bold text-dark mb-2">Roster Ingestion Action:</label>
+                    <label class="form-label fw-bold text-dark mb-2">{{ 'إجراء استيراد القائمة:' if is_rtl else 'Roster Ingestion Action:' }}</label>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="rosterAction" id="actionMerge" value="merge" checked>
                         <label class="form-check-label text-dark" for="actionMerge">
-                            <strong>Merge with current roster</strong> <span class="text-muted small">(adds new students and updates existing profiles)</span>
+                            <strong>{{ 'دمج مع القائمة الحالية' if is_rtl else 'Merge with current roster' }}</strong> <span class="text-muted small">({{ 'يضيف طلبة جدد ويحدّث الملفات القائمة' if is_rtl else 'adds new students and updates existing profiles' }})</span>
                         </label>
                     </div>
                     <div class="form-check mt-2">
                         <input class="form-check-input" type="radio" name="rosterAction" id="actionReplace" value="replace">
                         <label class="form-check-label text-danger" for="actionReplace">
-                            <strong>Replace entire roster</strong> <span class="text-muted small">(clears current database and loads only students from this ZIP)</span>
+                            <strong>{{ 'استبدال القائمة بالكامل' if is_rtl else 'Replace entire roster' }}</strong> <span class="text-muted small">({{ 'يمسح القاعدة الحالية ويحمل الطلبة من هذا الملف فقط' if is_rtl else 'clears current database and loads only students from this ZIP' }})</span>
                         </label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer bg-light py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ t('cancel') }}</button>
                 <button type="button" class="btn btn-primary btn-sm fw-bold" id="btnUploadZip" onclick="submitZipUpload()">
-                    <i class="fas fa-cloud-arrow-up me-1"></i> Process &amp; Import Transcripts
+                    <i class="fas fa-cloud-arrow-up me-1"></i> {{ 'معالجة واستيراد السجلات' if is_rtl else 'Process & Import Transcripts' }}
                 </button>
             </div>
         </div>
@@ -93,20 +91,20 @@
                     <div class="icon-box icon-box-sm icon-box-success text-white bg-white bg-opacity-20 border-0">
                         <i class="fas fa-paste"></i>
                     </div>
-                    <h5 class="modal-title mb-0 fw-bold">Quick Import Advisee Table HTML</h5>
+                    <h5 class="modal-title mb-0 fw-bold">{{ 'استيراد سريع لجدول المرشدين عبر HTML' if is_rtl else 'Quick Import Advisee Table HTML' }}</h5>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-2">
-                    If you have your Advisee Student List open in your web browser, right-click the table &rarr; <b>Inspect</b> &rarr; copy the <code>&lt;div id="advisee_data_panel"&gt;</code> or <code>&lt;table&gt;</code> element and paste it below:
+                    {{ 'إذا كان جدول الطلبة المرشدين مفتوحاً لديك في المتصفح، انقر بزر الفأرة الأيمن ثم فحص العنصر (Inspect) وانسخ عنصر الجدول والصقه هنا:' if is_rtl else 'If you have your Advisee Student List open in your web browser, right-click the table &rarr; Inspect &rarr; copy the <div id="advisee_data_panel"> or <table> element and paste it below:' }}
                 </p>
-                <textarea class="form-control font-monospace small" id="pastedHtml" rows="8" placeholder="Paste HTML markup here..."></textarea>
+                <textarea class="form-control font-monospace small" id="pastedHtml" rows="8" placeholder="{{ 'الصق كود HTML هنا...' if is_rtl else 'Paste HTML markup here...' }}"></textarea>
             </div>
             <div class="modal-footer bg-light py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ t('cancel') }}</button>
                 <button type="button" class="btn btn-success btn-sm fw-bold" onclick="submitImportedHtml()">
-                    <i class="fas fa-check me-1"></i> Import Advisees
+                    <i class="fas fa-check me-1"></i> {{ 'استيراد الطلبة' if is_rtl else 'Import Advisees' }}
                 </button>
             </div>
         </div>
@@ -120,19 +118,19 @@
         <!-- Status Filter Pills -->
         <div class="d-flex flex-wrap gap-1.5 align-items-center">
             <button class="btn btn-sm btn-dark filter-btn active" onclick="filterByStatus('all', this)">
-                All ({{ students|length }})
+                {{ t('all') }} ({{ students|length }})
             </button>
             <button class="btn btn-sm btn-outline-danger filter-btn" onclick="filterByStatus('strict', this)">
-                <i class="fas fa-triangle-exclamation me-1"></i>Strict ({{ strict_count }})
+                <i class="fas fa-triangle-exclamation me-1"></i>{{ 'صارمة' if is_rtl else 'Strict' }} ({{ strict_count }})
             </button>
             <button class="btn btn-sm btn-outline-warning text-dark filter-btn" onclick="filterByStatus('probation', this)">
-                <i class="fas fa-circle-exclamation me-1"></i>Probation ({{ probation_count }})
+                <i class="fas fa-circle-exclamation me-1"></i>{{ 'ملاحظة' if is_rtl else 'Probation' }} ({{ probation_count }})
             </button>
             <button class="btn btn-sm btn-outline-info text-dark filter-btn" onclick="filterByStatus('removal', this)">
-                <i class="fas fa-shield-halved me-1"></i>Cleared ({{ cleared_count }})
+                <i class="fas fa-shield-halved me-1"></i>{{ 'رفع الملاحظة' if is_rtl else 'Cleared' }} ({{ cleared_count }})
             </button>
             <button class="btn btn-sm btn-outline-success filter-btn" onclick="filterByStatus('good', this)">
-                <i class="fas fa-circle-check me-1"></i>Good ({{ good_standing_count }})
+                <i class="fas fa-circle-check me-1"></i>{{ 'وضع سليم' if is_rtl else 'Good' }} ({{ good_standing_count }})
             </button>
         </div>
 
@@ -140,10 +138,10 @@
         <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
             <div class="du-search-bar" style="min-width: 250px;">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="rosterSearchInput" class="form-control form-control-sm" placeholder="Search advisee name, ID, major..." onkeyup="filterRosterSearch()">
+                <input type="text" id="rosterSearchInput" class="form-control form-control-sm" placeholder="{{ 'البحث بالاسم، الرقم الجامعي، التخصص...' if is_rtl else 'Search advisee name, ID, major...' }}" onkeyup="filterRosterSearch()">
             </div>
             <button type="button" class="btn btn-sm btn-success shadow-sm fw-semibold" id="btnGroupMeetSelected" onclick="launchGroupMeetingFromTable()" disabled>
-                <i class="fas fa-video me-1"></i> Group Meet (<span id="bulkSelectedCount">0</span>)
+                <i class="fas fa-video me-1"></i> {{ 'اجتماع جماعي' if is_rtl else 'Group Meet' }} (<span id="bulkSelectedCount">0</span>)
             </button>
         </div>
     </div>
@@ -157,15 +155,15 @@
                 <thead>
                     <tr>
                         <th style="width: 44px;" class="text-center">
-                            <input class="form-check-input" type="checkbox" id="selectAllTableCheckbox" onclick="toggleSelectAllTable(this)" title="Select all advisees">
+                            <input class="form-check-input" type="checkbox" id="selectAllTableCheckbox" onclick="toggleSelectAllTable(this)" title="{{ 'تحديد كافة الطلبة' if is_rtl else 'Select all advisees' }}">
                         </th>
                         <th>{{ t('student_id') }}</th>
                         <th>{{ t('name') }}</th>
                         <th>{{ t('program_major') }}</th>
                         <th>{{ t('standing_status') }}</th>
-                        <th>Year</th>
-                        <th title="Cumulative GPA (Graduation Requirement >= 65.0%)">{{ t('cgpa') }}</th>
-                        <th title="Latest Semester GPA (Academic Probation Metric)">{{ t('sgpa') }}</th>
+                        <th>{{ 'السنة' if is_rtl else 'Year' }}</th>
+                        <th title="{{ 'المعدل التراكمي (متطلب التخرج >= 65.0%)' if is_rtl else 'Cumulative GPA (Graduation Requirement >= 65.0%)' }}">{{ t('cgpa') }}</th>
+                        <th title="{{ 'المعدل الفصلي الأخير (معيار الملاحظة الأكاديمية)' if is_rtl else 'Latest Semester GPA (Academic Probation Metric)' }}">{{ t('sgpa') }}</th>
                         <th class="text-end pe-3">{{ t('actions') }}</th>
                     </tr>
                 </thead>
@@ -186,33 +184,33 @@
                                 <div class="avatar-badge avatar-sm">
                                     {{ initials }}
                                 </div>
-                                <span>{{ student.id }}</span>
+                                <span style="direction: ltr !important; display: inline-block;">{{ student.id }}</span>
                             </div>
                         </td>
                         <td class="fw-semibold text-dark">{{ student.name }}</td>
                         <td>
-                            <span class="text-secondary small">{{ student.program or 'Computer Science' }}</span>
+                            <span class="text-secondary small">{{ localize_program(student.program) }}</span>
                         </td>
                         <td>
                             {% if 'Strict' in st or 'Third' in st %}
                                 <span class="du-status-pill du-status-strict">
-                                    <i class="fas fa-triangle-exclamation"></i>{{ st }}
+                                    <i class="fas fa-triangle-exclamation"></i>{{ localize_standing(st) }}
                                 </span>
                             {% elif 'Second Probation' in st %}
                                 <span class="du-status-pill du-status-second">
-                                    <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                    <i class="fas fa-circle-exclamation"></i>{{ localize_standing(st) }}
                                 </span>
                             {% elif 'First Probation' in st or 'Probation' in st and 'Removal' not in st %}
                                 <span class="du-status-pill du-status-first">
-                                    <i class="fas fa-circle-exclamation"></i>{{ st }}
+                                    <i class="fas fa-circle-exclamation"></i>{{ localize_standing(st) }}
                                 </span>
                             {% elif 'Removal' in st %}
                                 <span class="du-status-pill du-status-cleared">
-                                    <i class="fas fa-shield-halved"></i>{{ st }}
+                                    <i class="fas fa-shield-halved"></i>{{ localize_standing(st) }}
                                 </span>
                             {% else %}
                                 <span class="du-status-pill du-status-good">
-                                    <i class="fas fa-circle-check"></i>{{ st }}
+                                    <i class="fas fa-circle-check"></i>{{ localize_standing(st) }}
                                 </span>
                             {% endif %}
                         </td>
@@ -222,7 +220,7 @@
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
                             {% if cgpa_val %}
-                                <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning text-dark' if cgpa_val >= 65.0 else 'danger' }}">
+                                <span class="badge bg-{{ 'success' if cgpa_val >= 75.0 else 'warning text-dark' if cgpa_val >= 65.0 else 'danger' }} font-monospace">
                                     {{ "%.2f"|format(cgpa_val) }}%
                                 </span>
                             {% else %}
@@ -231,7 +229,7 @@
                         </td>
                         <td>
                             {% if student.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }}">
+                                <span class="badge bg-{{ 'danger' if student.semester_gpa < 65.0 else 'warning text-dark' if student.semester_gpa < 75.0 else 'success' }} font-monospace">
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
@@ -242,22 +240,22 @@
                             <div class="btn-group btn-group-sm" role="group">
                                 <button type="button" class="btn btn-outline-success" 
                                         onclick="startQuickMeet('{{ student.id }}', '{{ student.name }}')"
-                                        title="Start Instant Virtual Meeting">
-                                    <i class="fas fa-video me-1"></i> Meet
+                                        title="{{ 'بدء اجتماع مرئي فوري' if is_rtl else 'Start Instant Virtual Meeting' }}">
+                                    <i class="fas fa-video me-1"></i> {{ 'اجتماع' if is_rtl else 'Meet' }}
                                 </button>
                                 <a href="{{ url_for('main.student_detail', student_id=student.id) }}" 
                                    class="btn btn-outline-primary"
-                                   title="Open Full Advising Dossier & Plan">
-                                    <i class="fas fa-id-card me-1"></i> Profile
+                                   title="{{ 'فتح الملف الإرشادي الكامل والخطة' if is_rtl else 'Open Full Advising Dossier & Plan' }}">
+                                    <i class="fas fa-id-card me-1"></i> {{ 'الملف' if is_rtl else 'Profile' }}
                                 </a>
                                 <a href="{{ url_for('main.student_official_notice', student_id=student.id) }}" 
                                    target="_blank" class="btn btn-outline-info"
-                                   title="Generate Official Advisory Notice & Pre-filled Email">
-                                    <i class="fas fa-envelope-open-text me-1"></i> Notice
+                                   title="{{ 'إصدار إخطار إرشادي رسمي وبريد جاهز' if is_rtl else 'Generate Official Advisory Notice & Pre-filled Email' }}">
+                                    <i class="fas fa-envelope-open-text me-1"></i> {{ 'إخطار' if is_rtl else 'Notice' }}
                                 </a>
                                 <a href="{{ url_for('main.student_transcript_pdf', student_id=student.id) }}" 
                                    target="_blank" class="btn btn-outline-danger"
-                                   title="Download Official PDF Transcript">
+                                   title="{{ 'تنزيل السجل الأكاديمي الرسمي PDF' if is_rtl else 'Download Official PDF Transcript' }}">
                                     <i class="fas fa-file-pdf"></i>
                                 </a>
                             </div>
@@ -274,10 +272,10 @@
     <div class="icon-box icon-box-xl icon-box-primary mb-3">
         <i class="fas fa-users-slash"></i>
     </div>
-    <h4 class="fw-bold">No Advisees Found</h4>
-    <p class="text-muted mb-3">Please sync with the university system or upload a transcript ZIP to load your advisee list.</p>
+    <h4 class="fw-bold">{{ 'لم يتم العثور على طلبة مرشدين' if is_rtl else 'No Advisees Found' }}</h4>
+    <p class="text-muted mb-3">{{ 'يرجى المزامنة مع نظام الجامعة أو رفع ملف ZIP يتضمن سجلات الطلبة.' if is_rtl else 'Please sync with the university system or upload a transcript ZIP to load your advisee list.' }}</p>
     <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-        <i class="fas fa-arrows-rotate me-1"></i> Sync Advisees
+        <i class="fas fa-arrows-rotate me-1"></i> {{ 'مزامنة الطلبة' if is_rtl else 'Sync Advisees' }}
     </a>
 </div>
 {% endif %}
@@ -286,11 +284,12 @@
 {% block scripts %}
 <script>
 let currentStatusFilter = 'all';
+const IS_RTL = {{ 'true' if is_rtl else 'false' }};
 
 async function submitImportedHtml() {
     const html = document.getElementById('pastedHtml').value;
     if (!html.trim()) {
-        alert('Please paste table HTML first.');
+        alert(IS_RTL ? 'يرجى لصق كود HTML أولاً.' : 'Please paste table HTML first.');
         return;
     }
     
@@ -303,37 +302,40 @@ async function submitImportedHtml() {
         });
         const res = await response.json();
         if (res.status === 'success') {
-            alert(`Success! Imported ${res.count} advisee students.`);
+            alert(IS_RTL ? `تم بنجاح! تم استيراد (${res.count}) طالب.` : `Success! Imported ${res.count} advisee students.`);
             window.location.reload();
         } else {
-            alert('Import error: ' + res.message);
+            alert((IS_RTL ? 'خطأ في الاستيراد: ' : 'Import error: ') + res.message);
         }
     } catch (err) {
-        alert('Request failed: ' + err.message);
+        alert((IS_RTL ? 'فشل الطلب: ' : 'Request failed: ') + err.message);
     }
 }
 
 async function submitZipUpload() {
     const fileInput = document.getElementById('zipFileInput');
     if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Please select a .zip file containing student transcripts.');
+        alert(IS_RTL ? 'يرجى اختيار ملف .zip يحتوي على سجلات الطلبة.' : 'Please select a .zip file containing student transcripts.');
         return;
     }
     
     const file = fileInput.files[0];
     if (!file.name.toLowerCase().endsWith('.zip')) {
-        alert('The selected file must be a .zip file.');
+        alert(IS_RTL ? 'يجب أن يكون الملف المختار بصيغة .zip' : 'The selected file must be a .zip file.');
         return;
     }
     
     const isReplace = document.getElementById('actionReplace').checked;
-    if (isReplace && !confirm('WARNING: You chose to REPLACE the entire advisee roster. All current students not in this ZIP will be replaced. Do you want to proceed?')) {
-        return;
+    if (isReplace) {
+        const warningText = IS_RTL 
+            ? 'تحذير: لقد اخترت استبدال قائمة الطلبة بالكامل. سيتم حذف جميع الطلبة غير الموجودين في هذا الملف. هل تريد المتابعة؟'
+            : 'WARNING: You chose to REPLACE the entire advisee roster. All current students not in this ZIP will be replaced. Do you want to proceed?';
+        if (!confirm(warningText)) return;
     }
     
     const btn = document.getElementById('btnUploadZip');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Parsing Transcripts & Standings...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> ' + (IS_RTL ? 'جارٍ معالجة السجلات وتحديد الحالات...' : 'Parsing Transcripts & Standings...');
     
     const formData = new FormData();
     formData.append('file', file);
@@ -348,16 +350,19 @@ async function submitZipUpload() {
         const res = await response.json();
         
         if (res.status === 'success') {
-            alert(res.message + `\n\nBreakdown:\n- Strict Probation: ${res.stats.strict}\n- On Probation: ${res.stats.probation}\n- Cleared Removal: ${res.stats.cleared}\n- Good Standing: ${res.stats.good_standing}`);
+            const breakdownMsg = IS_RTL
+                ? `${res.message}\n\nالتوزيع:\n- ملاحظة صارمة: ${res.stats.strict}\n- تحت الملاحظة: ${res.stats.probation}\n- رفع الملاحظة: ${res.stats.cleared}\n- وضع سليم: ${res.stats.good_standing}`
+                : `${res.message}\n\nBreakdown:\n- Strict Probation: ${res.stats.strict}\n- On Probation: ${res.stats.probation}\n- Cleared Removal: ${res.stats.cleared}\n- Good Standing: ${res.stats.good_standing}`;
+            alert(breakdownMsg);
             window.location.reload();
         } else {
-            alert('Upload error: ' + (res.message || 'Failed to process ZIP.'));
+            alert((IS_RTL ? 'خطأ في الرفع: ' : 'Upload error: ') + (res.message || 'Failed to process ZIP.'));
         }
     } catch (err) {
-        alert('Request error: ' + err.message);
+        alert((IS_RTL ? 'خطأ في الطلب: ' : 'Request error: ') + err.message);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-cloud-arrow-up me-1"></i> Process & Import Transcripts';
+        btn.innerHTML = '<i class="fas fa-cloud-arrow-up me-1"></i> ' + (IS_RTL ? 'معالجة واستيراد السجلات' : 'Process & Import Transcripts');
     }
 }
 
@@ -440,19 +445,19 @@ function toggleSelectAllTable(masterCb) {
 function launchGroupMeetingFromTable() {
     const checkedBoxes = Array.from(document.querySelectorAll('.student-row-select:checked'));
     if (checkedBoxes.length === 0) {
-        alert('Please select at least one student.');
+        alert(IS_RTL ? 'يرجى تحديد طالب واحد على الأقل.' : 'Please select at least one student.');
         return;
     }
     const studentIds = checkedBoxes.map(cb => cb.value);
     const names = checkedBoxes.map(cb => cb.getAttribute('data-name')).filter(Boolean);
     const defaultTitle = studentIds.length === 1 
-        ? `Advising Session - ${names[0] || studentIds[0]}`
-        : `Group Advising Session (${studentIds.length} Students)`;
+        ? (IS_RTL ? `جلسة إرشادية - ${names[0] || studentIds[0]}` : `Advising Session - ${names[0] || studentIds[0]}`)
+        : (IS_RTL ? `جلسة إرشاد جماعية (${studentIds.length} طالب)` : `Group Advising Session (${studentIds.length} Students)`);
 
     const btn = document.getElementById('btnGroupMeetSelected');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Creating Room...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> ' + (IS_RTL ? 'جارٍ إنشاء الغرفة...' : 'Creating Room...');
     }
 
     const prefix = window.APP_PREFIX || '';
@@ -469,16 +474,21 @@ function launchGroupMeetingFromTable() {
     .then(data => {
         if (data.status === 'success') {
             const studentCount = data.target_students ? data.target_students.length : studentIds.length;
-            const inviteMsg = `Dear Students,\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            const inviteMsg = IS_RTL
+                ? `أعزائي الطلبة،\nيرجى الانضمام إلى جلسة الإرشاد الأكاديمي المرئية عبر هذا الرابط:\n${data.meeting_url || data.lan_url}\n\nد. ناصر تبوك - جامعة ظفار`
+                : `Dear Students,\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
             navigator.clipboard.writeText(inviteMsg);
-            if (confirm(`Group Virtual Meeting Created for ${studentCount} Students!\n\nSingle meeting invitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`)) {
+            const confirmMsg = IS_RTL
+                ? `تم إنشاء غرفة اجتماع افتراضي لـ (${studentCount}) طالب!\n\nتم نسخ رابط الدعوة إلى الحافظة:\n${data.meeting_url || data.lan_url}\n\nهل ترغب بالدخول إلى الغرفة الآن؟`
+                : `Group Virtual Meeting Created for ${studentCount} Students!\n\nSingle meeting invitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`;
+            if (confirm(confirmMsg)) {
                 window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
             }
         } else {
-            alert('Error creating meeting: ' + data.message);
+            alert((IS_RTL ? 'خطأ في إنشاء الاجتماع: ' : 'Error creating meeting: ') + data.message);
         }
     })
-    .catch(err => alert('Network error: ' + err.message))
+    .catch(err => alert((IS_RTL ? 'خطأ في الشبكة: ' : 'Network error: ') + err.message))
     .finally(() => {
         if (btn) {
             btn.disabled = false;
@@ -496,23 +506,28 @@ function startQuickMeet(studentId, studentName) {
             student_ids: [studentId],
             student_id: studentId,
             student_name: studentName,
-            title: `Advising Session - ${studentName} (${studentId})`,
+            title: IS_RTL ? `جلسة إرشادية - ${studentName} (${studentId})` : `Advising Session - ${studentName} (${studentId})`,
             advisor_name: 'Dr. Nasser Tabook'
         })
     })
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
-            const inviteMsg = `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            const inviteMsg = IS_RTL
+                ? `عزيزي الطالب ${studentName}،\nيرجى الانضمام إلى جلسة الإرشاد الأكاديمي المرئية عبر الرابط التالي:\n${data.meeting_url || data.lan_url}\n\nد. ناصر تبوك - جامعة ظفار`
+                : `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url || data.lan_url}\n\nDr. Nasser Tabook - Dhofar University`;
             navigator.clipboard.writeText(inviteMsg);
-            if (confirm(`Virtual Meeting Created!\n\nInvitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`)) {
+            const confirmMsg = IS_RTL
+                ? `تم إنشاء الاجتماع الافتراضي بنجاح!\n\nتم نسخ رابط الدعوة إلى الحافظة:\n${data.meeting_url || data.lan_url}\n\nهل تود دخول الغرفة الآن؟`
+                : `Virtual Meeting Created!\n\nInvitation copied to clipboard:\n${data.meeting_url || data.lan_url}\n\nEnter the room now?`;
+            if (confirm(confirmMsg)) {
                 window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
             }
         } else {
-            alert('Error: ' + data.message);
+            alert((IS_RTL ? 'خطأ: ' : 'Error: ') + data.message);
         }
     })
-    .catch(err => alert('Network error: ' + err.message));
+    .catch(err => alert((IS_RTL ? 'خطأ في الشبكة: ' : 'Network error: ') + err.message));
 }
 </script>
 {% endblock %}

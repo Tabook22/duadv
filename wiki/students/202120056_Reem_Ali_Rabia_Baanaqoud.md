@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 79.21
 semester_gpa: 80.0
-last_updated: "2026-10-08"
+last_updated: "2026-10-14"
 ---
 
 # Student Advising Dossier: Reem Ali Rabia Baanaqoud

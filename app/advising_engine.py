@@ -72,7 +72,7 @@ def extract_numerical_grade(grade_str: Any) -> Optional[float]:
             pass
     return None
 
-def audit_student_degree(student_id: str, transcripts_dir: str = None, force_refresh: bool = False) -> Dict[str, Any]:
+def audit_student_degree(student_id: str, transcripts_dir: str = None, force_refresh: bool = False, lang: str = None) -> Dict[str, Any]:
     """
     Perform deep degree audit for a student:
     - Match historical courses against the official study plan.
@@ -81,8 +81,16 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
     - Calculate credit limits and GPA recovery targets according to DU regulations.
     Cached in-memory for 300 seconds for high-speed responsiveness.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+
     now_ts = time.time()
-    cache_key = f"{student_id}_{transcripts_dir or ''}"
+    cache_key = f"{student_id}_{transcripts_dir or ''}_{lang or ''}"
     if not force_refresh and cache_key in _AUDIT_CACHE:
         entry = _AUDIT_CACHE[cache_key]
         if now_ts - entry.get('timestamp', 0) < 300:
@@ -276,13 +284,13 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
     st = student.status or ''
     if 'Strict' in st or 'Third' in st or 'Second Probation' in st or 'First Probation' in st or ('Probation' in st and 'Removal' not in st):
         credit_cap = 12
-        cap_reason = 'Academic Probation Cap: Maximum 12 Credit Hours (Dhofar University Academic Regulations Article 14 & 22)'
+        cap_reason = 'سقف الملاحظة الأكاديمية: 12 ساعة معتمدة كحد أقصى (لوائح جامعة ظفار الأكاديمية - المادتان 14 و 22)' if is_ar else 'Academic Probation Cap: Maximum 12 Credit Hours (Dhofar University Academic Regulations Article 14 & 22)'
     elif current_gpa > 0 and current_gpa < 65.0 and 'Removal' not in st and 'Good' not in st:
         credit_cap = 12
-        cap_reason = 'Pre-Probation Warning Cap: Advised max 12 Credit Hours to recover CGPA >= 65.0%'
+        cap_reason = 'سقف إنذار تدني المعدل: يوصى بـ 12 ساعة معتمدة كحد أقصى لرفع المعدل التراكمي >= 65.0%' if is_ar else 'Pre-Probation Warning Cap: Advised max 12 Credit Hours to recover CGPA >= 65.0%'
     else:
         credit_cap = 18
-        cap_reason = 'Normal Full-Time Course Load: 15 to 18 Credit Hours (Dhofar University Academic Regulations Article 22)'
+        cap_reason = 'العبء الدراسي الاعتيادي: 15 إلى 18 ساعة معتمدة (لوائح جامعة ظفار الأكاديمية - المادة 22)' if is_ar else 'Normal Full-Time Course Load: 15 to 18 Credit Hours (Dhofar University Academic Regulations Article 22)'
         
     gpa_deficit = max(0.0, round(65.0 - current_gpa, 2)) if current_gpa > 0 else 0.0
     semesters_remaining = math.ceil(remaining_credits / (12 if credit_cap == 12 else 15)) if remaining_credits > 0 else 0
@@ -320,11 +328,19 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
     return result
 
 
-def analyze_semester_progression(student_id: str) -> Dict[str, Any]:
+def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str, Any]:
     """
     Analyze student semester-by-semester trajectory, compute term & cumulative deltas,
     diagnose root causes for improvements or declines, and structure Chart.js dataset.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+
     raw_semesters = get_student_semesters(student_id)
     
     # Filter to credit-bearing or graded terms
@@ -418,41 +434,41 @@ def analyze_semester_progression(student_id: str) -> Dict[str, Any]:
         reasons = []
         if status == "INITIAL":
             if cum_gpa and cum_gpa >= 65.0:
-                reasons.append(f"Initial academic baseline established at {cum_gpa:.2f}% (Good Standing). Successfully completed {len(passed_courses)} course(s).")
+                reasons.append(f"تم إنشاء خط الأساس الأكاديمي الأولي بمعدل {cum_gpa:.2f}% (وضع أكاديمي سليم). تم اجتياز {len(passed_courses)} مساق(ات) بنجاح." if is_ar else f"Initial academic baseline established at {cum_gpa:.2f}% (Good Standing). Successfully completed {len(passed_courses)} course(s).")
             elif cum_gpa:
-                failed_str = ", ".join(c['code'] for c in failed_courses) or "unresolved courses"
-                reasons.append(f"Initial credit-bearing term resulted in academic jeopardy ({cum_gpa:.2f}%). Deficits incurred in {failed_str}.")
+                failed_str = ", ".join(c['code'] for c in failed_courses) or ("مساقات متعثرة" if is_ar else "unresolved courses")
+                reasons.append(f"أسفر الفصل الدراسي الأولي عن وضع أكاديمي متعثر بمعدل ({cum_gpa:.2f}%). نتج العجز بسبب الإخفاق في {failed_str}." if is_ar else f"Initial credit-bearing term resulted in academic jeopardy ({cum_gpa:.2f}%). Deficits incurred in {failed_str}.")
             else:
-                reasons.append("Foundation assessment period.")
+                reasons.append("فترة تقييم البرنامج التأسيسي." if is_ar else "Foundation assessment period.")
         elif status == "IMPROVED":
             gain_str = f"+{delta_cum:.2f}%" if delta_cum else ""
             pass_str = ", ".join(f"{c['code']} ({c['grade']})" for c in passed_courses[:3])
-            reasons.append(f"Cumulative average rebounded by {gain_str} points.")
+            reasons.append(f"ارتفع المعدل التراكمي بمقدار {gain_str} نقطة." if is_ar else f"Cumulative average rebounded by {gain_str} points.")
             if pass_str:
-                reasons.append(f"Key drivers: Strong performance in {pass_str}.")
+                reasons.append(f"أهم دوافع التحسن: أداء متميز في {pass_str}." if is_ar else f"Key drivers: Strong performance in {pass_str}.")
             if repeated_courses:
                 rep_str = ", ".join(c['code'] for c in repeated_courses)
-                reasons.append(f"Grade replacement benefit realized from repeating {rep_str} under DU Article 18.")
+                reasons.append(f"تحقق أثر استبدال الدرجة من إعادة مساق {rep_str} بموجب المادة 18 من لوائح الجامعة." if is_ar else f"Grade replacement benefit realized from repeating {rep_str} under DU Article 18.")
             if failed_courses:
                 fail_str = ", ".join(c['code'] for c in failed_courses)
-                reasons.append(f"Note: Lingering deficiencies remain in {fail_str}.")
+                reasons.append(f"ملاحظة: ما زال هناك تعثر معلق في {fail_str}." if is_ar else f"Note: Lingering deficiencies remain in {fail_str}.")
         elif status == "DECLINED":
             loss_str = f"{delta_cum:.2f}%" if delta_cum else ""
-            reasons.append(f"Performance experienced a downward decline of {loss_str} points.")
+            reasons.append(f"شهد الأداء تراجعاً بمقدار {loss_str} نقطة." if is_ar else f"Performance experienced a downward decline of {loss_str} points.")
             if failed_courses:
                 fail_str = ", ".join(f"{c['code']} ({c['grade']})" for c in failed_courses)
-                reasons.append(f"Primary impediment: Course failure(s) in {fail_str}.")
+                reasons.append(f"العائق الرئيسي: الرسوب في {fail_str}." if is_ar else f"Primary impediment: Course failure(s) in {fail_str}.")
             if withdrawn_courses:
                 w_str = ", ".join(f"{c['code']} ({c['grade']})" for c in withdrawn_courses)
-                reasons.append(f"Course disruption due to withdrawal(s) in {w_str}.")
+                reasons.append(f"تعطيل المسار بسبب الانسحاب من {w_str}." if is_ar else f"Course disruption due to withdrawal(s) in {w_str}.")
             if len(courses) > 4:
-                reasons.append(f"High credit burden ({s['total_credits']} credits attempted) exacerbated academic strain.")
+                reasons.append(f"العبء الدراسي المرتفع ({s.get('total_credits', 0)} ساعة مسجلة) فاقم الضغط الأكاديمي." if is_ar else f"High credit burden ({s.get('total_credits', 0)} credits attempted) exacerbated academic strain.")
         else:
-            reasons.append("Academic performance remained essentially unchanged.")
+            reasons.append("ظل الأداء الأكاديمي ثابتاً دون تغيير جوهري." if is_ar else "Academic performance remained essentially unchanged.")
             if cum_gpa and cum_gpa < 65.0:
-                reasons.append(f"Marginal course passes prevented lifting CGPA out of the probation zone.")
+                reasons.append("اجتياز المساقات بدرجات حدية حال دون رفع المعدل التراكمي خارج نطاق الملاحظة الأكاديمية." if is_ar else "Marginal course passes prevented lifting CGPA out of the probation zone.")
             else:
-                reasons.append(f"Consistent performance maintained in Good Standing.")
+                reasons.append("أداء متسق ومستمر في الوضع الأكاديمي السليم." if is_ar else "Consistent performance maintained in Good Standing.")
                 
         diagnosis_text = " ".join(reasons)
         
@@ -489,16 +505,16 @@ def analyze_semester_progression(student_id: str) -> Dict[str, Any]:
     
     if len(all_cum_gpas) >= 2:
         if all_cum_gpas[-1] > all_cum_gpas[0] and (all_cum_gpas[-1] - all_cum_gpas[-2] >= 0):
-            overall_trend = "Upward / Improving Trajectory"
+            overall_trend = "مسار صاعد / تحسن ملحوظ" if is_ar else "Upward / Improving Trajectory"
             trend_badge = "success"
         elif all_cum_gpas[-1] < all_cum_gpas[-2]:
-            overall_trend = "Downward / At-Risk Trajectory"
+            overall_trend = "مسار هابط / تحت الخطر" if is_ar else "Downward / At-Risk Trajectory"
             trend_badge = "danger"
         else:
-            overall_trend = "Fluctuating / Variable"
+            overall_trend = "مسار متذبذب / متغير" if is_ar else "Fluctuating / Variable"
             trend_badge = "warning"
     else:
-        overall_trend = "Initial Academic Baseline"
+        overall_trend = "خط الأساس الأكاديمي الأولي" if is_ar else "Initial Academic Baseline"
         trend_badge = "info"
         
     chart_data = {
@@ -520,11 +536,19 @@ def analyze_semester_progression(student_id: str) -> Dict[str, Any]:
         'latest_record': latest_record
     }
 
-def calculate_gpa_recovery_path(audit: Dict[str, Any], student: Student) -> Dict[str, Any]:
+def calculate_gpa_recovery_path(audit: Dict[str, Any], student: Student, lang: str = None) -> Dict[str, Any]:
     """
     Simulate the mathematical impact of repeating courses under DU Article 18 (Grade Replacement).
     Calculates points needed and projected CGPA at 70%, 75%, and 80% repeat target marks.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+
     current_gpa = audit['current_gpa'] or 0.0
     completed_credits = max(audit['completed_credits'], 3)
     deficit = audit['gpa_deficit']
@@ -548,7 +572,7 @@ def calculate_gpa_recovery_path(audit: Dict[str, Any], student: Student) -> Dict
             'old_score': old_score,
             'projected_gain_75': round(gain_at_75, 2),
             'projected_gain_80': round(gain_at_80, 2),
-            'priority': 'Critical Mandatory Repeat'
+            'priority': 'إعادة إجبارية حرجة' if is_ar else 'Critical Mandatory Repeat'
         })
         total_potential_gain += gain_at_75
         
@@ -567,20 +591,29 @@ def calculate_gpa_recovery_path(audit: Dict[str, Any], student: Student) -> Dict
             'old_score': old_score,
             'projected_gain_75': round(gain_at_75, 2),
             'projected_gain_80': round(gain_at_80, 2),
-            'priority': 'Recommended D-Grade Repeat'
+            'priority': 'إعادة موصى بها لتحسين المعدل' if is_ar else 'Recommended D-Grade Repeat'
         })
         total_potential_gain += gain_at_75
         
     projected_cgpa_75 = round(min(100.0, current_gpa + total_potential_gain), 2)
     recovers_good_standing = projected_cgpa_75 >= 65.0
     
-    action_steps = [
-        f"Strictly prioritize repeating failed prerequisite courses ({', '.join(c['code'] for c in audit['critical_repeats'][:3]) or 'core courses'}).",
-        "Target minimum 70-75% in repeated courses to trigger the DU Article 18 grade replacement multiplier.",
-        "Observe the 12 credit hour probation limit (DU Article 22) to avoid overburdening your schedule.",
-        "Dedicate minimum 6 hours/week to Department tutorial labs for programming and calculus.",
-        "Track quiz and continuous assessment marks weekly to ensure grades stay above 65% before the Week 10 withdrawal (W) deadline."
-    ]
+    if is_ar:
+        action_steps = [
+            f"إعطاء أولوية قصوى لإعادة المساقات التأسيسية المتعثرة ({', '.join(c['code'] for c in audit['critical_repeats'][:3]) or 'المقررات الأساسية'}).",
+            "استهداف الحصول على معدل 70-75% على الأقل في المساقات المعادة لتفعيل ميزة استبدال الدرجة وفق المادة 18 من لوائح الجامعة.",
+            "الالتزام الصارم بسقف 12 ساعة معتمدة للملاحظة الأكاديمية (المادة 22) لمنع إثقال الجدول الدراسي.",
+            "تخصيص ما لا يقل عن 6 ساعات أسبوعياً لمختبرات التقوية بالقسم للبرمجة وحساب التفاضل والتكامل.",
+            "متابعة درجات الاختبارات والتقييم المستمر أسبوعياً لضمان بقاء الدرجات فوق 65% قبل الموعد النهائي للانسحاب (W) بالأسبوع العاشر."
+        ]
+    else:
+        action_steps = [
+            f"Strictly prioritize repeating failed prerequisite courses ({', '.join(c['code'] for c in audit['critical_repeats'][:3]) or 'core courses'}).",
+            "Target minimum 70-75% in repeated courses to trigger the DU Article 18 grade replacement multiplier.",
+            "Observe the 12 credit hour probation limit (DU Article 22) to avoid overburdening your schedule.",
+            "Dedicate minimum 6 hours/week to Department tutorial labs for programming and calculus.",
+            "Track quiz and continuous assessment marks weekly to ensure grades stay above 65% before the Week 10 withdrawal (W) deadline."
+        ]
     
     return {
         'current_gpa': current_gpa,
@@ -596,99 +629,165 @@ def generate_advisor_consultation_guide(
     student: Student,
     audit: Dict[str, Any],
     progression: Dict[str, Any],
-    recovery: Dict[str, Any]
+    recovery: Dict[str, Any],
+    lang: str = None
 ) -> Dict[str, Any]:
     """
     Generate formal Advisor Consultation Protocol:
     Determines meeting urgency, consultation windows, exact talking points script for Dr. Nasser Tabook,
     and preparation guidelines for the student.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+
     st = student.status or 'Normal / Good Standing'
     gpa = audit['current_gpa'] or 0.0
     deficit = audit['gpa_deficit']
     cap = audit['credit_cap']
     
     if 'Strict' in st or 'Third' in st:
-        urgency = "CRITICAL & MANDATORY (Week 1 Priority)"
+        urgency = "حرج وإلزامي (أولوية الأسبوع الأول)" if is_ar else "CRITICAL & MANDATORY (Week 1 Priority)"
         urgency_badge = "danger"
-        schedule_window = "Immediate - First 5 days of semester (Before Add/Drop closes)"
-        frequency = "Weekly mandatory check-in with Academic Advisor"
+        schedule_window = "فوري - أول 5 أيام من الفصل (قبل إغلاق فترة الحذف والإضافة)" if is_ar else "Immediate - First 5 days of semester (Before Add/Drop closes)"
+        frequency = "متابعة أسبوعية إلزامية مع المرشد الأكاديمي" if is_ar else "Weekly mandatory check-in with Academic Advisor"
     elif 'Second Probation' in st:
-        urgency = "HIGH MANDATORY (Add/Drop Period)"
+        urgency = "إلزامي عاجل (فترة الحذف والإضافة)" if is_ar else "HIGH MANDATORY (Add/Drop Period)"
         urgency_badge = "warning text-dark"
-        schedule_window = "Week 1 to Week 2 of classes"
-        frequency = "Bi-weekly mandatory check-in with Academic Advisor"
+        schedule_window = "الأسبوع الأول إلى الثاني من بدء الدراسة" if is_ar else "Week 1 to Week 2 of classes"
+        frequency = "متابعة إلزامية كل أسبوعين مع المرشد الأكاديمي" if is_ar else "Bi-weekly mandatory check-in with Academic Advisor"
     elif 'First Probation' in st:
-        urgency = "MANDATORY (Academic Warning Review)"
+        urgency = "إلزامي (مراجعة الإنذار الأكاديمي)" if is_ar else "MANDATORY (Academic Warning Review)"
         urgency_badge = "warning text-dark"
-        schedule_window = "First 2 weeks of classes"
-        frequency = "Bi-weekly progress check-ins with Academic Advisor"
+        schedule_window = "أول أسبوعين من بدء الدراسة" if is_ar else "First 2 weeks of classes"
+        frequency = "مراجعة التقدم كل أسبوعين مع المرشد الأكاديمي" if is_ar else "Bi-weekly progress check-ins with Academic Advisor"
     else:
-        urgency = "RECOMMENDED (Regular Semester Check-in)"
+        urgency = "موصى به (مراجعة فصلية اعتيادية)" if is_ar else "RECOMMENDED (Regular Semester Check-in)"
         urgency_badge = "info text-dark"
-        schedule_window = "Regular pre-registration advising window"
-        frequency = "Midterm check-in (Week 7)"
+        schedule_window = "فترة الإرشاد والتسجيل المعتادة" if is_ar else "Regular pre-registration advising window"
+        frequency = "متابعة منتصف الفصل (الأسبوع السابع)" if is_ar else "Midterm check-in (Week 7)"
 
     critical_codes = [c['code'] for c in audit['critical_repeats']]
-    crit_text = ", ".join(critical_codes[:3]) if critical_codes else "your core curriculum courses"
+    crit_text = ", ".join(critical_codes[:3]) if critical_codes else ("مقررات الخطة الأساسية" if is_ar else "your core curriculum courses")
     
-    advisor_script = [
-        {
-            'phase': '1. Empathetic Welcome & Objective',
-            'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
-            'dialogue': (
-                f"Hello {student.name}, thank you for meeting with me today. I called you in because your academic success "
-                f"and your degree progression are our top priority in the Department. My purpose today is not to reprimand you, "
-                f"but to work together on an evidence-based Academic Recovery Plan that will lift your GPA and protect your standing at Dhofar University."
-            )
-        },
-        {
-            'phase': '2. Academic Reality Check & Bylaws',
-            'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
-            'dialogue': (
-                f"Let us examine your transcript with complete transparency. Your current cumulative GPA is **{gpa:.2f}%**, which is "
-                f"**{deficit:.2f} points below our required 65.0% Good Standing threshold**, placing your status at **{st}**. "
-                f"Under Dhofar University Article 14 and Article 22, this is a formal warning. Your course load is strictly capped at "
-                f"**{cap} credit hours** this term. We cannot register for more than 12 credits, because another term below 65% will trigger severe probation escalation or dismissal."
-            )
-        },
-        {
-            'phase': '3. The Strategic Solution (DU Article 18 Grade Replacement)',
-            'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
-            'dialogue': (
-                f"Here is why your situation is completely recoverable: Under DU Article 18, when you repeat courses you previously failed "
-                f"—specifically **{crit_text}**—your new grade directly replaces the old failing mark in your cumulative GPA! "
-                f"Mathematically, scoring a 75% in these repeated courses will inject an estimated **+{recovery['total_potential_gain']:.2f}% directly into your CGPA**, "
-                f"lifting you right back into Good Standing. Repeating these courses gives you twice the leverage of taking new courses."
-            )
-        },
-        {
-            'phase': '4. Operational Routine & Department Tutoring',
-            'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
-            'dialogue': (
-                f"To make this happen, we are locking your registration to these exact {audit['credit_cap']} credit hours. "
-                f"You must commit to attending the Department tutorial labs for mathematics and programming every single week. "
-                f"If you ever struggle with a concept or assignment, do not isolate yourself and do not wait for the final exam—come see me during office hours immediately."
-            )
-        },
-        {
-            'phase': '5. Milestones & The Action Plan Agreement',
-            'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
-            'dialogue': (
-                f"We will hold our mandatory midterm review right after Week 6. If any course grade is under 60% by Week 9, we will evaluate "
-                f"the official Course Withdrawal (W) option before the Week 10 deadline, ensuring no failing grade ever blemishes your transcript again. "
-                f"Let us sign this official Academic Recovery Agreement together today."
-            )
-        }
-    ]
-    
-    student_talking_points = [
-        "Ask Dr. Nasser to verify which specific repeated course provides the highest point leverage toward lifting GPA above 65.0%.",
-        "Disclose any personal, health, or transportation hurdles openly so Dr. Nasser can tailor your class schedule times.",
-        "Inquire about the exact hours and room locations of the Department Mathematics and Programming tutorial labs.",
-        "Ask for clarification on the Week 10 official Course Withdrawal (W) deadline rules and how to protect against WF penalties.",
-        "Commit to scheduling the Week 7 Midterm Follow-up advising appointment before leaving the office."
-    ]
+    if is_ar:
+        advisor_script = [
+            {
+                'phase': '١. الترحيب الإرشادي وتحديد الهدف',
+                'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
+                'dialogue': (
+                    f"أهلاً بك يا {student.name}، وأشكرك على حضورك اليوم. دعوتك لهذا اللقاء لأن نجاحك الأكاديمي "
+                    f"وتقدمك الدراسي نحو التخرج هما أولويتنا القصوى في قسم علوم الحاسوب. هدفنا اليوم ليس اللوم أو العتاب، "
+                    f"بل العمل معاً على خطة تعافٍ أكاديمي مدروسة ترفع معدلك التراكمي وتحمي وضعك الدراسي بجامعة ظفار."
+                )
+            },
+            {
+                'phase': '٢. المصارحة بالواقع الأكاديمي واللوائح',
+                'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
+                'dialogue': (
+                    f"دعنا ننظر إلى كشف درجاتك بكل شفافية. معدلك التراكمي الحالي هو **{gpa:.2f}%**، وهو "
+                    f"**يقل بمقدار {deficit:.2f} نقطة عن حد الوضع الأكاديمي السليم المطلوب (65.0%)**، مما يضعك تحت **{st}**. "
+                    f"وفق المادتين 14 و 22 من لوائح جامعة ظفار الأكاديمية، يُعد هذا إنذاراً رسمياً. عبؤك الدراسي محدد بسقف صارم هو "
+                    f"**{cap} ساعة معتمدة** هذا الفصل. لا يمكننا تسجيل أكثر من 12 ساعة، لأن استمرار المعدل دون 65% سيؤدي لتصاعد الملاحظة أو التعرض للفصل الأكاديمي."
+                )
+            },
+            {
+                'phase': '٣. الحل الاستراتيجي (استبدال الدرجة بموجب المادة ١٨)',
+                'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
+                'dialogue': (
+                    f"إليك سبب قدرتنا التامة على تصحيح الوضع: وفق المادة 18 من لوائح الجامعة، عندما تعيد المقررات التي رسبت فيها سابقاً "
+                    f"—تحديداً **{crit_text}**—فإن درجتك الجديدة تستبدل درجة الرسوب القديمة مباشرة في حساب المعدل التراكمي! "
+                    f"حسابياً، تحقيق نسبة 75% في هذه المقررات المعادة سيضخ مكسباً يقدر بـ **+{recovery['total_potential_gain']:.2f}% مباشرة في معدلك التراكمي**، "
+                    f"مما يعيدك فوراً إلى الوضع الأكاديمي السليم. إعادة هذه المقررات تمنحك ضعف التأثير الإيجابي مقارنة بتسجيل مقررات جديدة."
+                )
+            },
+            {
+                'phase': '٤. خطة العمل اليومية ومختبرات التقوية بالقسم',
+                'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
+                'dialogue': (
+                    f"لتحقيق هذا الهدف، سنثبت تسجيلك على هذه الـ {audit['credit_cap']} ساعة المعتمدة المحددة بدقة. "
+                    f"عليك الالتزام بحضور مختبرات التقوية الأسبوعية في الرياضيات والبرمجة بالقسم. "
+                    f"إذا واجهت أي صعوبة في أي مفهوم أو واجب، لا تنعزل ولا تنتظر حتى الامتحانات النهائية—تفضل بمراجعتي في الساعات المكتبية فوراً."
+                )
+            },
+            {
+                'phase': '٥. المحطات الزمنية وتوقيع اتفاقية الخطة الإرشادية',
+                'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
+                'dialogue': (
+                    f"سنعقد جلستنا الإلزامية لمتابعة منتصف الفصل مباشرة بعد الأسبوع السادس. وإذا كانت درجة أي مقرر أقل من 60% بحلول الأسبوع التاسع، سنقيم "
+                    f"خيار الانسحاب الرسمي من المقرر (W) قبل موعد الأسبوع العاشر، لضمان عدم ثبوت أي رسوب في سجلك مجدداً. "
+                    f"دعنا نوقع معاً اتفاقية التعافي الأكاديمي الرسمية اليوم."
+                )
+            }
+        ]
+        student_talking_points = [
+            "اطلب من د. ناصر توضيح أي المساقات المعادة يوفر أعلى أثر لرفع المعدل التراكمي فوق 65.0%.",
+            "صارح المرشد بأي صعوبات شخصية أو صحية أو في المواصلات لتعديل مواعيد الشعب الدراسية بما يناسب ظروفك.",
+            "استفسر عن مواعيد وقاعات مختبرات التقوية لمادتي الرياضيات والبرمجة بالقسم.",
+            "استوضح قواعد الموعد النهائي للانسحاب من المقررات (W) في الأسبوع العاشر للحماية من رسوب الغياب (WF).",
+            "احرص على تثبيت موعد متابعة منتصف الفصل (الأسبوع السابع) مع المرشد قبل مغادرة المكتب."
+        ]
+    else:
+        advisor_script = [
+            {
+                'phase': '1. Empathetic Welcome & Objective',
+                'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
+                'dialogue': (
+                    f"Hello {student.name}, thank you for meeting with me today. I called you in because your academic success "
+                    f"and your degree progression are our top priority in the Department. My purpose today is not to reprimand you, "
+                    f"but to work together on an evidence-based Academic Recovery Plan that will lift your GPA and protect your standing at Dhofar University."
+                )
+            },
+            {
+                'phase': '2. Academic Reality Check & Bylaws',
+                'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
+                'dialogue': (
+                    f"Let us examine your transcript with complete transparency. Your current cumulative GPA is **{gpa:.2f}%**, which is "
+                    f"**{deficit:.2f} points below our required 65.0% Good Standing threshold**, placing your status at **{st}**. "
+                    f"Under Dhofar University Article 14 and Article 22, this is a formal warning. Your course load is strictly capped at "
+                    f"**{cap} credit hours** this term. We cannot register for more than 12 credits, because another term below 65% will trigger severe probation escalation or dismissal."
+                )
+            },
+            {
+                'phase': '3. The Strategic Solution (DU Article 18 Grade Replacement)',
+                'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
+                'dialogue': (
+                    f"Here is why your situation is completely recoverable: Under DU Article 18, when you repeat courses you previously failed "
+                    f"—specifically **{crit_text}**—your new grade directly replaces the old failing mark in your cumulative GPA! "
+                    f"Mathematically, scoring a 75% in these repeated courses will inject an estimated **+{recovery['total_potential_gain']:.2f}% directly into your CGPA**, "
+                    f"lifting you right back into Good Standing. Repeating these courses gives you twice the leverage of taking new courses."
+                )
+            },
+            {
+                'phase': '4. Operational Routine & Department Tutoring',
+                'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
+                'dialogue': (
+                    f"To make this happen, we are locking your registration to these exact {audit['credit_cap']} credit hours. "
+                    f"You must commit to attending the Department tutorial labs for mathematics and programming every single week. "
+                    f"If you ever struggle with a concept or assignment, do not isolate yourself and do not wait for the final exam—come see me during office hours immediately."
+                )
+            },
+            {
+                'phase': '5. Milestones & The Action Plan Agreement',
+                'speaker': 'Academic Advisor (Dr. Nasser Tabook)',
+                'dialogue': (
+                    f"We will hold our mandatory midterm review right after Week 6. If any course grade is under 60% by Week 9, we will evaluate "
+                    f"the official Course Withdrawal (W) option before the Week 10 deadline, ensuring no failing grade ever blemishes your transcript again. "
+                    f"Let us sign this official Academic Recovery Agreement together today."
+                )
+            }
+        ]
+        student_talking_points = [
+            "Ask Dr. Nasser to verify which specific repeated course provides the highest point leverage toward lifting GPA above 65.0%.",
+            "Disclose any personal, health, or transportation hurdles openly so Dr. Nasser can tailor your class schedule times.",
+            "Inquire about the exact hours and room locations of the Department Mathematics and Programming tutorial labs.",
+            "Ask for clarification on the Week 10 official Course Withdrawal (W) deadline rules and how to protect against WF penalties.",
+            "Commit to scheduling the Week 7 Midterm Follow-up advising appointment before leaving the office."
+        ]
     
     return {
         'consultation_required': True,
@@ -701,12 +800,20 @@ def generate_advisor_consultation_guide(
     }
 
 
-def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
+def generate_student_advising_dossier(student_id: str, force_refresh: bool = False, lang: str = None) -> Dict[str, Any]:
     """
     Synthesize complete academic advising dossier with tailored course selection,
     probation compliance, and exact Dhofar University regulation citations.
     """
-    audit = audit_student_degree(student_id)
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+
+    audit = audit_student_degree(student_id, lang=lang)
     student = audit['student']
     cap = audit['credit_cap']
     st = student.status or 'Normal / Good Standing'
@@ -726,12 +833,14 @@ def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
             continue
         crd = cr['credits'] or 3
         if accumulated_credits + crd <= cap:
+            p_text = 'High (Mandatory Repeat)'
+            r_text = f"إعادة مساق لم يتم اجتيازه سابقاً ({cr['last_grade']}). ضروري جداً لرفع المعدل التراكمي وفتح المتطلبات السابقة بالخطة." if is_ar else f"Repeat course previously not passed ({cr['last_grade']}). Critical to lift CGPA and unlock future prerequisites."
             recommended_schedule.append({
                 'code': cr['code'],
                 'name': cr['name'],
                 'credits': crd,
-                'priority': 'High (Mandatory Repeat)',
-                'reason': f"Repeat course previously not passed ({cr['last_grade']}). Critical to lift CGPA and unlock future prerequisites."
+                'priority': p_text,
+                'reason': r_text
             })
             accumulated_credits += crd
             scheduled_codes.add(c_norm)
@@ -743,12 +852,14 @@ def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
             continue
         crd = rc['credits'] or 3
         if accumulated_credits + crd <= cap:
+            p_text = 'Standard Core Requirement'
+            r_text = f"متطلب {rc['category']}. المتطلبات السابقة مستوفاة بالكامل. موصى به للفصل القادم." if is_ar else f"Required {rc['category']}. All prerequisites satisfied. Recommended for {rc.get('term_recommended', 'immediate term')}."
             recommended_schedule.append({
                 'code': rc['code'],
                 'name': rc['name'],
                 'credits': crd,
-                'priority': 'Standard Core Requirement',
-                'reason': f"Required {rc['category']}. All prerequisites satisfied. Recommended for {rc.get('term_recommended', 'immediate term')}."
+                'priority': p_text,
+                'reason': r_text
             })
             accumulated_credits += crd
             scheduled_codes.add(c_norm)
@@ -761,12 +872,14 @@ def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
                 continue
             crd = lr['credits'] or 3
             if accumulated_credits + crd <= cap:
+                p_text = 'Recommended GPA Recovery'
+                r_text = f"إعادة لتحسين درجة D/D+ ({lr['grade']}). الدرجة الأعلى تستبدل المحاولة السابقة وفق المادة 18 من لوائح الجامعة." if is_ar else f"Repeat to replace D/D+ grade ({lr['grade']}). Highest grade replaces previous attempt under DU Article 18."
                 recommended_schedule.append({
                     'code': lr['code'],
                     'name': lr['name'],
                     'credits': crd,
-                    'priority': 'Recommended GPA Recovery',
-                    'reason': f"Repeat to replace D/D+ grade ({lr['grade']}). Highest grade replaces previous attempt under DU Article 18."
+                    'priority': p_text,
+                    'reason': r_text
                 })
                 accumulated_credits += crd
                 scheduled_codes.add(c_norm)
@@ -777,92 +890,169 @@ def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
     urgency_level = "CRITICAL" if ("Strict" in st or "Third" in st) else "HIGH" if "Second" in st else "MODERATE" if "First" in st else "NORMAL"
     
     analysis_paragraphs = []
-    if "Strict" in st:
-        analysis_paragraphs.append(
-            f"**Critical Standing Alert:** {student.name} is currently placed on **{st}** with a cumulative GPA of **{gpa:.2f}%**, "
-            f"which is **{audit['gpa_deficit']:.2f} points below** the Dhofar University required Good Standing threshold of 65.0%. "
-            f"Continued academic deficit places the student at immediate risk of dismissal. A strictly monitored 12-credit recovery schedule is mandatory."
-        )
-    elif "Second Probation" in st:
-        analysis_paragraphs.append(
-            f"**Second Academic Probation Warning:** {student.name} has maintained a cumulative GPA of **{gpa:.2f}%**, remaining in academic jeopardy. "
-            f"Under university bylaws, failing to raise the semester average above 65.0% this semester will trigger escalation to Strict Probation."
-        )
-    elif "First Probation" in st:
-        analysis_paragraphs.append(
-            f"**Academic Warning (First Probation):** {student.name}'s cumulative GPA is **{gpa:.2f}%**. "
-            f"Early intervention is critical to prevent cascading probation stages. Course load is restricted to 12 credit hours."
-        )
+    if is_ar:
+        if "Strict" in st:
+            analysis_paragraphs.append(
+                f"**تنبيه أكاديمي حرج:** الطالب {student.name} مدرج حالياً تحت **{st}** بمعدل تراكمي قدره **{gpa:.2f}%**، "
+                f"وهو **يقل بمقدار {audit['gpa_deficit']:.2f} نقطة** عن حد الوضع الأكاديمي السليم الإلزامي بجامعة ظفار (65.0%). "
+                f"استمرار هذا العجز يعرض الطالب لخطر الفصل الأكاديمي المباشر. الالتزام بجدول تعافٍ صارم محدد بـ 12 ساعة معتمدة أمر إلزامي."
+            )
+        elif "Second Probation" in st:
+            analysis_paragraphs.append(
+                f"**إنذار الملاحظة الأكاديمية الثانية:** الطالب {student.name} يبلغ معدله التراكمي **{gpa:.2f}%**، وما زال تحت الملاحظة الأكاديمية. "
+                f"وفقاً للوائح الجامعة، فإن عدم رفع المعدل الفصلي فوق 65.0% هذا الفصل سيؤدي للتصعيد إلى الملاحظة الأكاديمية الصارمة."
+            )
+        elif "First Probation" in st:
+            analysis_paragraphs.append(
+                f"**إنذار أكاديمي (الملاحظة الأولى):** المعدل التراكمي للطالب {student.name} هو **{gpa:.2f}%**. "
+                f"التدخل المبكر أمر حاسم لمنع التدرج إلى مستويات ملاحظة متقدمة. تم تقييد العبء الدراسي بـ 12 ساعة معتمدة."
+            )
+        else:
+            analysis_paragraphs.append(
+                f"**وضع أكاديمي سليم ومستوفٍ:** الطالب {student.name} في **{st}** بمعدل تراكمي قدره **{gpa:.2f}%** و **{audit['completed_credits']} ساعة معتمدة منجزة** "
+                f"({audit['completion_percentage']}% من إجمالي ساعات الخطة الدراسية لتخصص {audit['program_title']})."
+            )
+            
+        if audit['critical_repeats']:
+            crit_names = ', '.join(c['code'] for c in audit['critical_repeats'])
+            analysis_paragraphs.append(
+                f"**تحليل التعثر الأكاديمي:** لدى الطالب {len(audit['critical_repeats'])} مساق متعثر يتطلب الإعادة ({crit_names}). "
+                f"إعادة هذه المقررات تستبدل درجات الرسوب وفق المادة 18 وتسرع وتيرة التعافي نحو الوضع الأكاديمي السليم."
+            )
+            
+        if audit['blocked_courses']:
+            blocked_sample = ', '.join(c['code'] for c in audit['blocked_courses'][:4])
+            analysis_paragraphs.append(
+                f"**خارطة المتطلبات السابقة:** هناك {len(audit['blocked_courses'])} مقرراً بالخطة (تشمل {blocked_sample}) "
+                f"معلقة حالياً لحين اجتياز المتطلبات السابقة بنجاح."
+            )
     else:
-        analysis_paragraphs.append(
-            f"**Satisfactory Standing:** {student.name} is in **{st}** with a cumulative GPA of **{gpa:.2f}%** and **{audit['completed_credits']} earned credit hours** "
-            f"({audit['completion_percentage']}% of the {audit['program_title']} degree plan completed)."
-        )
-        
-    if audit['critical_repeats']:
-        crit_names = ', '.join(c['code'] for c in audit['critical_repeats'])
-        analysis_paragraphs.append(
-            f"**Deficiency Analysis:** The student has {len(audit['critical_repeats'])} unresolved course attempt(s) needing repeat ({crit_names}). "
-            f"Repeating these courses replaces the failing scores under Article 18 and accelerates GPA recovery towards Good Standing."
-        )
-        
-    if audit['blocked_courses']:
-        blocked_sample = ', '.join(c['code'] for c in audit['blocked_courses'][:4])
-        analysis_paragraphs.append(
-            f"**Prerequisite Roadmap:** {len(audit['blocked_courses'])} upcoming curriculum courses (including {blocked_sample}) "
-            f"are currently locked until prerequisite courses are successfully completed."
-        )
+        if "Strict" in st:
+            analysis_paragraphs.append(
+                f"**Critical Standing Alert:** {student.name} is currently placed on **{st}** with a cumulative GPA of **{gpa:.2f}%**, "
+                f"which is **{audit['gpa_deficit']:.2f} points below** the Dhofar University required Good Standing threshold of 65.0%. "
+                f"Continued academic deficit places the student at immediate risk of dismissal. A strictly monitored 12-credit recovery schedule is mandatory."
+            )
+        elif "Second Probation" in st:
+            analysis_paragraphs.append(
+                f"**Second Academic Probation Warning:** {student.name} has maintained a cumulative GPA of **{gpa:.2f}%**, remaining in academic jeopardy. "
+                f"Under university bylaws, failing to raise the semester average above 65.0% this semester will trigger escalation to Strict Probation."
+            )
+        elif "First Probation" in st:
+            analysis_paragraphs.append(
+                f"**Academic Warning (First Probation):** {student.name}'s cumulative GPA is **{gpa:.2f}%**. "
+                f"Early intervention is critical to prevent cascading probation stages. Course load is restricted to 12 credit hours."
+            )
+        else:
+            analysis_paragraphs.append(
+                f"**Satisfactory Standing:** {student.name} is in **{st}** with a cumulative GPA of **{gpa:.2f}%** and **{audit['completed_credits']} earned credit hours** "
+                f"({audit['completion_percentage']}% of the {audit['program_title']} degree plan completed)."
+            )
+            
+        if audit['critical_repeats']:
+            crit_names = ', '.join(c['code'] for c in audit['critical_repeats'])
+            analysis_paragraphs.append(
+                f"**Deficiency Analysis:** The student has {len(audit['critical_repeats'])} unresolved course attempt(s) needing repeat ({crit_names}). "
+                f"Repeating these courses replaces the failing scores under Article 18 and accelerates GPA recovery towards Good Standing."
+            )
+            
+        if audit['blocked_courses']:
+            blocked_sample = ', '.join(c['code'] for c in audit['blocked_courses'][:4])
+            analysis_paragraphs.append(
+                f"**Prerequisite Roadmap:** {len(audit['blocked_courses'])} upcoming curriculum courses (including {blocked_sample}) "
+                f"are currently locked until prerequisite courses are successfully completed."
+            )
 
-    # -----------------------------------------------------------------
+    # -------------------------------------------------------------
     # 3. Policy Citations & Bylaw Links
-    # -----------------------------------------------------------------
-    policy_citations = [
-        {
-            'bylaw': 'Article 14: Academic Probation & CGPA Thresholds',
-            'source_document': 'DU Undergraduate Academic Regulations',
-            'page': 1,
-            'summary': 'Undergraduate students must maintain a cumulative GPA >= 65.0%. Any student below 65.0% is placed on probation with mandatory advising.'
-        },
-        {
-            'bylaw': 'Article 18: Course Repetition & Grade Replacement',
-            'source_document': 'DU Undergraduate Academic Regulations',
-            'page': 1,
-            'summary': 'Students may repeat courses with F, D, or D+. The highest grade achieved is counted in the cumulative GPA calculation.'
-        },
-        {
-            'bylaw': 'Article 22: Course Registration Limits & Overloads',
-            'source_document': 'DU Undergraduate Academic Regulations',
-            'page': 1,
-            'summary': f"Students on probation are strictly capped at 12 credit hours per semester. Standard full-time load is 15-18 credit hours."
-        }
-    ]
-    
-    if audit['bridge_info']:
-        policy_citations.append({
-            'bylaw': 'Section 3: Bridge to Bachelor Degree Requirements',
-            'source_document': 'Requirements for Studying Computer Science Diploma',
-            'page': 1,
-            'summary': 'Diploma graduates must achieve a CGPA >= 75.0% to qualify for direct articulation into B.Sc. in Computer Science, Cybersecurity, or Data Science.'
-        })
-
-    # -----------------------------------------------------------------
-    # 4. Action Plan & Follow-up Schedule
-    # -----------------------------------------------------------------
-    action_items = [
-        f"Register exactly {accumulated_credits} credit hours (strictly capped at {cap} credit hours).",
-        "Sign the official Academic Recovery Plan agreement with the Academic Advisor before add/drop closes.",
-    ]
-    if audit['is_under_probation']:
-        action_items.append("Attend mandatory bi-weekly academic progress reviews with Academic Advisor Dr. Nasser Tabook.")
-        action_items.append("Utilize Department tutoring labs for programming, mathematics, and digital logic courses.")
-        action_items.append("Submit midterm progress updates prior to the official course withdrawal (W) deadline (Week 10).")
+    # -------------------------------------------------------------
+    if is_ar:
+        policy_citations = [
+            {
+                'bylaw': 'المادة 14: الملاحظة الأكاديمية وحدود المعدل التراكمي',
+                'source_document': 'لوائح الدراسات الجامعية الأولى بجامعة ظفار',
+                'page': 1,
+                'summary': 'يجب على طلاب البكالوريوس والدبلوم الحفاظ على معدل تراكمي لا يقل عن 65.0%. يوضع الطالب تحت الملاحظة الأكاديمية وتلزم استشارته الإرشادية فور انخفاضه عن ذلك.'
+            },
+            {
+                'bylaw': 'المادة 18: إعادة المقررات واستبدال الدرجة',
+                'source_document': 'لوائح الدراسات الجامعية الأولى بجامعة ظفار',
+                'page': 1,
+                'summary': 'يجوز للطالب إعادة المساقات الحاصل فيها على F أو D أو D+. وتحسب الدرجة الأعلى في حساب المعدل التراكمي.'
+            },
+            {
+                'bylaw': 'المادة 22: سقف تسجيل المقررات والعبء الإضافي',
+                'source_document': 'لوائح الدراسات الجامعية الأولى بجامعة ظفار',
+                'page': 1,
+                'summary': f"يحدد سقف الساعات للطلاب الواقعين تحت الملاحظة بـ 12 ساعة معتمدة كحد أقصى لكل فصل دراسي. والعبء الاعتيادي هو 15-18 ساعة."
+            }
+        ]
+        if audit.get('bridge_info'):
+            policy_citations.append({
+                'bylaw': 'البند 3: شروط الانتقال التجسيري من الدبلوم إلى البكالوريوس',
+                'source_document': 'متطلبات دراسة دبلوم علوم الحاسوب بجامعة ظفار',
+                'page': 1,
+                'summary': 'يشترط لخريجي الدبلوم الحصول على معدل تراكمي >= 75.0% للتأهل والانتقال المباشر لبرامج البكالوريوس في علوم الحاسوب أو الأمن السيبراني أو علم البيانات.'
+            })
     else:
-        action_items.append("Maintain semester GPA >= 70.0% to ensure on-time graduation trajectory.")
+        policy_citations = [
+            {
+                'bylaw': 'Article 14: Academic Probation & CGPA Thresholds',
+                'source_document': 'DU Undergraduate Academic Regulations',
+                'page': 1,
+                'summary': 'Undergraduate students must maintain a cumulative GPA >= 65.0%. Any student below 65.0% is placed on probation with mandatory advising.'
+            },
+            {
+                'bylaw': 'Article 18: Course Repetition & Grade Replacement',
+                'source_document': 'DU Undergraduate Academic Regulations',
+                'page': 1,
+                'summary': 'Students may repeat courses with F, D, or D+. The highest grade achieved is counted in the cumulative GPA calculation.'
+            },
+            {
+                'bylaw': 'Article 22: Course Registration Limits & Overloads',
+                'source_document': 'DU Undergraduate Academic Regulations',
+                'page': 1,
+                'summary': f"Students on probation are strictly capped at 12 credit hours per semester. Standard full-time load is 15-18 credit hours."
+            }
+        ]
+        if audit.get('bridge_info'):
+            policy_citations.append({
+                'bylaw': 'Section 3: Bridge to Bachelor Degree Requirements',
+                'source_document': 'Requirements for Studying Computer Science Diploma',
+                'page': 1,
+                'summary': 'Diploma graduates must achieve a CGPA >= 75.0% to qualify for direct articulation into B.Sc. in Computer Science, Cybersecurity, or Data Science.'
+            })
+
+    # -------------------------------------------------------------
+    # 4. Action Plan & Follow-up Schedule
+    # -------------------------------------------------------------
+    if is_ar:
+        action_items = [
+            f"تسجيل {accumulated_credits} ساعة معتمدة بالتمام والكمال (سقف إلزامي بـ {cap} ساعة كحد أقصى).",
+            "توقيع اتفاقية خطة التعافي الأكاديمي الرسمية مع المرشد الأكاديمي قبل إغلاق فترة الحذف والإضافة.",
+        ]
+        if audit['is_under_probation']:
+            action_items.append("حضور جلسات المتابعة الإرشادية الدورية الإلزامية كل أسبوعين مع المرشد د. ناصر تبوك.")
+            action_items.append("الاستفادة من مختبرات التقوية بالقسم لمقررات البرمجة والرياضيات والتصميم المنطقي.")
+            action_items.append("تقديم تقرير درجات منتصف الفصل قبل الموعد النهائي للانسحاب من المقررات (W) في الأسبوع العاشر.")
+        else:
+            action_items.append("الحفاظ على معدل فصلي لا يقل عن 70.0% لضمان التخرج في الموعد المخطط له.")
+    else:
+        action_items = [
+            f"Register exactly {accumulated_credits} credit hours (strictly capped at {cap} credit hours).",
+            "Sign the official Academic Recovery Plan agreement with the Academic Advisor before add/drop closes.",
+        ]
+        if audit['is_under_probation']:
+            action_items.append("Attend mandatory bi-weekly academic progress reviews with Academic Advisor Dr. Nasser Tabook.")
+            action_items.append("Utilize Department tutoring labs for programming, mathematics, and digital logic courses.")
+            action_items.append("Submit midterm progress updates prior to the official course withdrawal (W) deadline (Week 10).")
+        else:
+            action_items.append("Maintain semester GPA >= 70.0% to ensure on-time graduation trajectory.")
 
     # Calculate progression, recovery blueprint, and advisor consultation guide
-    progression = analyze_semester_progression(student_id)
-    recovery_plan = calculate_gpa_recovery_path(audit, student)
-    consultation_guide = generate_advisor_consultation_guide(student, audit, progression, recovery_plan)
+    progression = analyze_semester_progression(student_id, lang=lang)
+    recovery_plan = calculate_gpa_recovery_path(audit, student, lang=lang)
+    consultation_guide = generate_advisor_consultation_guide(student, audit, progression, recovery_plan, lang=lang)
 
     # Cross-reference recommended courses with live Section Schedule
     try:
@@ -875,13 +1065,15 @@ def generate_student_advising_dossier(student_id: str) -> Dict[str, Any]:
         'audit': audit,
         'progression': progression,
         'recovery_plan': recovery_plan,
+        'recovery_path': recovery_plan,
         'consultation_guide': consultation_guide,
         'urgency_level': urgency_level,
         'analysis_summary': analysis_paragraphs,
+        'executive_analysis': {'situation_summary': analysis_paragraphs},
         'recommended_schedule': matched_schedule,
         'total_recommended_credits': accumulated_credits,
         'policy_citations': policy_citations,
         'action_items': action_items,
         'advisor_name': student.advisor or 'Dr. Nasser Tabook',
-        'generated_at': 'Academic Year 2025/2026'
+        'generated_at': 'العام الأكاديمي 2026/2027' if is_ar else 'Academic Year 2025/2026'
     }

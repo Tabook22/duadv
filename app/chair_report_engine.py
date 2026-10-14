@@ -3,25 +3,42 @@ Chairperson Advising Report Engine for Dhofar University.
 Generates formal, executive academic briefing letters and comprehensive intervention dossiers
 from the Academic Advisor (Dr. Nasser Tabook) to the Chairperson of the Department of Computer Science
 regarding advisees on First, Second, Third/Strict Academic Probation and students at risk.
+Fully supports both English and professional academic Arabic.
 """
 
 import time
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from app.utils import load_students_from_file
 from app.advising_engine import audit_student_degree
 
-_REPORT_CACHE: Dict[str, Any] = {'data': None, 'timestamp': 0.0}
+_REPORT_CACHE: Dict[str, Dict[str, Any]] = {}
 
-def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027", force_refresh: bool = False) -> Dict[str, Any]:
+def generate_chair_advising_report(
+    academic_term: str = "Academic Year 2026-2027",
+    force_refresh: bool = False,
+    lang: str = None
+) -> Dict[str, Any]:
     """
     Synthesize complete, official academic briefing and intervention dossier
     addressed from Dr. Nasser Tabook to the Chair of the Department of Computer Science.
-    Cached for 120 seconds for instant page loads.
+    Cached for 120 seconds per language for instant page loads.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    else:
+        lang = lang.lower()
+    is_ar = (lang == 'ar')
+
     now_ts = time.time()
-    if not force_refresh and _REPORT_CACHE['data'] is not None and (now_ts - _REPORT_CACHE['timestamp'] < 120):
-        return _REPORT_CACHE['data']
+    cache_key = f"{academic_term}_{lang}"
+    cached = _REPORT_CACHE.get(cache_key)
+    if not force_refresh and cached and (now_ts - cached.get('timestamp', 0) < 120):
+        return cached['data']
 
     students = load_students_from_file()
     total_advisees = len(students)
@@ -32,7 +49,11 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
     low_gpa_warning: List[Dict[str, Any]] = []
     
     # Track program distribution and gatekeeper course bottlenecks
-    program_counts = {'Diploma in Computer Science': 0, 'Bachelor of Science in Computer Science': 0, 'Other': 0}
+    program_counts = {
+        'Diploma in Computer Science': 0,
+        'Bachelor of Science in Computer Science': 0,
+        'Other': 0
+    }
     bottleneck_courses: Dict[str, int] = {}
     
     for s in students:
@@ -47,9 +68,9 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
         if not (is_strict or is_second or is_first or is_low_gpa):
             continue
             
-        # Single audit call per at-risk student for speed
+        # Single audit call per at-risk student with language support
         try:
-            audit = audit_student_degree(s.id)
+            audit = audit_student_degree(s.id, lang=lang)
         except Exception:
             audit = {
                 'current_gpa': cgpa or 0.0,
@@ -64,12 +85,22 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
             }
             
         trend = 'Improving' if (s.semester_gpa and cgpa and s.semester_gpa > cgpa) else ('Declining' if (s.semester_gpa and cgpa and s.semester_gpa < cgpa) else 'Stable')
-        if is_strict:
-            archetype_info = {'title': 'The High-Risk Stagnator', 'badge': 'danger', 'icon': 'fas fa-shield-virus'}
-        elif is_second:
-            archetype_info = {'title': 'The Academic Warning Stagnator', 'badge': 'warning text-dark', 'icon': 'fas fa-exclamation-triangle'}
+        
+        if is_ar:
+            if is_strict:
+                archetype_info = {'title': 'المتعثر عالي الخطورة', 'badge': 'danger', 'icon': 'fas fa-shield-virus'}
+            elif is_second:
+                archetype_info = {'title': 'المتعثر في مرحلة الإنذار الأكاديمي', 'badge': 'warning text-dark', 'icon': 'fas fa-exclamation-triangle'}
+            else:
+                ar_title = 'المكافح لاستعادة وضعه الأكاديمي' if trend == 'Improving' else 'المتدرب في مرحلة الإنذار المبكر'
+                archetype_info = {'title': ar_title, 'badge': 'warning text-dark', 'icon': 'fas fa-bell'}
         else:
-            archetype_info = {'title': 'The Recovery Fighter' if trend == 'Improving' else 'The Early-Warning Trainee', 'badge': 'warning text-dark', 'icon': 'fas fa-bell'}
+            if is_strict:
+                archetype_info = {'title': 'The High-Risk Stagnator', 'badge': 'danger', 'icon': 'fas fa-shield-virus'}
+            elif is_second:
+                archetype_info = {'title': 'The Academic Warning Stagnator', 'badge': 'warning text-dark', 'icon': 'fas fa-exclamation-triangle'}
+            else:
+                archetype_info = {'title': 'The Recovery Fighter' if trend == 'Improving' else 'The Early-Warning Trainee', 'badge': 'warning text-dark', 'icon': 'fas fa-bell'}
 
             
         # Tally bottlenecks
@@ -82,10 +113,10 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
         prog_clean = s.program or 'Computer Science'
         if 'Diploma' in prog_clean:
             program_counts['Diploma in Computer Science'] += 1
-            degree_label = 'Diploma in Computer Science'
+            degree_label = 'دبلوم في علوم الحاسوب' if is_ar else 'Diploma in Computer Science'
         elif 'Bachelor' in prog_clean:
             program_counts['Bachelor of Science in Computer Science'] += 1
-            degree_label = 'Bachelor of Science in Computer Science'
+            degree_label = 'بكالوريوس العلوم في علوم الحاسوب' if is_ar else 'Bachelor of Science in Computer Science'
         else:
             program_counts['Other'] += 1
             degree_label = prog_clean
@@ -96,26 +127,48 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
         rescue_actions = []
         chair_intervention = ""
         
-        if critical_codes:
-            primary_crit = ", ".join(critical_codes[:2])
-            rescue_actions.append(f"Immediate repeat registration for gatekeeper course(s): {primary_crit} (DU Article 18 Grade Replacement).")
-        else:
-            rescue_actions.append("Prioritize lower-level curriculum requirements before advancing to upper-division electives.")
+        if is_ar:
+            if critical_codes:
+                primary_crit = ", ".join(critical_codes[:2])
+                rescue_actions.append(f"التسجيل الفوري لإعادة مساقات عنق الزجاجة: {primary_crit} (استبدال الدرجة وفق المادة 18 من لوائح جامعة ظفار).")
+            else:
+                rescue_actions.append("إعطاء الأولوية لمتطلبات الخطة الدراسية الأساسية قبل الانتقال للمقررات الاختيارية المتقدمة.")
+                
+            if audit.get('credit_cap') == 12:
+                rescue_actions.append("الالتزام الصارم بسقف 12 ساعة معتمدة (المادتين 14 و22 من لوائح جامعة ظفار) لمنع العبء الدراسي الزائد.")
+                chair_intervention = "إنفاذ سقف 12 ساعة معتمدة؛ ورفض طلبات الاستثناء لتجاوز الساعات حتى يصل المعدل التراكمي إلى 65.0% فما فوق."
+            else:
+                rescue_actions.append("تحديد الجدول الدراسي بين 12-14 ساعة معتمدة بمزيج متوازن بين المساقات النظرية والمختبرات.")
+                chair_intervention = "متابعة الالتزام بالخطة الدراسية خلال فترة الحذف والإضافة."
+                
+            rescue_actions.append("حضور إلزامي من 4-6 ساعات أسبوعياً في مختبرات الدروس الإرشادية بالقسم (الرياضيات / البرمجة).")
+            rescue_actions.append("إجراء تدقيق ومراجعة لدرجات منتصف الفصل بالأسبوع السابع؛ وتقييم الانسحاب من المقرر (W) وفق المادة 24 قبل نهاية الأسبوع العاشر إذا بقيت الدرجات دون 60%.")
             
-        if audit.get('credit_cap') == 12:
-            rescue_actions.append("Strictly enforce the 12 credit hour ceiling (DU Article 14 & 22) to prevent course overloads.")
-            chair_intervention = "Enforce 12-credit cap; reject elective overload petitions until CGPA >= 65.0%."
+            if is_strict:
+                chair_intervention += " إجراء حرج: يتطلب توجيه خطاب إنذار أكاديمي رسمي من القسم وتوقيع اتفاقية متابعة مع المرشد."
+            elif is_second:
+                chair_intervention += " أولوية قصوى: مراجعة سلاسل المتطلبات السابقة، وضمان حجز مقعد في شعبة المساق المعاد."
         else:
-            rescue_actions.append("Cap schedule at 12-14 credits with balanced theoretical and laboratory workload.")
-            chair_intervention = "Monitor study plan adherence during Add/Drop."
+            if critical_codes:
+                primary_crit = ", ".join(critical_codes[:2])
+                rescue_actions.append(f"Immediate repeat registration for gatekeeper course(s): {primary_crit} (DU Article 18 Grade Replacement).")
+            else:
+                rescue_actions.append("Prioritize lower-level curriculum requirements before advancing to upper-division electives.")
+                
+            if audit.get('credit_cap') == 12:
+                rescue_actions.append("Strictly enforce the 12 credit hour ceiling (DU Article 14 & 22) to prevent course overloads.")
+                chair_intervention = "Enforce 12-credit cap; reject elective overload petitions until CGPA >= 65.0%."
+            else:
+                rescue_actions.append("Cap schedule at 12-14 credits with balanced theoretical and laboratory workload.")
+                chair_intervention = "Monitor study plan adherence during Add/Drop."
+                
+            rescue_actions.append("Mandatory 4-6 hours/week Department tutorial lab attendance (Calculus/Programming).")
+            rescue_actions.append("Conduct Week 7 midterm audit; evaluate Article 24 Course Withdrawal (W) prior to Week 10 deadline if marks remain below 60%.")
             
-        rescue_actions.append("Mandatory 4-6 hours/week Department tutorial lab attendance (Calculus/Programming).")
-        rescue_actions.append("Conduct Week 7 midterm audit; evaluate Article 24 Course Withdrawal (W) prior to Week 10 deadline if marks remain below 60%.")
-        
-        if is_strict:
-            chair_intervention += " CRITICAL: Requires formal Department warning letter and advisor check-in agreement signed."
-        elif is_second:
-            chair_intervention += " HIGH: Review prerequisite chains; ensure seat reserved in repeated course section."
+            if is_strict:
+                chair_intervention += " CRITICAL: Requires formal Department warning letter and advisor check-in agreement signed."
+            elif is_second:
+                chair_intervention += " HIGH: Review prerequisite chains; ensure seat reserved in repeated course section."
 
         record = {
             'student': s,
@@ -160,13 +213,14 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
     
     now = datetime.now()
     ref_number = f"DU/CAAS/CS/ADV-{now.year}-{now.strftime('%m%d')}-01"
-    report_date = now.strftime("%B %d, %Y")
+    report_date = now.strftime("%Y/%m/%d") if is_ar else now.strftime("%B %d, %Y")
+    academic_term_disp = "العام الأكاديمي 2026-2027" if (is_ar and "2026" in academic_term) else academic_term
     
     # Build text version of the official letter for copy/pasting
     letter_text = _build_plain_text_letter(
         ref_number=ref_number,
         report_date=report_date,
-        academic_term=academic_term,
+        academic_term=academic_term_disp,
         total_advisees=total_advisees,
         total_at_risk=total_at_risk,
         at_risk_percentage=at_risk_percentage,
@@ -175,20 +229,38 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
         strict_probation=strict_probation,
         second_probation=second_probation,
         first_probation=first_probation,
-        low_gpa_warning=low_gpa_warning
+        low_gpa_warning=low_gpa_warning,
+        lang=lang
     )
     
+    if is_ar:
+        advisor_name = 'د. ناصر طمطيم تبوك'
+        advisor_title = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
+        department_name = 'قسم علوم الحاسوب'
+        college_name = 'كلية الآداب والعلوم التطبيقية'
+        university_name = 'جامعة ظفار'
+        addressee_title = 'رئيس قسم علوم الحاسوب المحترم'
+        subject = f'تقرير وإيجاز إرشادي رسمي: ملف الطلاب تحت الملاحظة الأكاديمية وفئة الخطر الأكاديمي ({total_at_risk} طالباً - مطلوب اتخاذ إجراء)'
+    else:
+        advisor_name = 'Dr. Nasser Tabook'
+        advisor_title = 'Assistant Professor of Computer Science & Academic Advisor'
+        department_name = 'Department of Computer Science'
+        college_name = 'College of Arts and Applied Sciences'
+        university_name = 'Dhofar University'
+        addressee_title = 'Chairperson, Department of Computer Science'
+        subject = f'OFFICIAL ADVISING BRIEFING & INTERVENTION DOSSIER: STUDENTS UNDER ACADEMIC PROBATION & AT-RISK COHORT ({total_at_risk} ADVISEES - ACTION REQUIRED)'
+
     result = {
         'ref_number': ref_number,
         'report_date': report_date,
-        'academic_term': academic_term,
-        'advisor_name': 'Dr. Nasser Tabook',
-        'advisor_title': 'Assistant Professor of Computer Science & Academic Advisor',
-        'department_name': 'Department of Computer Science',
-        'college_name': 'College of Arts and Applied Sciences',
-        'university_name': 'Dhofar University',
-        'addressee_title': 'Chairperson, Department of Computer Science',
-        'subject': 'OFFICIAL ADVISING BRIEFING & INTERVENTION DOSSIER: STUDENTS UNDER ACADEMIC PROBATION & AT-RISK COHORT (ACTION REQUIRED)',
+        'academic_term': academic_term_disp,
+        'advisor_name': advisor_name,
+        'advisor_title': advisor_title,
+        'department_name': department_name,
+        'college_name': college_name,
+        'university_name': university_name,
+        'addressee_title': addressee_title,
+        'subject': subject,
         'total_advisees': total_advisees,
         'total_at_risk': total_at_risk,
         'at_risk_percentage': at_risk_percentage,
@@ -208,8 +280,10 @@ def generate_chair_advising_report(academic_term: str = "Academic Year 2026-2027
         'letter_text': letter_text
     }
     
-    _REPORT_CACHE['data'] = result
-    _REPORT_CACHE['timestamp'] = now_ts
+    _REPORT_CACHE[cache_key] = {
+        'data': result,
+        'timestamp': now_ts
+    }
     return result
 
 
@@ -226,10 +300,127 @@ def _build_plain_text_letter(
     strict_probation: List[Dict[str, Any]],
     second_probation: List[Dict[str, Any]],
     first_probation: List[Dict[str, Any]],
-    low_gpa_warning: List[Dict[str, Any]]
+    low_gpa_warning: List[Dict[str, Any]],
+    lang: str = 'en'
 ) -> str:
     """Generate cleanly formatted official letter text ready for copying into email or Word"""
     lines = []
+    is_ar = (lang == 'ar')
+    
+    if is_ar:
+        lines.append("=" * 80)
+        lines.append("جامعة ظفار | كلية الآداب والعلوم التطبيقية")
+        lines.append("قسم علوم الحاسوب — وحدة الإرشاد الأكاديمي")
+        lines.append("=" * 80)
+        lines.append(f"المرجع: {ref_number}")
+        lines.append(f"التاريخ: {report_date}")
+        lines.append(f"الفصل الأكاديمي: {academic_term}")
+        lines.append("")
+        lines.append("إلى:     رئيس قسم علوم الحاسوب المحترم")
+        lines.append("من:     د. ناصر طمطيم تبوك، أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي")
+        lines.append(f"الموضوع: إيجاز إرشادي رسمي وخطة التدخل: طلاب تحت الملاحظة الأكاديمية ({total_at_risk} طالباً)")
+        lines.append("-" * 80)
+        lines.append("")
+        lines.append("السيد رئيس القسم المحترم،")
+        lines.append("السلام عليكم ورحمة الله وبركاته، وبعد:")
+        lines.append("")
+        lines.append("أرفع إلى عنايتكم الكريمة التقرير التشخيصي والإيجاز الإرشادي وخطة التدخل الأكاديمي الشاملة لكافة الطلبة الواقعين تحت إرشادي الأكاديمي والمدرجين حالياً تحت طائلة الملاحظة الأكاديمية أو فئة الخطر الأكاديمي في جامعة ظفار.")
+        lines.append("")
+        lines.append("١. نظرة عامة وملخص المخاطر الأكاديمية للدفعة")
+        lines.append("=" * 45)
+        lines.append(f"• إجمالي الطلبة تحت الإرشاد:          {total_advisees} طالباً")
+        lines.append(f"• إجمالي الطلبة في دائرة الخطر:         {total_at_risk} طالباً ({at_risk_percentage}% من الدفعة)")
+        lines.append(f"• الفئة (أ) - الملاحظة الصارمة / الثالثة (خطر الفصل الوشيك - المادة 14): {len(strict_probation)} طالباً")
+        lines.append(f"• الفئة (ب) - الملاحظة الثانية (مرحلة الإنذار المتصاعد):                  {len(second_probation)} طالباً")
+        lines.append(f"• الفئة (ج) - الملاحظة الأولى (مرحلة الإنذار والتدخل المبكر):               {len(first_probation)} طالباً")
+        if low_gpa_warning:
+            lines.append(f"• الفئة (د) - إنذار ما قبل الملاحظة (المعدل التراكمي < 65.0%):            {len(low_gpa_warning)} طالباً")
+        lines.append("")
+        lines.append(f"توزيع البرامج الدراسية: دبلوم في علوم الحاسوب ({program_counts.get('Diploma in Computer Science', 0)}) | بكالوريوس علوم الحاسوب ({program_counts.get('Bachelor of Science in Computer Science', 0)})")
+        if top_bottlenecks:
+            b_str = ", ".join(f"{code} ({cnt} طلاب)" for code, cnt in top_bottlenecks)
+            lines.append(f"المساقات الأكثر تعثراً (عنق الزجاجة): {b_str}")
+        lines.append("")
+        lines.append("٢. السجل المفصل لطلبة دائرة الخطر وخطط الإنقاذ المقررة")
+        lines.append("=" * 80)
+
+        # Section A: Strict Probation
+        if strict_probation:
+            lines.append("")
+            lines.append(f"الفئة (أ): الملاحظة الأكاديمية الصارمة / الثالثة — خطر الفصل الأكاديمي الوشيك ({len(strict_probation)} طالباً)")
+            lines.append("تخضع لأحكام المادتين 14 و22 من لوائح جامعة ظفار (إنفاذ سقف صارم 12 ساعة معتمدة)")
+            lines.append("-" * 80)
+            for idx, rec in enumerate(strict_probation, 1):
+                s = rec['student']
+                lines.append(f"{idx}. {s.name} (الرقم الجامعي: {s.id})")
+                lines.append(f"   • الخطة الدراسية:     {rec['degree_plan']}")
+                lines.append(f"   • الوضع الأكاديمي:   {s.status}")
+                lines.append(f"   • المعدل التراكمي:    {rec['cgpa']:.2f}% (عجز: {rec['gpa_deficit']:.2f} نقطة دون 65.0%)")
+                lines.append(f"   • المعدل الفصلي:     {rec['semester_gpa']:.2f}%" if rec['semester_gpa'] is not None else "   • المعدل الفصلي:     غير متوفر")
+                lines.append(f"   • الساعات المنجزة:    {rec['completed_credits']} / {rec['total_credits']} ساعة")
+                if rec['critical_codes']:
+                    lines.append(f"   • مقررات عنق الزجاجة: {', '.join(rec['critical_codes'])}")
+                lines.append("   • خطة الإنقاذ المحددة:")
+                for act in rec['rescue_actions']:
+                    lines.append(f"     - {act}")
+                lines.append(f"   • الإجراء المطلوب من رئيس القسم: {rec['chair_intervention']}")
+                lines.append("")
+
+        # Section B: Second Probation
+        if second_probation:
+            lines.append("")
+            lines.append(f"الفئة (ب): الملاحظة الأكاديمية الثانية — خطر متصاعد ({len(second_probation)} طالباً)")
+            lines.append("-" * 80)
+            for idx, rec in enumerate(second_probation, 1):
+                s = rec['student']
+                lines.append(f"{idx}. {s.name} (الرقم الجامعي: {s.id})")
+                lines.append(f"   • الخطة الدراسية:     {rec['degree_plan']}")
+                lines.append(f"   • الوضع الأكاديمي:   {s.status}")
+                lines.append(f"   • المعدل التراكمي:    {rec['cgpa']:.2f}% (عجز: {rec['gpa_deficit']:.2f} نقطة)")
+                if rec['critical_codes']:
+                    lines.append(f"   • مقررات عنق الزجاجة: {', '.join(rec['critical_codes'])}")
+                lines.append("   • خطة الإنقاذ المحددة:")
+                for act in rec['rescue_actions']:
+                    lines.append(f"     - {act}")
+                lines.append(f"   • الإجراء المطلوب من رئيس القسم: {rec['chair_intervention']}")
+                lines.append("")
+
+        # Section C: First Probation
+        if first_probation:
+            lines.append("")
+            lines.append(f"الفئة (ج): الملاحظة الأكاديمية الأولى — إنذار وتدخل مبكر ({len(first_probation)} طالباً)")
+            lines.append("-" * 80)
+            for idx, rec in enumerate(first_probation, 1):
+                s = rec['student']
+                lines.append(f"{idx}. {s.name} (الرقم الجامعي: {s.id})")
+                lines.append(f"   • الخطة الدراسية:     {rec['degree_plan']}")
+                lines.append(f"   • الوضع الأكاديمي:   {s.status}")
+                lines.append(f"   • المعدل التراكمي:    {rec['cgpa']:.2f}% (عجز: {rec['gpa_deficit']:.2f} نقطة)")
+                if rec['critical_codes']:
+                    lines.append(f"   • مقررات عنق الزجاجة: {', '.join(rec['critical_codes'])}")
+                lines.append("   • خطة الإنقاذ المحددة:")
+                for act in rec['rescue_actions']:
+                    lines.append(f"     - {act}")
+                lines.append(f"   • الإجراء المطلوب من رئيس القسم: {rec['chair_intervention']}")
+                lines.append("")
+
+        lines.append("٣. التوصيات المؤسسية والإجرائية المرفوعة لرئيس القسم")
+        lines.append("=" * 65)
+        lines.append("لتصحيح المسار الأكاديمي ورفع المعدل التراكمي لهؤلاء الطلاب، أوصي باتخاذ الإجراءات المؤسسية التالية بالقسم:")
+        lines.append("١. الإنفاذ الصارم لسقف 12 ساعة معتمدة (المادة 22): توجيه القبول والتسجيل والمرشدين لرفض أي طلبات لتجاوز الساعات للطلاب الواقعين تحت الملاحظة.")
+        lines.append("٢. أولوية حجز المقاعد لإعادة مقررات المتطلبات السابقة: ضمان حجز مقاعد في شعب المقررات الأساسية (خاصة MATH 199 وCMPS 110N وCMPS 180) للاستفادة القصوى من ميزة استبدال الدرجة وفق المادة 18.")
+        lines.append("٣. تفعيل مختبرات التقوية بالقسم: إلزام مدرسي المختبرات بتنظيم ساعات تقوية أسبوعية ورفع كشوف الحضور أسبوعياً للمرشدين.")
+        lines.append("٤. التدقيق الأكاديمي لمنتصف الفصل وتفعيل شبكة أمان المادة 24: إجراء مراجعة دورية بعد الأسبوع السادس، وتوجيه الطلاب المتعثرين قبل الأسبوع العاشر لاتخاذ خيار الانسحاب من المقرر (W) بموجب المادة 24 لتفادي الرسوب والفصل.")
+        lines.append("")
+        lines.append("وتفضلوا بقبول فائق الاحترام والتقدير،،")
+        lines.append("")
+        lines.append("د. ناصر طمطيم تبوك")
+        lines.append("أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي")
+        lines.append("قسم علوم الحاسوب | كلية الآداب والعلوم التطبيقية | جامعة ظفار")
+        lines.append("=" * 80)
+        return "\n".join(lines)
+
+    # English version
     lines.append("=" * 80)
     lines.append("DHOFAR UNIVERSITY | COLLEGE OF ARTS AND APPLIED SCIENCES")
     lines.append("DEPARTMENT OF COMPUTER SCIENCE — ACADEMIC ADVISING UNIT")

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Advising Report - Students at Risk | Dhofar University</title>
+    <title>{{ 'تقرير الإرشاد الأكاديمي - الطلبة تحت الملاحظة | جامعة ظفار' if is_rtl else 'Academic Advising Report - Students at Risk | Dhofar University' }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --du-navy: #1e3a8a;
@@ -18,6 +21,16 @@
             background-color: #f8fafc;
             color: #1e293b;
             font-size: 13px;
+        }
+
+        html[dir="rtl"], html[dir="rtl"] body {
+            font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+        }
+
+        .font-monospace {
+            font-family: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            direction: ltr !important;
+            display: inline-block;
         }
 
         .report-page {
@@ -89,11 +102,19 @@
             color: #991b1b;
             border-left: 5px solid #dc2626;
         }
+        html[dir="rtl"] .sec-strict {
+            border-left: none;
+            border-right: 5px solid #dc2626;
+        }
 
         .sec-second {
             background: #ffedd5;
             color: #9a3412;
             border-left: 5px solid #ea580c;
+        }
+        html[dir="rtl"] .sec-second {
+            border-left: none;
+            border-right: 5px solid #ea580c;
         }
 
         .sec-first {
@@ -101,11 +122,19 @@
             color: #92400e;
             border-left: 5px solid #d97706;
         }
+        html[dir="rtl"] .sec-first {
+            border-left: none;
+            border-right: 5px solid #d97706;
+        }
 
         .sec-warning {
             background: #f1f5f9;
             color: #334155;
             border-left: 5px solid #64748b;
+        }
+        html[dir="rtl"] .sec-warning {
+            border-left: none;
+            border-right: 5px solid #64748b;
         }
 
         .table-custom {
@@ -145,12 +174,6 @@
             margin-top: 50px;
             padding-top: 25px;
             border-top: 1px dashed #cbd5e1;
-        }
-
-        .sign-line {
-            border-bottom: 1px solid #000;
-            height: 40px;
-            margin-bottom: 6px;
         }
 
         .no-print-bar {
@@ -204,24 +227,23 @@
     <div class="no-print-bar px-3">
         <div>
             <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-secondary btn-sm me-2">
-                <i class="fas fa-arrow-left me-1"></i> Back to Students at Risk
+                <i class="fas fa-arrow-left me-1"></i> {{ 'العودة إلى الطلبة تحت الملاحظة' if is_rtl else 'Back to Students at Risk' }}
             </a>
             <a href="{{ url_for('main.students') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-users me-1"></i> All Advisees
+                <i class="fas fa-users me-1"></i> {{ 'كافة الطلبة المُرشَدين' if is_rtl else 'All Advisees' }}
             </a>
         </div>
         <div>
             <button onclick="window.print()" class="btn btn-primary btn-sm me-2">
-                <i class="fas fa-print me-1"></i> Print Official Report
+                <i class="fas fa-print me-1"></i> {{ 'طباعة التقرير الرسمي' if is_rtl else 'Print Official Report' }}
             </button>
             <a href="{{ url_for('main.students_at_risk_report_excel') }}" class="btn btn-success btn-sm me-2">
-                <i class="fas fa-file-excel me-1"></i> Download Excel (.xlsx)
+                <i class="fas fa-file-excel me-1"></i> {{ 'تنزيل ملف إكسل (.xlsx)' if is_rtl else 'Download Excel (.xlsx)' }}
             </a>
             <a href="{{ url_for('main.students_at_risk_report_pdf') }}" class="btn btn-danger btn-sm">
-                <i class="fas fa-file-pdf me-1"></i> Download PDF
+                <i class="fas fa-file-pdf me-1"></i> {{ 'تنزيل PDF' if is_rtl else 'Download PDF' }}
             </a>
         </div>
-
     </div>
 
     <!-- Official Report Page Document -->
@@ -230,35 +252,35 @@
         <div class="header-box">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="univ-logo-badge">DU</div>
+                    <div class="univ-logo-badge">{{ 'ظ' if is_rtl else 'DU' }}</div>
                     <div>
-                        <h4 class="mb-0 fw-bold" style="color: #1e3a8a; letter-spacing: 0.5px;">DHOFAR UNIVERSITY</h4>
-                        <div class="text-secondary fw-semibold" style="font-size: 13px;">College of Arts and Applied Sciences &bull; Department of Computer Science</div>
-                        <div class="text-muted" style="font-size: 12px;">Office of Academic Advising &amp; Student Registration Support</div>
+                        <h4 class="mb-0 fw-bold" style="color: #1e3a8a; letter-spacing: 0.5px;">{{ 'جامعة ظفار' if is_rtl else 'DHOFAR UNIVERSITY' }}</h4>
+                        <div class="text-secondary fw-semibold" style="font-size: 13px;">{{ 'كلية الآداب والعلوم التطبيقية • قسم علوم الحاسوب' if is_rtl else 'College of Arts and Applied Sciences • Department of Computer Science' }}</div>
+                        <div class="text-muted" style="font-size: 12px;">{{ 'مكتب الإرشاد الأكاديمي ودعم تسجيل الطلبة' if is_rtl else 'Office of Academic Advising & Student Registration Support' }}</div>
                     </div>
                 </div>
                 <div class="text-end">
                     <div class="badge bg-danger text-uppercase px-3 py-2 fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">
-                        CONFIDENTIAL &bull; ACADEMIC PROBATION
+                        {{ 'سري للغاية • الملاحظة الأكاديمية' if is_rtl else 'CONFIDENTIAL • ACADEMIC PROBATION' }}
                     </div>
                     <div class="text-muted mt-2" style="font-size: 11px;">
-                        Generated: <strong class="text-dark">{{ current_time or 'Spring 2026' }}</strong>
+                        {{ 'تاريخ الإصدار:' if is_rtl else 'Generated:' }} <strong class="text-dark">{{ current_time or ('خريف 2026' if is_rtl else 'Spring 2026') }}</strong>
                     </div>
                 </div>
             </div>
             
             <div class="row mt-4 pt-3 border-top g-3">
                 <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Academic Advisor</small>
-                    <strong class="text-dark fs-6">Nasser Tabook</strong>
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">{{ 'المرشد الأكاديمي' if is_rtl else 'Academic Advisor' }}</small>
+                    <strong class="text-dark fs-6">{{ 'د. ناصر تبوك' if is_rtl else 'Dr. Nasser Tabook' }}</strong>
                 </div>
                 <div class="col-md-4">
-                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Report Type</small>
-                    <strong class="text-dark">Official Students at Risk Roster</strong>
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">{{ 'نوع التقرير' if is_rtl else 'Report Type' }}</small>
+                    <strong class="text-dark">{{ 'كشف الطلبة الخاضعين للملاحظة الأكاديمية' if is_rtl else 'Official Students at Risk Roster' }}</strong>
                 </div>
                 <div class="col-md-4 text-md-end">
-                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">Academic Standing Policy</small>
-                    <strong class="text-danger">GPA &lt; 65.0% Criteria</strong>
+                    <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 10px;">{{ 'لائحة الوضع الأكاديمي' if is_rtl else 'Academic Standing Policy' }}</small>
+                    <strong class="text-danger">{{ 'معيار المعدل التراكمي < 65.0%' if is_rtl else 'GPA < 65.0% Criteria' }}</strong>
                 </div>
             </div>
         </div>
@@ -268,31 +290,31 @@
             <div class="col">
                 <div class="stat-card">
                     <div class="stat-val text-primary">{{ breakdown.total_advisees }}</div>
-                    <div class="stat-lbl">Total Advisees</div>
+                    <div class="stat-lbl">{{ 'إجمالي الطلبة' if is_rtl else 'Total Advisees' }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card" style="border-color: #fca5a5; background: #fff5f5;">
                     <div class="stat-val text-danger">{{ breakdown.total_at_risk }}</div>
-                    <div class="stat-lbl text-danger">Total At-Risk</div>
+                    <div class="stat-lbl text-danger">{{ 'إجمالي تحت الملاحظة' if is_rtl else 'Total At-Risk' }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card" style="border-color: #fca5a5; background: #fee2e2;">
                     <div class="stat-val text-danger">{{ breakdown.counts.strict }}</div>
-                    <div class="stat-lbl text-danger">Strict Probation</div>
+                    <div class="stat-lbl text-danger">{{ 'الملاحظة الصارمة' if is_rtl else 'Strict Probation' }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card" style="border-color: #fdba74; background: #fff7ed;">
                     <div class="stat-val text-warning" style="color: #ea580c !important;">{{ breakdown.counts.second }}</div>
-                    <div class="stat-lbl" style="color: #c2410c;">Second Probation</div>
+                    <div class="stat-lbl" style="color: #c2410c;">{{ 'الملاحظة الثانية' if is_rtl else 'Second Probation' }}</div>
                 </div>
             </div>
             <div class="col">
                 <div class="stat-card" style="border-color: #fcd34d; background: #fefce8;">
                     <div class="stat-val text-warning" style="color: #ca8a04 !important;">{{ breakdown.counts.first }}</div>
-                    <div class="stat-lbl" style="color: #a16207;">First Probation</div>
+                    <div class="stat-lbl" style="color: #a16207;">{{ 'الملاحظة الأولى' if is_rtl else 'First Probation' }}</div>
                 </div>
             </div>
         </div>
@@ -300,23 +322,23 @@
         <!-- Category 1: Strict Probation -->
         <div class="section-header sec-strict">
             <div>
-                <i class="fas fa-radiation me-2"></i> Category 1: Strict Probation (Second / Third Strict)
-                <span class="badge bg-danger ms-2">{{ breakdown.counts.strict }} Advisees</span>
+                <i class="fas fa-radiation me-2"></i> {{ 'الفئة 1: الملاحظة الصارمة (الصارمة الثانية / الثالثة)' if is_rtl else 'Category 1: Strict Probation (Second / Third Strict)' }}
+                <span class="badge bg-danger ms-2">{{ breakdown.counts.strict }} {{ 'طالب' if is_rtl else 'Advisees' }}</span>
             </div>
-            <small class="text-danger fw-normal">Highest Risk &bull; Max 12 CH &bull; Mandatory Bi-weekly Advising</small>
+            <small class="text-danger fw-normal">{{ 'أعلى درجات الخطر • سقف 12 ساعة معتمدة • جلسات إرشاد كل أسبوعين' if is_rtl else 'Highest Risk • Max 12 CH • Mandatory Bi-weekly Advising' }}</small>
         </div>
         {% if breakdown.strict_probation %}
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-custom align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 105px;">Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program</th>
-                        <th class="text-center" style="width: 70px;">GPA</th>
-                        <th class="text-center" style="width: 65px;">Credits</th>
-                        <th>Current Standing</th>
-                        <th>Advisory Intervention Plan</th>
+                        <th style="width: 105px;">{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th class="text-center" style="width: 70px;">{{ t('cgpa') }}</th>
+                        <th class="text-center" style="width: 65px;">{{ t('credits') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th>{{ 'خطة التدخل الإرشادي' if is_rtl else 'Advisory Intervention Plan' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -324,17 +346,17 @@
                     <tr>
                         <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
                         <td class="fw-bold">{{ student.name }}</td>
-                        <td>{{ student.program or 'Computer Science' }}</td>
-                        <td class="text-center fw-bold text-danger">
+                        <td>{{ localize_program(student.program) }}</td>
+                        <td class="text-center fw-bold text-danger font-monospace">
                             {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
-                            <span class="badge-status status-strict">{{ student.status }}</span>
+                            <span class="badge-status status-strict">{{ localize_standing(student.status) }}</span>
                         </td>
                         <td>
                             <small class="text-danger fw-semibold">
-                                <i class="fas fa-exclamation-triangle me-1"></i> Limit to 9-12 credits. Repeat F/D grade courses immediately.
+                                <i class="fas fa-exclamation-triangle me-1"></i> {{ 'قصر التسجيل على 9-12 ساعة كحد أقصى. إعادة المساقات الراسبة F و D فوراً وفق المادة 18.' if is_rtl else 'Limit to 9-12 credits. Repeat F/D grade courses immediately.' }}
                             </small>
                         </td>
                     </tr>
@@ -343,29 +365,29 @@
             </table>
         </div>
         {% else %}
-        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on Strict Probation.</div>
+        <div class="p-3 text-center text-muted bg-light rounded border">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الصارمة.' if is_rtl else 'No students currently on Strict Probation.' }}</div>
         {% endif %}
 
         <!-- Category 2: Second Probation -->
         <div class="section-header sec-second">
             <div>
-                <i class="fas fa-exclamation-triangle me-2"></i> Category 2: Second Academic Probation
-                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.second }} Advisees</span>
+                <i class="fas fa-exclamation-triangle me-2"></i> {{ 'الفئة 2: الملاحظة الأكاديمية الثانية' if is_rtl else 'Category 2: Second Academic Probation' }}
+                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.second }} {{ 'طالب' if is_rtl else 'Advisees' }}</span>
             </div>
-            <small class="text-warning-emphasis fw-normal">Critical Stage &bull; Max 12 CH &bull; Academic Warning Notice</small>
+            <small class="text-warning-emphasis fw-normal">{{ 'مرحلة حرجة • سقف 12 ساعة معتمدة • إنذار أكاديمي رسمي' if is_rtl else 'Critical Stage • Max 12 CH • Academic Warning Notice' }}</small>
         </div>
         {% if breakdown.second_probation %}
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-custom align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 105px;">Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program</th>
-                        <th class="text-center" style="width: 70px;">GPA</th>
-                        <th class="text-center" style="width: 65px;">Credits</th>
-                        <th>Current Standing</th>
-                        <th>Advisory Intervention Plan</th>
+                        <th style="width: 105px;">{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th class="text-center" style="width: 70px;">{{ t('cgpa') }}</th>
+                        <th class="text-center" style="width: 65px;">{{ t('credits') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th>{{ 'خطة التدخل الإرشادي' if is_rtl else 'Advisory Intervention Plan' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -373,17 +395,17 @@
                     <tr>
                         <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
                         <td class="fw-bold">{{ student.name }}</td>
-                        <td>{{ student.program or 'Computer Science' }}</td>
-                        <td class="text-center fw-bold text-warning-emphasis">
+                        <td>{{ localize_program(student.program) }}</td>
+                        <td class="text-center fw-bold text-warning-emphasis font-monospace">
                             {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
-                            <span class="badge-status status-second">{{ student.status }}</span>
+                            <span class="badge-status status-second">{{ localize_standing(student.status) }}</span>
                         </td>
                         <td>
                             <small class="text-warning-emphasis fw-semibold">
-                                <i class="fas fa-arrow-up me-1"></i> Retake low-grade courses to achieve &ge;65% semester GPA.
+                                <i class="fas fa-arrow-up me-1"></i> {{ 'إعادة تسجيل المقررات ذات التقدير المتدني لتحقيق معدل فصلي ≥ 65% وتفادي الملاحظة الصارمة.' if is_rtl else 'Retake low-grade courses to achieve >=65% semester GPA.' }}
                             </small>
                         </td>
                     </tr>
@@ -392,29 +414,29 @@
             </table>
         </div>
         {% else %}
-        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on Second Probation.</div>
+        <div class="p-3 text-center text-muted bg-light rounded border">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الثانية.' if is_rtl else 'No students currently on Second Probation.' }}</div>
         {% endif %}
 
         <!-- Category 3: First Probation -->
         <div class="section-header sec-first">
             <div>
-                <i class="fas fa-info-circle me-2"></i> Category 3: First Academic Probation
-                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.first }} Advisees</span>
+                <i class="fas fa-info-circle me-2"></i> {{ 'الفئة 3: الملاحظة الأكاديمية الأولى' if is_rtl else 'Category 3: First Academic Probation' }}
+                <span class="badge bg-warning text-dark ms-2">{{ breakdown.counts.first }} {{ 'طالب' if is_rtl else 'Advisees' }}</span>
             </div>
-            <small class="text-warning-emphasis fw-normal">Early Intervention &bull; Max 12-14 CH &bull; Academic Counseling</small>
+            <small class="text-warning-emphasis fw-normal">{{ 'تدخل مبكر • سقف 12-14 ساعة معتمدة • استشارة وتوجيه أكاديمي' if is_rtl else 'Early Intervention • Max 12-14 CH • Academic Counseling' }}</small>
         </div>
         {% if breakdown.first_probation %}
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-custom align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 105px;">Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program</th>
-                        <th class="text-center" style="width: 70px;">GPA</th>
-                        <th class="text-center" style="width: 65px;">Credits</th>
-                        <th>Current Standing</th>
-                        <th>Advisory Intervention Plan</th>
+                        <th style="width: 105px;">{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th class="text-center" style="width: 70px;">{{ t('cgpa') }}</th>
+                        <th class="text-center" style="width: 65px;">{{ t('credits') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th>{{ 'خطة التدخل الإرشادي' if is_rtl else 'Advisory Intervention Plan' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -422,17 +444,17 @@
                     <tr>
                         <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
                         <td class="fw-bold">{{ student.name }}</td>
-                        <td>{{ student.program or 'Computer Science' }}</td>
-                        <td class="text-center fw-bold" style="color: #b45309;">
+                        <td>{{ localize_program(student.program) }}</td>
+                        <td class="text-center fw-bold font-monospace" style="color: #b45309;">
                             {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
-                            <span class="badge-status status-first">{{ student.status }}</span>
+                            <span class="badge-status status-first">{{ localize_standing(student.status) }}</span>
                         </td>
                         <td>
                             <small class="text-muted">
-                                Course load counseling. Pair difficult major courses with general electives.
+                                {{ 'تنظيم العبء الدراسي. الموازنة بين متطلبات التخصص والمتطلبات العامة لرفع المعدل.' if is_rtl else 'Course load counseling. Pair difficult major courses with general electives.' }}
                             </small>
                         </td>
                     </tr>
@@ -441,29 +463,29 @@
             </table>
         </div>
         {% else %}
-        <div class="p-3 text-center text-muted bg-light rounded border">No students currently on First Probation.</div>
+        <div class="p-3 text-center text-muted bg-light rounded border">{{ 'لا يوجد حالياً طلبة تحت الملاحظة الأولى.' if is_rtl else 'No students currently on First Probation.' }}</div>
         {% endif %}
 
         <!-- Category 4: Pre-probation Low GPA Warning (if any) -->
         {% if breakdown.low_gpa_warning %}
         <div class="section-header sec-warning">
             <div>
-                <i class="fas fa-bell me-2"></i> Category 4: Pre-Probation GPA Warning (Cumulative GPA &lt; 65%)
-                <span class="badge bg-secondary ms-2">{{ breakdown.counts.warning }} Advisees</span>
+                <i class="fas fa-bell me-2"></i> {{ 'الفئة 4: تحذير ما قبل الملاحظة (المعدل التراكمي أقل من 65%)' if is_rtl else 'Category 4: Pre-Probation GPA Warning (Cumulative GPA < 65%)' }}
+                <span class="badge bg-secondary ms-2">{{ breakdown.counts.warning }} {{ 'طالب' if is_rtl else 'Advisees' }}</span>
             </div>
-            <small class="text-muted fw-normal">Monitoring Stage</small>
+            <small class="text-muted fw-normal">{{ 'مرحلة المتابعة الوقائية' if is_rtl else 'Monitoring Stage' }}</small>
         </div>
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-custom align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 105px;">Student ID</th>
-                        <th>Student Name</th>
-                        <th>Program</th>
-                        <th class="text-center" style="width: 70px;">GPA</th>
-                        <th class="text-center" style="width: 65px;">Credits</th>
-                        <th>Current Standing</th>
-                        <th>Advisory Intervention Plan</th>
+                        <th style="width: 105px;">{{ t('student_id') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('program_major') }}</th>
+                        <th class="text-center" style="width: 70px;">{{ t('cgpa') }}</th>
+                        <th class="text-center" style="width: 65px;">{{ t('credits') }}</th>
+                        <th>{{ t('standing_status') }}</th>
+                        <th>{{ 'خطة التدخل الإرشادي' if is_rtl else 'Advisory Intervention Plan' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -471,16 +493,16 @@
                     <tr>
                         <td class="fw-bold text-dark font-monospace">{{ student.id }}</td>
                         <td class="fw-bold">{{ student.name }}</td>
-                        <td>{{ student.program or 'Computer Science' }}</td>
-                        <td class="text-center fw-bold text-danger">
+                        <td>{{ localize_program(student.program) }}</td>
+                        <td class="text-center fw-bold text-danger font-monospace">
                             {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
-                            <span class="badge-status status-warning">{{ student.status }}</span>
+                            <span class="badge-status status-warning">{{ localize_standing(student.status) }}</span>
                         </td>
                         <td>
-                            <small class="text-muted">Monitored for potential probation risk next term.</small>
+                            <small class="text-muted">{{ 'متابعة دورية لتفادي الهبوط تحت الملاحظة الأكاديمية في الفصل القادم.' if is_rtl else 'Monitored for potential probation risk next term.' }}</small>
                         </td>
                     </tr>
                     {% endfor %}
@@ -491,25 +513,23 @@
 
         <!-- Policy Notes -->
         <div class="mt-4 p-3 bg-light rounded border" style="font-size: 11px; color: #64748b;">
-            <strong class="text-dark"><i class="fas fa-shield-alt me-1"></i> Dhofar University Academic Regulation Summary:</strong>
-            Under DU undergraduate academic regulations, any student whose cumulative GPA falls below <strong>65.0%</strong> is placed on Academic Probation.
-            Students on First Probation must achieve a semester GPA &ge; 65.0% to avoid progression to Second Probation. Failure to raise cumulative GPA after repeated probations leads to Strict Probation and potential dismissal. Students on probation may register for a maximum of <strong>12 credit hours</strong> unless granted special approval by the Dean.
+            <strong class="text-dark"><i class="fas fa-shield-alt me-1"></i> {{ 'ملخص لوائح جامعة ظفار الأكاديمية:' if is_rtl else 'Dhofar University Academic Regulation Summary:' }}</strong>
+            {{ 'وفقاً للوائح جامعة ظفار لطلبة البكالوريوس، يوضع أي طالب ينخفض معدله التراكمي عن 65.0% تحت الملاحظة الأكاديمية. يتعين على الطالب تحت الملاحظة الأولى تحقيق معدل فصلي لا يقل عن 65.0% لتفادي الانتقال إلى الملاحظة الثانية. يؤدي استمرار تدني المعدل إلى الملاحظة الصارمة ثم الفصل الأكاديمي. لا يجوز للطالب تحت الملاحظة تسجيل أكثر من 12 ساعة معتمدة إلا بموافقة خاصة من العميد.' if is_rtl else 'Under DU undergraduate academic regulations, any student whose cumulative GPA falls below 65.0% is placed on Academic Probation. Students on First Probation must achieve a semester GPA >= 65.0% to avoid progression to Second Probation. Failure to raise cumulative GPA after repeated probations leads to Strict Probation and potential dismissal. Students on probation may register for a maximum of 12 credit hours unless granted special approval by the Dean.' }}
         </div>
 
         <!-- Official Signatures Block -->
         <div class="signature-box mt-4">
             <div class="p-2 px-3 fw-bold rounded-top" style="background-color: #e2e8f0; color: #1e293b; font-size: 11px; letter-spacing: 0.5px;">
-                OFFICIAL VERIFICATION &amp; SIGNATURES
+                {{ 'الاعتماد الرسمي والتوقيعات' if is_rtl else 'OFFICIAL VERIFICATION & SIGNATURES' }}
             </div>
             <div class="p-3 border border-top-0 rounded-bottom bg-white" style="max-width: 450px;">
-                <div class="fw-bold text-dark fs-6 mb-2">Academic Advisor: Dr. Nasser Tabook</div>
+                <div class="fw-bold text-dark fs-6 mb-2">{{ 'المرشد الأكاديمي: د. ناصر تبوك' if is_rtl else 'Academic Advisor: Dr. Nasser Tabook' }}</div>
                 <div class="text-dark d-flex align-items-center">
-                    <span class="fw-normal me-2">Signature:</span>
+                    <span class="fw-normal me-2">{{ 'التوقيع:' if is_rtl else 'Signature:' }}</span>
                     <span style="border-bottom: 1.5px solid #000; flex-grow: 1; height: 16px; display: inline-block;"></span>
                 </div>
             </div>
         </div>
-
 
     </div>
 

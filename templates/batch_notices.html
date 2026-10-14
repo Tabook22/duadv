@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Batch Academic Notice &amp; Advising Outreach Hub | Dhofar University{% endblock %}
+{% block title %}{{ 'مركز الإخطارات والتواصل الجماعي للطلبة تحت الملاحظة | جامعة ظفار' if is_rtl else 'Batch Academic Notice & Advising Outreach Hub | Dhofar University' }}{% endblock %}
 
 {% block styles %}
 <style>
@@ -23,6 +23,10 @@
         bottom: 12px;
         font-size: 2.8rem;
         opacity: 0.15;
+    }
+    html[dir="rtl"] .outreach-stat-card .stat-icon {
+        right: auto;
+        left: 15px;
     }
     .stat-number {
         font-size: 2rem;
@@ -60,6 +64,7 @@
         color: #b91c1c;
         border: 1px solid #fca5a5;
         margin: 1px 2px;
+        direction: ltr !important;
     }
     .status-pill {
         display: inline-flex;
@@ -80,44 +85,44 @@
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <a href="{{ url_for('main.students_at_risk') }}" class="text-decoration-none text-muted small fw-semibold">
-                    <i class="fas fa-arrow-left me-1"></i> Students at Risk
+                    <i class="fas fa-arrow-left me-1"></i> {{ t('students_at_risk') }}
                 </a>
                 <span class="text-muted small">/</span>
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small fw-bold">Outreach Hub</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small fw-bold">{{ 'مركز التواصل والإخطارات' if is_rtl else 'Outreach Hub' }}</span>
             </div>
             <h2 class="mb-1 text-dark fw-bold">
-                <i class="fas fa-mail-bulk text-primary me-2"></i>Batch Academic Advising Outreach &amp; Notices Hub
+                <i class="fas fa-mail-bulk text-primary me-2"></i>{{ 'مركز التواصل والإخطارات الأكاديمية الجماعية' if is_rtl else 'Batch Academic Advising Outreach & Notices Hub' }}
             </h2>
             <p class="text-muted mb-0">
-                Directly dispatch individual official notices, email at-risk advisees who have not visited the advisor, and track consultation progress.
+                {{ 'إرسال الإخطارات الرسمية الفردية مباشرة، ومراسلة الطلبة الخاضعين للملاحظة الذين لم يراجعوا المرشد، ومتابعة سجل جلسات الإرشاد.' if is_rtl else 'Directly dispatch individual official notices, email at-risk advisees who have not visited the advisor, and track consultation progress.' }}
             </p>
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ url_for('main.students_at_risk_chair_letter') }}" class="btn btn-outline-danger btn-sm fw-bold">
-                <i class="fas fa-file-signature me-1"></i> Chair Briefing Letter
+                <i class="fas fa-file-signature me-1"></i> {{ 'خطاب رئيس القسم' if is_rtl else 'Chair Briefing Letter' }}
             </a>
             <a href="{{ url_for('main.students_at_risk_export_notices_txt') }}" class="btn btn-outline-secondary btn-sm fw-bold">
-                <i class="fas fa-file-alt me-1"></i> Export All Notices (.txt)
+                <i class="fas fa-file-alt me-1"></i> {{ 'تصدير كافة الإخطارات (.txt)' if is_rtl else 'Export All Notices (.txt)' }}
             </a>
             <div class="dropdown">
                 <button class="btn btn-primary btn-sm dropdown-toggle fw-bold shadow-sm" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-copy me-1"></i> Copy All Emails (BCC)
+                    <i class="fas fa-copy me-1"></i> {{ 'نسخ عناوين البريد (BCC)' if is_rtl else 'Copy All Emails (BCC)' }}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li><h6 class="dropdown-header">Select Delimiter Format</h6></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="copyBatchEmails('comma')"><i class="fas fa-globe me-2 text-primary"></i>Comma (Webmail / Gmail)</a></li>
-                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="copyBatchEmails('semicolon')"><i class="fas fa-envelope me-2 text-info"></i>Semicolon (Outlook Desktop)</a></li>
+                    <li><h6 class="dropdown-header">{{ 'تنسيق الفاصلة' if is_rtl else 'Select Delimiter Format' }}</h6></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="copyBatchEmails('comma')"><i class="fas fa-globe me-2 text-primary"></i>{{ 'فاصلة عادية (بريد الويب / Gmail)' if is_rtl else 'Comma (Webmail / Gmail)' }}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="copyBatchEmails('semicolon')"><i class="fas fa-envelope me-2 text-info"></i>{{ 'فاصلة منقوطة (Outlook)' if is_rtl else 'Semicolon (Outlook Desktop)' }}</a></li>
                 </ul>
             </div>
-            <a href="{{ batch.group_mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" title="Launch group advising email invitation with all students in BCC">
-                <i class="fas fa-paper-plane me-1"></i> Group Advising Email
+            <a href="{{ batch.group_mailto_url }}" class="btn btn-success btn-sm fw-bold shadow-sm" title="{{ 'إطلاق دعوة بريدية جماعية مع وضع جميع الطلبة في النسخة المخفية BCC' if is_rtl else 'Launch group advising email invitation with all students in BCC' }}">
+                <i class="fas fa-paper-plane me-1"></i> {{ 'بريد إرشادي جماعي' if is_rtl else 'Group Advising Email' }}
             </a>
         </div>
     </div>
 
     <!-- Alert Banner -->
     <div id="actionToastAlert" class="alert alert-success alert-dismissible fade d-none mb-3 shadow-sm" role="alert">
-        <span id="actionAlertMessage"><i class="fas fa-check-circle me-2"></i>Action completed successfully.</span>
+        <span id="actionAlertMessage"><i class="fas fa-check-circle me-2"></i>{{ 'تم تنفيذ الإجراء بنجاح.' if is_rtl else 'Action completed successfully.' }}</span>
         <button type="button" class="btn-close" onclick="dismissActionAlert()"></button>
     </div>
 
@@ -126,33 +131,33 @@
         <div class="col-sm-6 col-md-3">
             <div class="outreach-stat-card" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
                 <i class="fas fa-users stat-icon"></i>
-                <div class="stat-label">Total At-Risk Cohort</div>
+                <div class="stat-label">{{ 'إجمالي الطلبة تحت الملاحظة' if is_rtl else 'Total At-Risk Cohort' }}</div>
                 <div class="stat-number">{{ batch.total_at_risk }}</div>
-                <small class="opacity-75">Advisees needing intervention</small>
+                <small class="opacity-75">{{ 'طلبة يحتاجون تدخلاً إرشادياً' if is_rtl else 'Advisees needing intervention' }}</small>
             </div>
         </div>
         <div class="col-sm-6 col-md-3">
             <div class="outreach-stat-card" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
                 <i class="fas fa-triangle-exclamation stat-icon"></i>
-                <div class="stat-label">Strict Probation</div>
+                <div class="stat-label">{{ t('strict_probation') }}</div>
                 <div class="stat-number">{{ batch.counts.strict }}</div>
-                <small class="opacity-75">Max 12 cr &bull; Dismissal Risk</small>
+                <small class="opacity-75">{{ 'سقف 12 ساعة • خطر الفصل' if is_rtl else 'Max 12 cr • Dismissal Risk' }}</small>
             </div>
         </div>
         <div class="col-sm-6 col-md-3">
             <div class="outreach-stat-card" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);">
                 <i class="fas fa-paper-plane stat-icon"></i>
-                <div class="stat-label">Notices Dispatched</div>
+                <div class="stat-label">{{ 'الإخطارات المرسلة' if is_rtl else 'Notices Dispatched' }}</div>
                 <div class="stat-number">{{ batch.outreach_counts.emailed + batch.outreach_counts.responded + batch.outreach_counts.completed + batch.outreach_counts.signed }}</div>
-                <small class="opacity-75">{{ batch.outreach_counts.pending }} Pending Initial Contact</small>
+                <small class="opacity-75">{{ batch.outreach_counts.pending }} {{ 'في انتظار التواصل الأولي' if is_rtl else 'Pending Initial Contact' }}</small>
             </div>
         </div>
         <div class="col-sm-6 col-md-3">
             <div class="outreach-stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
                 <i class="fas fa-handshake stat-icon"></i>
-                <div class="stat-label">Meetings Completed</div>
+                <div class="stat-label">{{ 'الجلسات المنجزة' if is_rtl else 'Meetings Completed' }}</div>
                 <div class="stat-number">{{ batch.outreach_counts.completed + batch.outreach_counts.signed }}</div>
-                <small class="opacity-75">{{ batch.outreach_counts.signed }} Plans Officially Signed</small>
+                <small class="opacity-75">{{ batch.outreach_counts.signed }} {{ 'خطة تم توقيعها رسمياً' if is_rtl else 'Plans Officially Signed' }}</small>
             </div>
         </div>
     </div>
@@ -163,25 +168,25 @@
             <!-- Filter Pills -->
             <div class="d-flex flex-wrap gap-1 align-items-center" id="tierFilters">
                 <button type="button" class="btn btn-sm btn-dark active filter-btn" onclick="filterTable('all', this)">
-                    All ({{ batch.total_at_risk }})
+                    {{ t('all') }} ({{ batch.total_at_risk }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-danger filter-btn" onclick="filterTable('strict', this)">
-                    Strict ({{ batch.counts.strict }})
+                    {{ 'صارمة' if is_rtl else 'Strict' }} ({{ batch.counts.strict }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-warning text-dark filter-btn" onclick="filterTable('second', this)">
-                    2nd Prob ({{ batch.counts.second }})
+                    {{ 'ملاحظة 2' if is_rtl else '2nd Prob' }} ({{ batch.counts.second }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-warning text-dark filter-btn" onclick="filterTable('first', this)">
-                    1st Prob ({{ batch.counts.first }})
+                    {{ 'ملاحظة 1' if is_rtl else '1st Prob' }} ({{ batch.counts.first }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary filter-btn" onclick="filterTable('pending', this)">
-                    Pending Contact ({{ batch.outreach_counts.pending }})
+                    {{ 'بانتظار التواصل' if is_rtl else 'Pending Contact' }} ({{ batch.outreach_counts.pending }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-info text-dark filter-btn" onclick="filterTable('emailed', this)">
-                    Notice Sent ({{ batch.outreach_counts.emailed }})
+                    {{ 'تم إرسال الإخطار' if is_rtl else 'Notice Sent' }} ({{ batch.outreach_counts.emailed }})
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-success filter-btn" onclick="filterTable('meeting', this)">
-                    Met / Approved ({{ batch.outreach_counts.completed + batch.outreach_counts.signed }})
+                    {{ 'تم الاجتماع / الاعتماد' if is_rtl else 'Met / Approved' }} ({{ batch.outreach_counts.completed + batch.outreach_counts.signed }})
                 </button>
             </div>
 
@@ -189,10 +194,10 @@
             <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                 <div class="input-group input-group-sm" style="width: 240px;">
                     <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" id="batchSearchInput" class="form-control border-start-0 ps-0" placeholder="Search student or course..." oninput="handleSearch()">
+                    <input type="text" id="batchSearchInput" class="form-control border-start-0 ps-0" placeholder="{{ 'البحث باسم الطالب أو المقرر...' if is_rtl else 'Search student or course...' }}" oninput="handleSearch()">
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" onclick="openBatchMarkModal()">
-                    <i class="fas fa-check-double me-1"></i> Update Selected (<span id="selectedCount">0</span>)
+                    <i class="fas fa-check-double me-1"></i> {{ 'تحديث المحدد' if is_rtl else 'Update Selected' }} (<span id="selectedCount">0</span>)
                 </button>
             </div>
         </div>
@@ -205,15 +210,15 @@
                 <thead>
                     <tr>
                         <th style="width: 38px;" class="text-center">
-                            <input type="checkbox" id="selectAllCheckbox" class="form-check-input" onclick="toggleSelectAll(this)" title="Select all students">
+                            <input type="checkbox" id="selectAllCheckbox" class="form-check-input" onclick="toggleSelectAll(this)" title="{{ 'تحديد كافة الطلبة' if is_rtl else 'Select all students' }}">
                         </th>
-                        <th>Student ID &amp; Name</th>
-                        <th>Academic Standing</th>
-                        <th class="text-center" title="Cumulative GPA">CGPA</th>
-                        <th class="text-center" title="Semester GPA">SGPA</th>
-                        <th>Prescribed Directives / Repeats</th>
-                        <th>Advising Outreach Status</th>
-                        <th class="text-end pe-3">Direct Dispatch</th>
+                        <th>{{ 'الرقم الجامعي واسم الطالب' if is_rtl else 'Student ID & Name' }}</th>
+                        <th>{{ 'الوضع الأكاديمي' if is_rtl else 'Academic Standing' }}</th>
+                        <th class="text-center" title="{{ 'المعدل التراكمي' if is_rtl else 'Cumulative GPA' }}">{{ t('cgpa') }}</th>
+                        <th class="text-center" title="{{ 'المعدل الفصلي' if is_rtl else 'Semester GPA' }}">{{ t('sgpa') }}</th>
+                        <th>{{ 'المقررات المقررة / الإعادة' if is_rtl else 'Prescribed Directives / Repeats' }}</th>
+                        <th>{{ 'حالة التواصل الإرشادي' if is_rtl else 'Advising Outreach Status' }}</th>
+                        <th class="text-end pe-3">{{ 'الإرسال المباشر' if is_rtl else 'Direct Dispatch' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -230,25 +235,25 @@
                         <td>
                             <div class="fw-bold text-dark">{{ s.student_name }}</div>
                             <div class="d-flex align-items-center gap-2 small">
-                                <span class="font-monospace text-muted fw-semibold">{{ s.student_id }}</span>
+                                <span class="font-monospace text-muted fw-semibold" style="direction: ltr !important; display: inline-block;">{{ s.student_id }}</span>
                                 <span class="text-muted">&bull;</span>
-                                <a href="mailto:{{ s.student_email }}" class="text-decoration-none text-secondary">{{ s.student_email }}</a>
+                                <a href="mailto:{{ s.student_email }}" class="text-decoration-none text-secondary" style="direction: ltr !important; display: inline-block;">{{ s.student_email }}</a>
                             </div>
                         </td>
                         <td>
                             <span class="badge bg-{{ s.tier_badge }} shadow-xs px-2 py-1">
-                                {{ s.standing }}
+                                {{ localize_standing(s.standing) }}
                             </span>
-                            <div class="small text-muted mt-0.5">{{ s.program }}</div>
+                            <div class="small text-muted mt-0.5">{{ localize_program(s.program) }}</div>
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-{{ 'danger' if s.cgpa < 65.0 else 'success' }} fs-7">
+                            <span class="badge bg-{{ 'danger' if s.cgpa < 65.0 else 'success' }} fs-7 font-monospace">
                                 {{ "%.2f"|format(s.cgpa) }}%
                             </span>
                         </td>
                         <td class="text-center">
                             {% if s.semester_gpa is not none %}
-                                <span class="badge bg-{{ 'danger' if s.semester_gpa < 65.0 else 'warning text-dark' if s.semester_gpa < 75.0 else 'success' }} fs-7">
+                                <span class="badge bg-{{ 'danger' if s.semester_gpa < 65.0 else 'warning text-dark' if s.semester_gpa < 75.0 else 'success' }} fs-7 font-monospace">
                                     {{ "%.2f"|format(s.semester_gpa) }}%
                                 </span>
                             {% else %}
@@ -257,7 +262,7 @@
                         </td>
                         <td>
                             <div class="small fw-semibold text-danger mb-0.5">
-                                <i class="fas fa-lock me-1"></i>Max {{ s.credit_cap }} Cr Limit (DU Art. 22)
+                                <i class="fas fa-lock me-1"></i>{{ ('حد أقصى ' ~ s.credit_cap ~ ' ساعة (المادة 22)') if is_rtl else ('Max ' ~ s.credit_cap ~ ' Cr Limit (DU Art. 22)') }}
                             </div>
                             <div class="text-truncate" style="max-width: 250px;">
                                 {% for cr in s.prescribed_courses %}
@@ -265,13 +270,13 @@
                                         {{ cr.code }}
                                     </span>
                                 {% else %}
-                                    <span class="text-muted small">Standard Plan Sequence</span>
+                                    <span class="text-muted small">{{ 'تسلسل الخطة القياسية' if is_rtl else 'Standard Plan Sequence' }}</span>
                                 {% endfor %}
                             </div>
                         </td>
                         <td id="statusCell-{{ s.student_id }}">
                             <span class="badge bg-{{ s.outreach.status_color }} status-pill">
-                                <i class="fas {{ s.outreach.status_icon }}"></i> {{ s.outreach.status }}
+                                <i class="fas {{ s.outreach.status_icon }}"></i> {{ localize_outreach_status(s.outreach.status) }}
                             </span>
                             {% if s.outreach.last_contacted_at %}
                                 <div class="text-muted small mt-1" style="font-size: 0.74rem;">
@@ -284,19 +289,19 @@
                                 <a href="{{ s.mailto_url }}" 
                                    class="btn btn-success" 
                                    onclick="recordQuickEmailSent('{{ s.student_id }}', '{{ s.student_name }}')"
-                                   title="Open individual pre-filled official email in email client">
-                                    <i class="fas fa-paper-plane me-1"></i> Email
+                                   title="{{ 'فتح بريد إلكتروني رسمي جاهز في تطبيق البريد' if is_rtl else 'Open individual pre-filled official email in email client' }}">
+                                    <i class="fas fa-paper-plane me-1"></i> {{ 'مراسلة' if is_rtl else 'Email' }}
                                 </a>
                                 <a href="{{ s.notice_view_url }}" 
                                    target="_blank" 
                                    class="btn btn-outline-info" 
-                                   title="View formal university letterhead notice">
-                                    <i class="fas fa-file-invoice me-1"></i> Notice
+                                   title="{{ 'عرض الخطاب الرسمي المروّس للجامعة' if is_rtl else 'View formal university letterhead notice' }}">
+                                    <i class="fas fa-file-invoice me-1"></i> {{ 'إخطار' if is_rtl else 'Notice' }}
                                 </a>
                                 <button type="button" 
                                         class="btn btn-outline-secondary" 
                                         onclick="openSingleStatusModal('{{ s.student_id }}', '{{ s.student_name }}', '{{ s.outreach.status }}', '{{ s.outreach.notes|replace('\'', '\\\'') }}')"
-                                        title="Log touchpoint / update contact status">
+                                        title="{{ 'تسجيل متابعة / تحديث حالة التواصل' if is_rtl else 'Log touchpoint / update contact status' }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
@@ -317,7 +322,7 @@
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-address-book fs-5"></i>
                     <div>
-                        <h6 class="modal-title mb-0 fw-bold" id="singleModalStudentName">Update Advising Status</h6>
+                        <h6 class="modal-title mb-0 fw-bold" id="singleModalStudentName">{{ 'تحديث حالة التواصل الإرشادي' if is_rtl else 'Update Advising Status' }}</h6>
                         <small class="opacity-75" id="singleModalStudentId"></small>
                     </div>
                 </div>
@@ -327,35 +332,35 @@
                 <form id="singleStatusForm">
                     <input type="hidden" id="modalStudentId">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Outreach &amp; Advising Status</label>
+                        <label class="form-label fw-semibold small">{{ 'حالة التواصل والإرشاد' if is_rtl else 'Outreach & Advising Status' }}</label>
                         <select class="form-select form-select-sm" id="modalStatusSelect" required>
-                            <option value="Pending Outreach">Pending Outreach (Not yet contacted)</option>
-                            <option value="Notice Sent via Email">Notice Sent via Email (Official letter emailed)</option>
-                            <option value="Student Responded">Student Responded (Replied or booked consultation)</option>
-                            <option value="Meeting Completed">Meeting Completed (In-person or virtual advising session completed)</option>
-                            <option value="Plan Signed &amp; Approved">Plan Signed &amp; Approved (Registration agreed and signed)</option>
+                            <option value="Pending Outreach">Pending Outreach ({{ 'لم يتم التواصل بعد' if is_rtl else 'Not yet contacted' }})</option>
+                            <option value="Notice Sent via Email">Notice Sent via Email ({{ 'تم إرسال الخطاب الرسمي' if is_rtl else 'Official letter emailed' }})</option>
+                            <option value="Student Responded">Student Responded ({{ 'تجاوب الطالب أو حجز موعداً' if is_rtl else 'Replied or booked consultation' }})</option>
+                            <option value="Meeting Completed">Meeting Completed ({{ 'تمت جلسة الإرشاد حضورياً أو افتراضياً' if is_rtl else 'In-person or virtual advising session completed' }})</option>
+                            <option value="Plan Signed &amp; Approved">Plan Signed &amp; Approved ({{ 'تم الاتفاق وتوقيع الخطة' if is_rtl else 'Registration agreed and signed' }})</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Contact Method / Channel</label>
+                        <label class="form-label fw-semibold small">{{ 'قناة / وسيلة التواصل' if is_rtl else 'Contact Method / Channel' }}</label>
                         <select class="form-select form-select-sm" id="modalMethodSelect">
-                            <option value="Email">Email (DU Official Mail)</option>
-                            <option value="Office Visit (Office 214)">In-Person Office Visit (Office 214)</option>
-                            <option value="Virtual Meeting (WebRTC)">Virtual Advising Room (WebRTC)</option>
-                            <option value="Phone / WhatsApp">Phone Call / WhatsApp</option>
-                            <option value="LMS Announcement">DU Portal / LMS Notification</option>
+                            <option value="Email">Email ({{ 'البريد الرسمي لجامعة ظفار' if is_rtl else 'DU Official Mail' }})</option>
+                            <option value="Office Visit (Office 214)">Office Visit ({{ 'زيارة مكتبية - مكتب 214' if is_rtl else 'Office 214' }})</option>
+                            <option value="Virtual Meeting (WebRTC)">Virtual Meeting ({{ 'غرفة الإرشاد الافتراضية' if is_rtl else 'WebRTC' }})</option>
+                            <option value="Phone / WhatsApp">Phone / WhatsApp ({{ 'اتصال هاتفي / واتساب' if is_rtl else 'Phone Call / WhatsApp' }})</option>
+                            <option value="LMS Announcement">LMS Announcement ({{ 'إشعار البوابة / المودل' if is_rtl else 'DU Portal / LMS Notification' }})</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Advisor Follow-up Notes</label>
-                        <textarea class="form-control form-control-sm" id="modalNotesText" rows="3" placeholder="Enter consultation notes, agreed courses, student remarks..."></textarea>
+                        <label class="form-label fw-semibold small">{{ 'ملاحظات المرشد للمتابعة' if is_rtl else 'Advisor Follow-up Notes' }}</label>
+                        <textarea class="form-control form-control-sm" id="modalNotesText" rows="3" placeholder="{{ 'أدخل ملاحظات الجلسة، المقررات المتفق عليها، ملاحظات الطالب...' if is_rtl else 'Enter consultation notes, agreed courses, student remarks...' }}"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer bg-light py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ t('cancel') }}</button>
                 <button type="button" class="btn btn-primary btn-sm fw-bold" onclick="saveSingleStatus()">
-                    <i class="fas fa-save me-1"></i> Save Touchpoint
+                    <i class="fas fa-save me-1"></i> {{ 'حفظ التحديث' if is_rtl else 'Save Touchpoint' }}
                 </button>
             </div>
         </div>
@@ -369,18 +374,18 @@
             <div class="modal-header bg-dark text-white py-3">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-check-double text-warning fs-5"></i>
-                    <h6 class="modal-title mb-0 fw-bold">Batch Update Selected Students</h6>
+                    <h6 class="modal-title mb-0 fw-bold">{{ 'تحديث جماعي للطلبة المحددين' if is_rtl else 'Batch Update Selected Students' }}</h6>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-3">
-                    You have selected <strong id="batchModalCount" class="text-primary">0</strong> advisee(s). Select the status to apply to all selected students simultaneously:
+                    {{ 'لقد قمت باختيار' if is_rtl else 'You have selected' }} <strong id="batchModalCount" class="text-primary">0</strong> {{ 'طالب/طلبة. اختر الحالة لتطبيقها على جميع الطلبة المحددين في آنٍ واحد:' if is_rtl else 'advisee(s). Select the status to apply to all selected students simultaneously:' }}
                 </p>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small">New Advising Status</label>
+                    <label class="form-label fw-semibold small">{{ 'الحالة الإرشادية الجديدة' if is_rtl else 'New Advising Status' }}</label>
                     <select class="form-select form-select-sm" id="batchStatusSelect">
-                        <option value="Notice Sent via Email">Notice Sent via Email (Official warning emailed)</option>
+                        <option value="Notice Sent via Email">Notice Sent via Email ({{ 'تم إرسال الخطاب الرسمي' if is_rtl else 'Official warning emailed' }})</option>
                         <option value="Student Responded">Student Responded</option>
                         <option value="Meeting Completed">Meeting Completed</option>
                         <option value="Plan Signed &amp; Approved">Plan Signed &amp; Approved</option>
@@ -388,7 +393,7 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small">Contact Method</label>
+                    <label class="form-label fw-semibold small">{{ 'طريقة التواصل' if is_rtl else 'Contact Method' }}</label>
                     <select class="form-select form-select-sm" id="batchMethodSelect">
                         <option value="Email">Email</option>
                         <option value="Office Visit (Office 214)">Office Visit</option>
@@ -396,14 +401,14 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-semibold small">Batch Advisor Note (Optional)</label>
-                    <input type="text" class="form-control form-control-sm" id="batchNotesText" placeholder="e.g. Sent official probation notices and registration directive">
+                    <label class="form-label fw-semibold small">{{ 'ملاحظة جماعية (اختياري)' if is_rtl else 'Batch Advisor Note (Optional)' }}</label>
+                    <input type="text" class="form-control form-control-sm" id="batchNotesText" placeholder="{{ 'مثال: تم إرسال إخطار الملاحظة الأكاديمية وتعليمات التسجيل' if is_rtl else 'e.g. Sent official probation notices and registration directive' }}">
                 </div>
             </div>
             <div class="modal-footer bg-light py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ t('cancel') }}</button>
                 <button type="button" class="btn btn-primary btn-sm fw-bold" onclick="submitBatchMark()">
-                    <i class="fas fa-check me-1"></i> Apply to All Selected
+                    <i class="fas fa-check me-1"></i> {{ 'تطبيق على المحددين' if is_rtl else 'Apply to All Selected' }}
                 </button>
             </div>
         </div>
@@ -414,11 +419,15 @@
     // Copy emails formatted
     const EMAILS_COMMA = {{ batch.emails_comma|tojson }};
     const EMAILS_SEMICOLON = {{ batch.emails_semicolon|tojson }};
+    const IS_RTL = {{ 'true' if is_rtl else 'false' }};
 
     function copyBatchEmails(format) {
         const text = (format === 'comma') ? EMAILS_COMMA : EMAILS_SEMICOLON;
         navigator.clipboard.writeText(text).then(() => {
-            showActionAlert(`Copied all ${ {{ batch.total_at_risk }} } student emails with ${format} formatting to clipboard!`);
+            const msg = IS_RTL 
+                ? `تم نسخ جميع عناوين البريد الإلكتروني لـ (${ {{ batch.total_at_risk }} }) طالب بتنسيق (${format}) إلى الحافظة بنجاح!`
+                : `Copied all ${ {{ batch.total_at_risk }} } student emails with ${format} formatting to clipboard!`;
+            showActionAlert(msg);
         }).catch(err => {
             alert("Clipboard copy failed: " + err);
         });
@@ -515,7 +524,7 @@
     function openSingleStatusModal(studentId, studentName, currentStatus, notes) {
         document.getElementById('modalStudentId').value = studentId;
         document.getElementById('singleModalStudentName').innerText = studentName;
-        document.getElementById('singleModalStudentId').innerText = 'ID: ' + studentId;
+        document.getElementById('singleModalStudentId').innerText = (IS_RTL ? 'الرقم الجامعي: ' : 'ID: ') + studentId;
         document.getElementById('modalStatusSelect').value = currentStatus || 'Notice Sent via Email';
         document.getElementById('modalNotesText').value = notes || '';
         
@@ -548,7 +557,7 @@
                             <i class="fas ${o.status_icon}"></i> ${o.status}
                         </span>
                         <div class="text-muted small mt-1" style="font-size: 0.74rem;">
-                            <i class="far fa-clock me-1"></i>${o.last_contacted_at || 'Just now'}
+                            <i class="far fa-clock me-1"></i>${o.last_contacted_at || (IS_RTL ? 'الآن' : 'Just now')}
                         </div>
                     `;
                 }
@@ -556,7 +565,10 @@
                 if (row) {
                     row.setAttribute('data-outreach-status', status.toLowerCase());
                 }
-                showActionAlert(`Updated advising status for ${studentId} to "${status}".`);
+                const alertText = IS_RTL 
+                    ? `تم تحديث حالة الإرشاد للطالب (${studentId}) إلى "${status}".`
+                    : `Updated advising status for ${studentId} to "${status}".`;
+                showActionAlert(alertText);
             } else {
                 alert("Update failed: " + (data.message || "Unknown error"));
             }
@@ -586,7 +598,7 @@
                             <i class="fas ${o.status_icon}"></i> ${o.status}
                         </span>
                         <div class="text-muted small mt-1" style="font-size: 0.74rem;">
-                            <i class="far fa-clock me-1"></i>${o.last_contacted_at || 'Just now'}
+                            <i class="far fa-clock me-1"></i>${o.last_contacted_at || (IS_RTL ? 'الآن' : 'Just now')}
                         </div>
                     `;
                 }
@@ -601,7 +613,7 @@
     function openBatchMarkModal() {
         const ids = getSelectedStudentIds();
         if (ids.length === 0) {
-            alert("Please select at least one student checkbox first.");
+            alert(IS_RTL ? "يرجى تحديد طالب واحد على الأقل أولاً." : "Please select at least one student checkbox first.");
             return;
         }
         document.getElementById('batchModalCount').innerText = ids.length;
@@ -625,7 +637,10 @@
         .then(data => {
             if (data.status === 'success') {
                 if (batchModalInstance) batchModalInstance.hide();
-                showActionAlert(`Successfully updated status to "${status}" for ${data.updated_count} student(s)! Reloading...`);
+                const reloadMsg = IS_RTL
+                    ? `تم بنجاح تحديث الحالة إلى "${status}" لـ (${data.updated_count}) طالب! جارٍ إعادة التحميل...`
+                    : `Successfully updated status to "${status}" for ${data.updated_count} student(s)! Reloading...`;
+                showActionAlert(reloadMsg);
                 setTimeout(() => { location.reload(); }, 1200);
             } else {
                 alert("Batch update failed: " + (data.message || "Unknown error"));

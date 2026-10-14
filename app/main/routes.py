@@ -799,6 +799,7 @@ def api_student_degree_audit(student_id):
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @bp.route('/student/<student_id>/advising-plan')
+@bp.route('/student/<student_id>/advising-memo')
 def student_advising_plan(student_id):
     """Generate and render official Policy-Referenced Academic Advising Plan"""
     from app.advising_engine import generate_student_advising_dossier

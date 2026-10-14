@@ -2046,3 +2046,13 @@ html[dir="rtl"] .du-status-pill i {
     margin-right: 0 !important;
     margin-left: 6px !important;
 }
+
+html[dir="rtl"], html[dir="rtl"] body {
+    font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+html[dir="rtl"] .font-monospace {
+    font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+    direction: ltr !important;
+    display: inline-block;
+}

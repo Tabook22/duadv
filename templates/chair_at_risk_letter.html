@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Official Advising Briefing to Department Chair - Students at Risk | Dhofar University{% endblock %}
+{% block title %}{{ 'إيجاز إرشادي رسمي لرئيس القسم - الطلاب في دائرة الخطر' if is_rtl else 'Official Advising Briefing to Department Chair - Students at Risk' }} | {{ t('dhofar_university') }}{% endblock %}
 
 {% block styles %}
 <style>
@@ -18,7 +18,7 @@
         padding: 50px 60px;
         background: #ffffff;
         color: #0f172a;
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        font-family: inherit;
     }
 
     .letterhead-top {
@@ -37,7 +37,7 @@
     }
 
     .memo-meta-table th {
-        width: 120px;
+        width: 130px;
         color: #475569;
         font-weight: 700;
         text-transform: uppercase;
@@ -92,17 +92,29 @@
         color: #991b1b;
         border-left: 5px solid #dc2626;
     }
+    html[dir="rtl"] .tier-strict {
+        border-left: none;
+        border-right: 5px solid #dc2626;
+    }
 
     .tier-second {
         background: #ffedd5;
         color: #9a3412;
         border-left: 5px solid #ea580c;
     }
+    html[dir="rtl"] .tier-second {
+        border-left: none;
+        border-right: 5px solid #ea580c;
+    }
 
     .tier-first {
         background: #fef3c7;
         color: #854d0e;
         border-left: 5px solid #d97706;
+    }
+    html[dir="rtl"] .tier-first {
+        border-left: none;
+        border-right: 5px solid #d97706;
     }
 
     .student-rescue-card {
@@ -162,21 +174,21 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 btn-toolbar-top gap-2">
     <div class="d-flex align-items-center gap-2">
         <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left me-1"></i> Back to At-Risk Roster
+            <i class="fas fa-arrow-left me-1"></i> {{ 'العودة لقائمة الطلبة المتعثرين' if is_rtl else 'Back to At-Risk Roster' }}
         </a>
         <span class="badge bg-danger px-2 py-1 fs-7">
-            <i class="fas fa-file-signature me-1"></i> Official Letter to Department Chair
+            <i class="fas fa-file-signature me-1"></i> {{ 'خطاب رسمي لرئيس القسم' if is_rtl else 'Official Letter to Department Chair' }}
         </span>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="copyOfficialLetterText()">
-            <i class="fas fa-copy me-1"></i> Copy Letter Text
+            <i class="fas fa-copy me-1"></i> {{ 'نسخ نص الخطاب' if is_rtl else 'Copy Letter Text' }}
         </button>
         <button type="button" class="btn btn-outline-dark btn-sm fw-semibold" onclick="window.print()">
-            <i class="fas fa-print me-1"></i> Print / Save PDF
+            <i class="fas fa-print me-1"></i> {{ 'طباعة / حفظ كملف PDF' if is_rtl else 'Print / Save PDF' }}
         </button>
         <a href="{{ url_for('main.students_at_risk_report_excel') }}" class="btn btn-outline-success btn-sm fw-semibold">
-            <i class="fas fa-file-excel me-1"></i> Download Excel Roster
+            <i class="fas fa-file-excel me-1"></i> {{ 'تحميل ملف إكسل' if is_rtl else 'Download Excel Roster' }}
         </a>
     </div>
 </div>
@@ -184,7 +196,11 @@
 <!-- Toast notification for copy action -->
 <div id="copySuccessAlert" class="alert alert-success alert-dismissible fade d-none mb-3 shadow-sm" role="alert">
     <i class="fas fa-check-circle me-2"></i>
-    <strong>Official Letter Copied!</strong> The complete briefing text has been copied to your clipboard. You can now paste it directly into an email, memo, or Microsoft Word.
+    {% if is_rtl %}
+        <strong>تم نسخ نص الخطاب بنجاح!</strong> تم نسخ النص الكامل للتقرير إلى الحافظة. يمكنك الآن لصقه مباشرة في رسالة بريد إلكتروني أو تطبيق وورد.
+    {% else %}
+        <strong>Official Letter Copied!</strong> The complete briefing text has been copied to your clipboard. You can now paste it directly into an email, memo, or Microsoft Word.
+    {% endif %}
     <button type="button" class="btn-close" onclick="dismissAlert()"></button>
 </div>
 
@@ -199,15 +215,15 @@
                         DU
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">DHOFAR UNIVERSITY</h4>
-                        <div class="fw-semibold text-secondary small">COLLEGE OF ARTS AND APPLIED SCIENCES</div>
-                        <div class="text-primary small fw-bold">Department of Computer Science &mdash; Academic Advising Unit</div>
+                        <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: -0.5px;">{{ 'جامعة ظفار' if is_rtl else 'DHOFAR UNIVERSITY' }}</h4>
+                        <div class="fw-semibold text-secondary small">{{ 'كلية الآداب والعلوم التطبيقية' if is_rtl else 'COLLEGE OF ARTS AND APPLIED SCIENCES' }}</div>
+                        <div class="text-primary small fw-bold">{{ 'قسم علوم الحاسوب — وحدة الإرشاد الأكاديمي' if is_rtl else 'Department of Computer Science — Academic Advising Unit' }}</div>
                     </div>
                 </div>
                 <div class="text-end d-none d-sm-block">
-                    <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Cairo', sans-serif;">جامعة ظفار</h5>
-                    <div class="small text-secondary" style="font-family: 'Cairo', sans-serif;">كلية الآداب والعلوم التطبيقية</div>
-                    <div class="small text-primary fw-bold" style="font-family: 'Cairo', sans-serif;">قسم علوم الحاسوب</div>
+                    <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Cairo', sans-serif;">{{ 'DHOFAR UNIVERSITY' if is_rtl else 'جامعة ظفار' }}</h5>
+                    <div class="small text-secondary" style="font-family: 'Cairo', sans-serif;">{{ 'COLLEGE OF ARTS AND APPLIED SCIENCES' if is_rtl else 'كلية الآداب والعلوم التطبيقية' }}</div>
+                    <div class="small text-primary fw-bold" style="font-family: 'Cairo', sans-serif;">{{ 'Department of Computer Science' if is_rtl else 'قسم علوم الحاسوب' }}</div>
                 </div>
             </div>
         </div>
@@ -217,25 +233,25 @@
             <table class="table table-borderless mb-0">
                 <tbody>
                     <tr>
-                        <th>REF:</th>
+                        <th>{{ 'المرجع:' if is_rtl else 'REF:' }}</th>
                         <td class="font-monospace fw-bold text-primary">{{ report.ref_number }}</td>
-                        <th class="ps-3">DATE:</th>
+                        <th class="ps-3">{{ 'التاريخ:' if is_rtl else 'DATE:' }}</th>
                         <td class="fw-semibold">{{ report.report_date }}</td>
                     </tr>
                     <tr>
-                        <th>TO:</th>
+                        <th>{{ 'إلى:' if is_rtl else 'TO:' }}</th>
                         <td class="fw-bold text-dark">{{ report.addressee_title }}</td>
-                        <th class="ps-3">ACADEMIC TERM:</th>
+                        <th class="ps-3">{{ 'الفصل الأكاديمي:' if is_rtl else 'ACADEMIC TERM:' }}</th>
                         <td>{{ report.academic_term }}</td>
                     </tr>
                     <tr>
-                        <th>FROM:</th>
+                        <th>{{ 'من:' if is_rtl else 'FROM:' }}</th>
                         <td class="fw-bold text-dark">{{ report.advisor_name }}, <span class="text-muted fw-normal">{{ report.advisor_title }}</span></td>
-                        <th class="ps-3">COHORT HEALTH:</th>
-                        <td><span class="badge bg-danger">{{ report.total_at_risk }} of {{ report.total_advisees }} At Risk ({{ report.at_risk_percentage }}%)</span></td>
+                        <th class="ps-3">{{ 'حالة الدفعة:' if is_rtl else 'COHORT HEALTH:' }}</th>
+                        <td><span class="badge bg-danger">{% if is_rtl %}{{ report.total_at_risk }} من أصل {{ report.total_advisees }} في دائرة الخطر ({{ report.at_risk_percentage }}%){% else %}{{ report.total_at_risk }} of {{ report.total_advisees }} At Risk ({{ report.at_risk_percentage }}%){% endif %}</span></td>
                     </tr>
                     <tr>
-                        <th>SUBJECT:</th>
+                        <th>{{ 'الموضوع:' if is_rtl else 'SUBJECT:' }}</th>
                         <td colspan="3" class="fw-bold text-danger pt-2">
                             {{ report.subject }}
                         </td>
@@ -245,44 +261,55 @@
         </div>
 
         <!-- Opening Formal Salutation & Executive Context -->
-        <div class="mb-4 text-dark" style="line-height: 1.7; font-size: 0.95rem;">
-            <p class="mb-3"><strong>Dear Chairperson,</strong></p>
-            <p class="mb-3">
-                I am formally submitting this academic diagnostic briefing and intervention dossier concerning the advisees under my supervision who are currently placed on <strong>Academic Probation (First, Second, and Strict/Third Probation)</strong> or categorized as academically at risk at Dhofar University.
-            </p>
-            <p class="mb-3">
-                The objective of this briefing is to present the Department Chairperson with full visibility into the student cohort's academic status, delineate their study plan progress (Diploma in Computer Science vs. Bachelor of Science in Computer Science), and articulate evidence-based rescue action plans to elevate their Cumulative GPA above the mandatory <strong>65.0% Good Standing benchmark</strong> in accordance with <strong>Dhofar University Academic Regulations Article 14, Article 18, and Article 22</strong>.
-            </p>
+        <div class="mb-4 text-dark" style="line-height: 1.8; font-size: 0.95rem;">
+            {% if is_rtl %}
+                <p class="mb-2"><strong>السيد رئيس القسم المحترم،</strong></p>
+                <p class="mb-2">السلام عليكم ورحمة الله وبركاته، وبعد:</p>
+                <p class="mb-3">
+                    أرفع إلى عنايتكم الكريمة هذا التقرير التشخيصي والإيجاز الإرشادي وخطة التدخل الأكاديمي الشاملة للطلبة الواقعين تحت إرشادي الأكاديمي والمدرجين حالياً تحت طائلة <strong>الملاحظة الأكاديمية (الأولى، الثانية، والصارمة/الثالثة)</strong> أو ضمن فئة الخطر الأكاديمي في جامعة ظفار.
+                </p>
+                <p class="mb-3">
+                    يهدف هذا الإيجاز إلى إحاطة رئيس القسم بالوضع الأكاديمي الدقيق للدفعة، واستعراض تقدمهم في الخطة الدراسية (دبلوم علوم الحاسوب مقابل بكالوريوس العلوم في علوم الحاسوب)، وتحديد خطط إنقاذ إرشادية مقننة تضمن رفع المعدل التراكمي للطلبة فوق <strong>سقف 65.0% المطلوب للوضع السليم</strong> وفقاً لأحكام <strong>المواد 14 و18 و22 من لوائح جامعة ظفار الأكاديمية</strong>.
+                </p>
+            {% else %}
+                <p class="mb-3"><strong>Dear Chairperson,</strong></p>
+                <p class="mb-3">
+                    I am formally submitting this academic diagnostic briefing and intervention dossier concerning the advisees under my supervision who are currently placed on <strong>Academic Probation (First, Second, and Strict/Third Probation)</strong> or categorized as academically at risk at Dhofar University.
+                </p>
+                <p class="mb-3">
+                    The objective of this briefing is to present the Department Chairperson with full visibility into the student cohort's academic status, delineate their study plan progress (Diploma in Computer Science vs. Bachelor of Science in Computer Science), and articulate evidence-based rescue action plans to elevate their Cumulative GPA above the mandatory <strong>65.0% Good Standing benchmark</strong> in accordance with <strong>Dhofar University Academic Regulations Article 14, Article 18, and Article 22</strong>.
+                </p>
+            {% endif %}
         </div>
 
         <!-- Macro Diagnostic KPI Strip -->
         <div class="row g-2 mb-4">
             <div class="col-6 col-md-3">
                 <div class="kpi-stat-box border-danger border-opacity-50">
-                    <div class="kpi-stat-lbl text-danger">Strict / Third Probation</div>
+                    <div class="kpi-stat-lbl text-danger">{{ 'الملاحظة الصارمة / الثالثة' if is_rtl else 'Strict / Third Probation' }}</div>
                     <div class="kpi-stat-val text-danger">{{ report.counts.strict }}</div>
-                    <small class="text-muted" style="font-size: 0.72rem;">Dismissal Stage (Art. 14)</small>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ 'مرحلة الفصل (المادة 14)' if is_rtl else 'Dismissal Stage (Art. 14)' }}</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="kpi-stat-box border-warning border-opacity-50">
-                    <div class="kpi-stat-lbl text-warning text-dark">Second Probation</div>
+                    <div class="kpi-stat-lbl text-warning text-dark">{{ 'الملاحظة الثانية' if is_rtl else 'Second Probation' }}</div>
                     <div class="kpi-stat-val text-warning text-dark" style="color: #ea580c !important;">{{ report.counts.second }}</div>
-                    <small class="text-muted" style="font-size: 0.72rem;">Escalating Warning</small>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ 'إنذار متصاعد' if is_rtl else 'Escalating Warning' }}</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="kpi-stat-box border-warning border-opacity-25">
-                    <div class="kpi-stat-lbl text-secondary">First Probation</div>
+                    <div class="kpi-stat-lbl text-secondary">{{ 'الملاحظة الأولى' if is_rtl else 'First Probation' }}</div>
                     <div class="kpi-stat-val text-primary">{{ report.counts.first }}</div>
-                    <small class="text-muted" style="font-size: 0.72rem;">Initial Warning Advising</small>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ 'تدخل وإنذار مبكر' if is_rtl else 'Initial Warning Advising' }}</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="kpi-stat-box bg-dark text-white border-0">
-                    <div class="kpi-stat-lbl text-white-50">Total Advisees at Risk</div>
+                    <div class="kpi-stat-lbl text-white-50">{{ 'إجمالي الطلبة في دائرة الخطر' if is_rtl else 'Total Advisees at Risk' }}</div>
                     <div class="kpi-stat-val text-white">{{ report.total_at_risk }}</div>
-                    <small class="text-white-50" style="font-size: 0.72rem;">{{ report.at_risk_percentage }}% of Cohort ({{ report.total_advisees }})</small>
+                    <small class="text-white-50" style="font-size: 0.72rem;">{% if is_rtl %}{{ report.at_risk_percentage }}% من الدفعة ({{ report.total_advisees }}){% else %}{{ report.at_risk_percentage }}% of Cohort ({{ report.total_advisees }}){% endif %}</small>
                 </div>
             </div>
         </div>
@@ -291,22 +318,22 @@
         <div class="p-3 rounded border bg-light mb-4">
             <div class="row g-3 align-items-center">
                 <div class="col-md-5 border-end-md">
-                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 0.72rem;">Degree Plan Distribution</small>
+                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 0.72rem;">{{ 'توزيع البرامج الدراسية' if is_rtl else 'Degree Plan Distribution' }}</small>
                     <div class="d-flex flex-wrap gap-2">
                         <span class="badge bg-primary px-2 py-1">
-                            <i class="fas fa-graduation-cap me-1"></i> Diploma in CS: <strong>{{ report.program_counts.get('Diploma in Computer Science', 0) }}</strong>
+                            <i class="fas fa-graduation-cap me-1"></i> {{ 'دبلوم في علوم الحاسوب' if is_rtl else 'Diploma in CS' }}: <strong>{{ report.program_counts.get('Diploma in Computer Science', 0) }}</strong>
                         </span>
                         <span class="badge bg-secondary px-2 py-1">
-                            <i class="fas fa-user-graduate me-1"></i> Bachelor of Science in CS: <strong>{{ report.program_counts.get('Bachelor of Science in Computer Science', 0) }}</strong>
+                            <i class="fas fa-user-graduate me-1"></i> {{ 'بكالوريوس علوم الحاسوب' if is_rtl else 'Bachelor of Science in CS' }}: <strong>{{ report.program_counts.get('Bachelor of Science in Computer Science', 0) }}</strong>
                         </span>
                     </div>
                 </div>
                 <div class="col-md-7">
-                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 0.72rem;">Top Prerequisite Bottleneck Courses</small>
+                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 0.72rem;">{{ 'المساقات الأكثر تعثراً (عنق الزجاجة)' if is_rtl else 'Top Prerequisite Bottleneck Courses' }}</small>
                     <div class="d-flex flex-wrap gap-1">
                         {% for code, cnt in report.top_bottlenecks %}
                         <span class="badge bg-white text-danger border border-danger border-opacity-25 font-monospace">
-                            <strong>{{ code }}</strong> ({{ cnt }} students)
+                            <strong>{{ code }}</strong> ({{ cnt }} {{ 'طلاب' if is_rtl else 'students' }})
                         </span>
                         {% endfor %}
                     </div>
@@ -318,50 +345,54 @@
         <!-- CATEGORY A: STRICT / THIRD PROBATION — CRITICAL DISMISSAL HAZARD -->
         <!-- ========================================================================= -->
         <div class="tier-header tier-strict">
-            <span><i class="fas fa-exclamation-triangle me-2"></i>CATEGORY A: STRICT / THIRD PROBATION &mdash; CRITICAL DISMISSAL STAGE</span>
-            <span class="badge bg-danger">{{ report.strict_probation|length }} Students</span>
+            <span><i class="fas fa-exclamation-triangle me-2"></i>{{ 'الفئة (أ): الملاحظة الأكاديمية الصارمة / الثالثة — مرحلة الخطر الحرج والفصل الأكاديمي' if is_rtl else 'CATEGORY A: STRICT / THIRD PROBATION — CRITICAL DISMISSAL STAGE' }}</span>
+            <span class="badge bg-danger">{{ report.strict_probation|length }} {{ 'طالب' if is_rtl else 'Students' }}</span>
         </div>
         <p class="small text-muted mb-3 fst-italic">
-            Governed by Dhofar University Academic Regulations Article 14 &amp; 22. These students face immediate academic dismissal if their cumulative GPA remains below 65.0% at the end of the semester. Course load is strictly capped at 12 credit hours.
+            {% if is_rtl %}
+                تخضع لأحكام المادتين 14 و22 من لوائح جامعة ظفار. يواجه هؤلاء الطلبة الفصل الأكاديمي الوشيك إذا بقي المعدل التراكمي دون 65.0% بنهاية الفصل الدراسي. العبء الدراسي محدد بسقف 12 ساعة معتمدة كحد أقصى.
+            {% else %}
+                Governed by Dhofar University Academic Regulations Article 14 &amp; 22. These students face immediate academic dismissal if their cumulative GPA remains below 65.0% at the end of the semester. Course load is strictly capped at 12 credit hours.
+            {% endif %}
         </p>
 
         {% for rec in report.strict_probation %}
         <div class="student-rescue-card border-danger border-opacity-50">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <div>
-                    <span class="badge bg-danger me-2">STRICT PROBATION</span>
+                    <span class="badge bg-danger me-2">{{ 'ملاحظة صارمة' if is_rtl else 'STRICT PROBATION' }}</span>
                     <strong class="text-dark fs-6">{{ rec.name }}</strong>
-                    <span class="text-muted font-monospace ms-1">(ID: {{ rec.id }})</span>
+                    <span class="text-muted font-monospace ms-1">({{ 'الرقم:' if is_rtl else 'ID:' }} {{ rec.id }})</span>
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-1 mt-md-0">
                     <span class="badge bg-light text-dark border">{{ rec.degree_plan }}</span>
-                    <span class="badge bg-danger font-monospace fs-7">CGPA: {{ "%.2f"|format(rec.cgpa) }}%</span>
-                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fs-7">Deficit: -{{ rec.gpa_deficit }}%</span>
+                    <span class="badge bg-danger font-monospace fs-7">{{ 'المعدل:' if is_rtl else 'CGPA:' }} {{ "%.2f"|format(rec.cgpa) }}%</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fs-7">{{ 'العجز:' if is_rtl else 'Deficit:' }} -{{ rec.gpa_deficit }}%</span>
                 </div>
             </div>
 
             <div class="row g-2 small text-dark mb-2">
                 <div class="col-md-4">
-                    <span class="text-muted">Standing:</span> <strong class="text-danger">{{ rec.status }}</strong>
+                    <span class="text-muted">{{ t('standing') }}:</span> <strong class="text-danger">{{ localize_standing(rec.status) }}</strong>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted">Earned Credits:</span> <strong>{{ rec.completed_credits }} / {{ rec.total_credits }} hrs</strong>
+                    <span class="text-muted">{{ t('earned_credits') }}:</span> <strong>{{ rec.completed_credits }} / {{ rec.total_credits }} {{ t('credits') }}</strong>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted">Semester Cap:</span> <strong class="text-danger">{{ rec.credit_cap }} Credits Max (Art. 22)</strong>
+                    <span class="text-muted">{{ 'سقف الساعات:' if is_rtl else 'Semester Cap:' }}</span> <strong class="text-danger">{{ rec.credit_cap }} {{ 'ساعة كحد أقصى (المادة 22)' if is_rtl else 'Credits Max (Art. 22)' }}</strong>
                 </div>
             </div>
 
             {% if rec.critical_codes %}
             <div class="mb-2 p-2 rounded bg-danger-subtle border border-danger border-opacity-25 small">
-                <strong class="text-danger"><i class="fas fa-lock me-1"></i>Unresolved Prerequisite Gatekeepers:</strong>
+                <strong class="text-danger"><i class="fas fa-lock me-1"></i>{{ 'مساقات عنق الزجاجة غير المستوفاة:' if is_rtl else 'Unresolved Prerequisite Gatekeepers:' }}</strong>
                 <span class="font-monospace fw-bold ms-1">{{ rec.critical_codes|join(', ') }}</span>
             </div>
             {% endif %}
 
             <div class="p-2 rounded bg-light border small mb-2">
-                <strong class="text-primary d-block mb-1"><i class="fas fa-clipboard-check me-1"></i>Prescribed Rescue Action Plan (Advisor Mandate):</strong>
-                <ul class="mb-0 ps-3">
+                <strong class="text-primary d-block mb-1"><i class="fas fa-clipboard-check me-1"></i>{{ 'خطة الإنقاذ الأكاديمية المقررة (توجيهات المرشد):' if is_rtl else 'Prescribed Rescue Action Plan (Advisor Mandate):' }}</strong>
+                <ul class="mb-0 ps-3 pe-3">
                     {% for act in rec.rescue_actions %}
                     <li class="mb-1">{{ act }}</li>
                     {% endfor %}
@@ -369,7 +400,7 @@
             </div>
 
             <div class="p-2 rounded border border-warning border-opacity-50 bg-warning-subtle small">
-                <strong class="text-dark"><i class="fas fa-user-shield text-warning me-1"></i>Department / Chairperson Action Required:</strong>
+                <strong class="text-dark"><i class="fas fa-user-shield text-warning me-1"></i>{{ 'الإجراء المطلوب من رئيس القسم:' if is_rtl else 'Department / Chairperson Action Required:' }}</strong>
                 <span class="text-dark ms-1">{{ rec.chair_intervention }}</span>
             </div>
         </div>
@@ -380,50 +411,54 @@
         <!-- ========================================================================= -->
         {% if report.second_probation %}
         <div class="tier-header tier-second">
-            <span><i class="fas fa-circle-exclamation me-2"></i>CATEGORY B: SECOND PROBATION &mdash; ESCALATING WARNING STAGE</span>
-            <span class="badge text-white" style="background-color: #ea580c;">{{ report.second_probation|length }} Student{{ 's' if report.second_probation|length != 1 else '' }}</span>
+            <span><i class="fas fa-circle-exclamation me-2"></i>{{ 'الفئة (ب): الملاحظة الأكاديمية الثانية — مرحلة الإنذار المتصاعد' if is_rtl else 'CATEGORY B: SECOND PROBATION — ESCALATING WARNING STAGE' }}</span>
+            <span class="badge text-white" style="background-color: #ea580c;">{{ report.second_probation|length }} {{ 'طالب' if is_rtl else 'Students' }}</span>
         </div>
         <p class="small text-muted mb-3 fst-italic">
-            Students on Second Probation who have failed to exit warning status after two consecutive terms. Critical intervention is mandatory before escalation to Strict Probation.
+            {% if is_rtl %}
+                الطلبة الخاضعون للملاحظة الثانية بعد عدم تمكنهم من الخروج من الإنذار خلال فصلين متتاليين. التدخل العاجل إلزامي قبل التصعيد إلى الملاحظة الصارمة.
+            {% else %}
+                Students on Second Probation who have failed to exit warning status after two consecutive terms. Critical intervention is mandatory before escalation to Strict Probation.
+            {% endif %}
         </p>
 
         {% for rec in report.second_probation %}
         <div class="student-rescue-card border-warning border-opacity-50">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <div>
-                    <span class="badge text-white me-2" style="background-color: #ea580c;">SECOND PROBATION</span>
+                    <span class="badge text-white me-2" style="background-color: #ea580c;">{{ 'الملاحظة الثانية' if is_rtl else 'SECOND PROBATION' }}</span>
                     <strong class="text-dark fs-6">{{ rec.name }}</strong>
-                    <span class="text-muted font-monospace ms-1">(ID: {{ rec.id }})</span>
+                    <span class="text-muted font-monospace ms-1">({{ 'الرقم:' if is_rtl else 'ID:' }} {{ rec.id }})</span>
                 </div>
                 <div class="d-flex align-items-center gap-2 mt-1 mt-md-0">
                     <span class="badge bg-light text-dark border">{{ rec.degree_plan }}</span>
-                    <span class="badge text-white font-monospace fs-7" style="background-color: #ea580c;">CGPA: {{ "%.2f"|format(rec.cgpa) }}%</span>
-                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning fs-7">Deficit: -{{ rec.gpa_deficit }}%</span>
+                    <span class="badge text-white font-monospace fs-7" style="background-color: #ea580c;">{{ 'المعدل:' if is_rtl else 'CGPA:' }} {{ "%.2f"|format(rec.cgpa) }}%</span>
+                    <span class="badge bg-warning bg-opacity-10 text-dark border border-warning fs-7">{{ 'العجز:' if is_rtl else 'Deficit:' }} -{{ rec.gpa_deficit }}%</span>
                 </div>
             </div>
 
             <div class="row g-2 small text-dark mb-2">
                 <div class="col-md-4">
-                    <span class="text-muted">Standing:</span> <strong>{{ rec.status }}</strong>
+                    <span class="text-muted">{{ t('standing') }}:</span> <strong>{{ localize_standing(rec.status) }}</strong>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted">Earned Credits:</span> <strong>{{ rec.completed_credits }} / {{ rec.total_credits }} hrs</strong>
+                    <span class="text-muted">{{ t('earned_credits') }}:</span> <strong>{{ rec.completed_credits }} / {{ rec.total_credits }} {{ t('credits') }}</strong>
                 </div>
                 <div class="col-md-4">
-                    <span class="text-muted">Semester Cap:</span> <strong class="text-danger">{{ rec.credit_cap }} Credits Max (Art. 22)</strong>
+                    <span class="text-muted">{{ 'سقف الساعات:' if is_rtl else 'Semester Cap:' }}</span> <strong class="text-danger">{{ rec.credit_cap }} {{ 'ساعة كحد أقصى (المادة 22)' if is_rtl else 'Credits Max (Art. 22)' }}</strong>
                 </div>
             </div>
 
             {% if rec.critical_codes %}
             <div class="mb-2 p-2 rounded bg-warning-subtle border border-warning border-opacity-25 small">
-                <strong class="text-dark"><i class="fas fa-lock me-1"></i>Unresolved Prerequisite Gatekeepers:</strong>
+                <strong class="text-dark"><i class="fas fa-lock me-1"></i>{{ 'مساقات عنق الزجاجة غير المستوفاة:' if is_rtl else 'Unresolved Prerequisite Gatekeepers:' }}</strong>
                 <span class="font-monospace fw-bold ms-1">{{ rec.critical_codes|join(', ') }}</span>
             </div>
             {% endif %}
 
             <div class="p-2 rounded bg-light border small mb-2">
-                <strong class="text-primary d-block mb-1"><i class="fas fa-clipboard-check me-1"></i>Prescribed Rescue Action Plan (Advisor Mandate):</strong>
-                <ul class="mb-0 ps-3">
+                <strong class="text-primary d-block mb-1"><i class="fas fa-clipboard-check me-1"></i>{{ 'خطة الإنقاذ الأكاديمية المقررة (توجيهات المرشد):' if is_rtl else 'Prescribed Rescue Action Plan (Advisor Mandate):' }}</strong>
+                <ul class="mb-0 ps-3 pe-3">
                     {% for act in rec.rescue_actions %}
                     <li class="mb-1">{{ act }}</li>
                     {% endfor %}
@@ -431,7 +466,7 @@
             </div>
 
             <div class="p-2 rounded border border-warning border-opacity-50 bg-warning-subtle small">
-                <strong class="text-dark"><i class="fas fa-user-shield text-warning me-1"></i>Department / Chairperson Action Required:</strong>
+                <strong class="text-dark"><i class="fas fa-user-shield text-warning me-1"></i>{{ 'الإجراء المطلوب من رئيس القسم:' if is_rtl else 'Department / Chairperson Action Required:' }}</strong>
                 <span class="text-dark ms-1">{{ rec.chair_intervention }}</span>
             </div>
         </div>
@@ -442,23 +477,27 @@
         <!-- CATEGORY C: FIRST PROBATION — EARLY WARNING & INTERVENTION -->
         <!-- ========================================================================= -->
         <div class="tier-header tier-first">
-            <span><i class="fas fa-bell me-2"></i>CATEGORY C: FIRST PROBATION &mdash; EARLY INTERVENTION STAGE</span>
-            <span class="badge bg-warning text-dark">{{ report.first_probation|length }} Students</span>
+            <span><i class="fas fa-bell me-2"></i>{{ 'الفئة (ج): الملاحظة الأكاديمية الأولى — مرحلة الإنذار والتدخل المبكر' if is_rtl else 'CATEGORY C: FIRST PROBATION — EARLY INTERVENTION STAGE' }}</span>
+            <span class="badge bg-warning text-dark">{{ report.first_probation|length }} {{ 'طالب' if is_rtl else 'Students' }}</span>
         </div>
         <p class="small text-muted mb-3 fst-italic">
-            Students receiving their first academic probation notification. Early recovery plans using DU Article 18 grade replacement offer the highest probability of restoring Good Standing within one semester.
+            {% if is_rtl %}
+                الطلبة الذين تلقوا إخطار الملاحظة الأكاديمية لأول مرة. توفر خطط الاستعادة المبكرة عبر استبدال الدرجة وفق المادة 18 أعلى نسبة للعودة للوضع السليم خلال فصل واحد.
+            {% else %}
+                Students receiving their first academic probation notification. Early recovery plans using DU Article 18 grade replacement offer the highest probability of restoring Good Standing within one semester.
+            {% endif %}
         </p>
 
         <div class="table-responsive bg-white rounded border mb-4">
             <table class="table table-sm table-hover mb-0 align-middle">
                 <thead class="table-light small text-muted">
                     <tr>
-                        <th style="width: 12%;">ID</th>
-                        <th style="width: 25%;">Student Name</th>
-                        <th style="width: 20%;">Degree Plan</th>
-                        <th style="width: 10%;">CGPA</th>
-                        <th style="width: 15%;">Gatekeeper Repeats</th>
-                        <th style="width: 18%;">Immediate Rescue Mandate</th>
+                        <th style="width: 12%;">{{ t('student_id') }}</th>
+                        <th style="width: 25%;">{{ t('student_name') }}</th>
+                        <th style="width: 20%;">{{ t('degree_plan') }}</th>
+                        <th style="width: 10%;">{{ t('cgpa') }}</th>
+                        <th style="width: 15%;">{{ 'إعادة مساقات متعثرة' if is_rtl else 'Gatekeeper Repeats' }}</th>
+                        <th style="width: 18%;">{{ 'خطة الإنقاذ الفورية' if is_rtl else 'Immediate Rescue Mandate' }}</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -471,7 +510,7 @@
                         </td>
                         <td class="fw-semibold text-dark">{{ rec.name }}</td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ rec.degree_plan|replace(' in Computer Science', '') }}</span>
+                            <span class="badge bg-light text-dark border">{{ rec.degree_plan|replace(' in Computer Science', '')|replace(' في علوم الحاسوب', '') }}</span>
                         </td>
                         <td>
                             <span class="badge bg-{{ 'danger' if rec.cgpa < 60.0 else 'warning text-dark' }} font-monospace">
@@ -499,32 +538,51 @@
         <!-- ========================================================================= -->
         <!-- RECOMMENDATIONS FOR THE DEPARTMENT CHAIRPERSON -->
         <!-- ========================================================================= -->
-        <div class="p-4 rounded border bg-light mt-4 mb-4" style="border-left: 5px solid #1e3a8a !important;">
+        <div class="p-4 rounded border bg-light mt-4 mb-4" style="border-left: 5px solid #1e3a8a !important; {% if is_rtl %}border-left: none !important; border-right: 5px solid #1e3a8a !important;{% endif %}">
             <h5 class="fw-bold text-dark mb-3">
-                <i class="fas fa-landmark text-primary me-2"></i>Institutional Recommendations for the Department Chairperson
+                <i class="fas fa-landmark text-primary me-2"></i>{{ 'التوصيات المؤسسية والإجرائية المرفوعة لرئيس القسم' if is_rtl else 'Institutional Recommendations for the Department Chairperson' }}
             </h5>
-            <p class="small text-dark mb-3" style="line-height: 1.6;">
-                To systematically reverse the academic decline of these {{ report.total_at_risk }} students and facilitate their elevation back into Good Standing (CGPA &ge; 65.0%), I respectfully recommend the implementation of the following administrative measures:
+            <p class="small text-dark mb-3" style="line-height: 1.7;">
+                {% if is_rtl %}
+                    لتصحيح المسار الأكاديمي لهؤلاء الطلبة ({{ report.total_at_risk }} طالباً) وتيسير عودتهم للوضع الأكاديمي السليم (المعدل التراكمي &ge; 65.0%)، أرفع إلى عنايتكم الكريمة التوصية باتخاذ التدابير الإدارية والتنظيمية التالية:
+                {% else %}
+                    To systematically reverse the academic decline of these {{ report.total_at_risk }} students and facilitate their elevation back into Good Standing (CGPA &ge; 65.0%), I respectfully recommend the implementation of the following administrative measures:
+                {% endif %}
             </p>
-            <ol class="mb-0 ps-3 small text-dark d-flex flex-column gap-2" style="line-height: 1.6;">
-                <li>
-                    <strong>Strict Registration Load Controls (DU Article 22):</strong> Direct the registration registrar and department advisors to reject all course overload requests exceeding 12 credit hours for any student on First, Second, or Strict Probation.
-                </li>
-                <li>
-                    <strong>Priority Seat Allocation for Gatekeeper Prerequisite Repeats:</strong> Ensure that sections for repeated core courses (particularly <code>MATH 199</code>, <code>CMPS 110N</code>, and <code>CMPS 180</code>) maintain reserved capacity for probation students, enabling them to capitalize on the DU Article 18 grade replacement multiplier.
-                </li>
-                <li>
-                    <strong>Structured Department Tutorial Lab Hours:</strong> Require lab instructors and teaching assistants to conduct mandatory weekly tutorial review sessions in programming and calculus, submitting bi-weekly attendance rosters to the academic advisors.
-                </li>
-                <li>
-                    <strong>Midterm Academic Audit &amp; Article 24 Safeguard:</strong> Mandate a departmental progress check following Week 6 assessments. For any student on Strict or Second Probation scoring under 60% by Week 9, coordinate with the advisor to initiate an official Course Withdrawal (W) before the Week 10 deadline to avert grade failure and dismissal.
-                </li>
+            <ol class="mb-0 ps-3 pe-3 small text-dark d-flex flex-column gap-2" style="line-height: 1.7;">
+                {% if is_rtl %}
+                    <li>
+                        <strong>الإنفاذ الصارم لضوابط العبء الدراسي (المادة 22):</strong> توجيه دائرة القبول والتسجيل ومرشدي القسم بوقف ورفض كافة طلبات تجاوز الساعات فوق 12 ساعة معتمدة لأي طالب واقع تحت الملاحظة الأكاديمية الأولى أو الثانية أو الصارمة.
+                    </li>
+                    <li>
+                        <strong>أولوية حجز المقاعد لإعادة مقررات المتطلبات السابقة المتعثرة:</strong> ضمان تخصيص مقاعد محجوزة في شعب المقررات الأساسية المعادة (خاصة <code>MATH 199</code> و<code>CMPS 110N</code> و<code>CMPS 180</code>) لتمكين طلبة الملاحظة من الاستفادة القصوى من ميزة استبدال الدرجة وفق المادة 18.
+                    </li>
+                    <li>
+                        <strong>تفعيل الساعات الإرشادية بمختبرات القسم:</strong> إلزام مدرسي المختبرات ومساعدي التدريس بعقد جلسات تقوية ومراجعة أسبوعية إلزامية في مواد البرمجة والرياضيات ورفع كشوف الحضور أسبوعياً للمرشدين.
+                    </li>
+                    <li>
+                        <strong>التدقيق الأكاديمي لمنتصف الفصل وشبكة أمان المادة 24:</strong> إجراء تدقيق إلزامي بعد تقييمات الأسبوع السادس؛ والتنسيق مع المرشد لتوجيه أي طالب في الملاحظة الثانية أو الصارمة لم يحقق 60% بحلول الأسبوع التاسع نحو الانسحاب الرسمي من المقرر (W) قبل الموعد النهائي للأسبوع العاشر لتفادي الرسوب والفصل.
+                    </li>
+                {% else %}
+                    <li>
+                        <strong>Strict Registration Load Controls (DU Article 22):</strong> Direct the registration registrar and department advisors to reject all course overload requests exceeding 12 credit hours for any student on First, Second, or Strict Probation.
+                    </li>
+                    <li>
+                        <strong>Priority Seat Allocation for Gatekeeper Prerequisite Repeats:</strong> Ensure that sections for repeated core courses (particularly <code>MATH 199</code>, <code>CMPS 110N</code>, and <code>CMPS 180</code>) maintain reserved capacity for probation students, enabling them to capitalize on the DU Article 18 grade replacement multiplier.
+                    </li>
+                    <li>
+                        <strong>Structured Department Tutorial Lab Hours:</strong> Require lab instructors and teaching assistants to conduct mandatory weekly tutorial review sessions in programming and calculus, submitting bi-weekly attendance rosters to the academic advisors.
+                    </li>
+                    <li>
+                        <strong>Midterm Academic Audit &amp; Article 24 Safeguard:</strong> Mandate a departmental progress check following Week 6 assessments. For any student on Strict or Second Probation scoring under 60% by Week 9, coordinate with the advisor to initiate an official Course Withdrawal (W) before the Week 10 deadline to avert grade failure and dismissal.
+                    </li>
+                {% endif %}
             </ol>
         </div>
 
         <!-- Formal Closing & Signature Block -->
         <div class="signature-block">
-            <p class="mb-4 small text-dark">Respectfully submitted for your review and administrative guidance,</p>
+            <p class="mb-4 small text-dark">{% if is_rtl %}وتفضلوا بقبول فائق الاحترام والتقدير والامتنان،،{% else %}Respectfully submitted for your review and administrative guidance,{% endif %}</p>
             
             <div class="d-flex flex-wrap justify-content-between align-items-end">
                 <div>
@@ -533,15 +591,15 @@
                     <div class="text-muted small">{{ report.department_name }} | {{ report.college_name }}</div>
                     <div class="text-muted small">{{ report.university_name }}</div>
                     <div class="sig-line"></div>
-                    <small class="text-muted">Signature &amp; Date</small>
+                    <small class="text-muted">{{ 'توقيع وختم المرشد الأكاديمي والتاريخ' if is_rtl else 'Signature & Date' }}</small>
                 </div>
                 <div class="text-end mt-3 mt-md-0">
                     <div class="p-2 border rounded bg-light small text-start" style="width: 250px;">
-                        <small class="text-muted d-block fw-bold mb-1">CHAIRPERSON ACKNOWLEDGEMENT</small>
+                        <small class="text-muted d-block fw-bold mb-1">{{ 'اعتماد رئيس القسم' if is_rtl else 'CHAIRPERSON ACKNOWLEDGEMENT' }}</small>
                         <div class="text-muted" style="height: 45px; border-bottom: 1px dashed #cbd5e1;"></div>
                         <div class="d-flex justify-content-between mt-1 text-muted" style="font-size: 0.7rem;">
-                            <span>Approved / Action Initiated</span>
-                            <span>Date</span>
+                            <span>{{ 'معتمد / تم اتخاذ الإجراء' if is_rtl else 'Approved / Action Initiated' }}</span>
+                            <span>{{ 'التاريخ' if is_rtl else 'Date' }}</span>
                         </div>
                     </div>
                 </div>

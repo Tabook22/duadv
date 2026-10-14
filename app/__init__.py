@@ -37,14 +37,26 @@ def create_app(config_name=None):
     def inject_app_context():
         from flask import session
         from app.settings_manager import get_settings
-        from app.i18n import get_current_language, is_rtl, t
+        from app.i18n import (
+            get_current_language, is_rtl, t,
+            localize_standing, localize_program, localize_season,
+            localize_term, localize_priority, localize_risk_level,
+            localize_outreach_status
+        )
         return {
             'app_settings': get_settings(),
             'is_admin_logged_in': session.get('is_admin', False),
             'admin_username': session.get('admin_username', ''),
             'current_lang': get_current_language(),
             'is_rtl': is_rtl(),
-            't': t
+            't': t,
+            'localize_standing': localize_standing,
+            'localize_program': localize_program,
+            'localize_season': localize_season,
+            'localize_term': localize_term,
+            'localize_priority': localize_priority,
+            'localize_risk_level': localize_risk_level,
+            'localize_outreach_status': localize_outreach_status
         }
     
     # Optional global login enforcement if admin configured require_login_for_portal
