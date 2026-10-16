@@ -88,6 +88,10 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
         except Exception:
             lang = 'en'
     is_ar = (lang == 'ar')
+    from app.i18n import (
+        localize_course_name, localize_category, localize_program,
+        localize_degree_type, localize_year, localize_term
+    )
 
     now_ts = time.time()
     cache_key = f"{student_id}_{transcripts_dir or ''}_{lang or ''}"
@@ -118,7 +122,7 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
             
             entry = {
                 'raw_code': code_raw,
-                'name': c.get('name', ''),
+                'name': localize_course_name(c.get('name', ''), lang=lang),
                 'term': sem.get('term', ''),
                 'season': sem.get('season', ''),
                 'credits': credits_val,
@@ -150,7 +154,8 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
     
     for req in curriculum:
         c_norm = normalize_course_code(req['code'])
-        cat = req.get('category', 'Major Core')
+        cat_raw = req.get('category', 'Major Core')
+        cat = localize_category(cat_raw, lang=lang)
         if cat not in category_summary:
             category_summary[cat] = {'required_credits': 0, 'completed_credits': 0, 'required_count': 0, 'completed_count': 0}
         category_summary[cat]['required_credits'] += req['credits']
@@ -165,17 +170,22 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
         elif (c_norm + 'N') in passed_course_codes:
             matched_norm = c_norm + 'N'
             
+        t_rec_raw = req.get('term_recommended', '')
+        t_rec = localize_year(t_rec_raw, lang=lang)
+        c_name = localize_course_name(req['name'], lang=lang)
+
         if matched_norm:
             att = best_attempts.get(matched_norm, {})
             completed_courses.append({
                 'code': req['code'],
-                'name': req['name'],
+                'name': c_name,
                 'credits': req['credits'],
                 'category': cat,
-                'term_recommended': req.get('term_recommended', ''),
+                'term_recommended': t_rec,
+                'term_recommended_raw': t_rec_raw,
                 'grade': att.get('grade'),
                 'score': att.get('score'),
-                'term_taken': att.get('term')
+                'term_taken': localize_term(att.get('term'), lang=lang)
             })
             category_summary[cat]['completed_credits'] += req['credits']
             category_summary[cat]['completed_count'] += 1
@@ -196,10 +206,11 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
             ready = (len(unmet_prereqs) == 0)
             missing_courses.append({
                 'code': req['code'],
-                'name': req['name'],
+                'name': c_name,
                 'credits': req['credits'],
                 'category': cat,
-                'term_recommended': req.get('term_recommended', ''),
+                'term_recommended': t_rec,
+                'term_recommended_raw': t_rec_raw,
                 'prerequisites': prereqs,
                 'unmet_prerequisites': unmet_prereqs,
                 'is_ready_to_register': ready
@@ -236,31 +247,39 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
             )
             critical_repeats.append({
                 'code': latest['raw_code'],
-                'name': latest['name'],
+                'name': localize_course_name(latest['name'], lang=lang),
                 'credits': latest['credits'] or 3,
                 'last_grade': latest['grade'],
                 'last_score': latest['score'],
-                'last_term': latest['term'],
+                'last_term': localize_term(latest['term'], lang=lang),
                 'in_curriculum': in_curriculum,
                 'attempts_count': len(attempts),
-                'reason': 'Mandatory Repeat: Course attempted and not passed. Blocks prerequisites and hurts CGPA.'
+                'reason': (
+                    'إعادة إجبارية: مقرر تمت محاولته ولم يتم اجتيازه. يعيق المتطلبات السابقة ويؤثر سلباً على المعدل التراكمي.'
+                    if is_ar else
+                    'Mandatory Repeat: Course attempted and not passed. Blocks prerequisites and hurts CGPA.'
+                )
             })
         else:
             # Course was passed, but check for low score (60-64%) under probation
             if is_under_probation and latest.get('score') is not None and 60 <= latest['score'] < 65:
                 low_grade_repeats.append({
                     'code': latest['raw_code'],
-                    'name': latest['name'],
+                    'name': localize_course_name(latest['name'], lang=lang),
                     'credits': latest['credits'],
                     'grade': latest['grade'],
                     'score': latest['score'],
-                    'term': latest['term'],
-                    'reason': 'Recommended Repeat: Grade is D/D+ (60-64%). Article 18 allows replacing with higher grade to lift GPA >= 65%'
+                    'term': localize_term(latest['term'], lang=lang),
+                    'reason': (
+                        'إعادة موصى بها: التقدير المسجل D/D+ (60-64%). تتيح المادة 18 استبداله بدرجة أعلى لرفع المعدل التراكمي >= 65%.'
+                        if is_ar else
+                        'Recommended Repeat: Grade is D/D+ (60-64%). Article 18 allows replacing with higher grade to lift GPA >= 65%'
+                    )
                 })
                 
     # Sort ready missing courses by recommended term order
     def _term_sort_key(item):
-        t = item.get('term_recommended', '')
+        t = item.get('term_recommended_raw') or item.get('term_recommended', '')
         val = 9.9
         if 'Year 1' in t: val = 1.0 + (0.1 if 'Spring' in t else 0.0)
         elif 'Year 2' in t: val = 2.0 + (0.1 if 'Spring' in t else 0.0)
@@ -295,11 +314,18 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
     gpa_deficit = max(0.0, round(65.0 - current_gpa, 2)) if current_gpa > 0 else 0.0
     semesters_remaining = math.ceil(remaining_credits / (12 if credit_cap == 12 else 15)) if remaining_credits > 0 else 0
     
-    return {
+    bridge_info = copy.deepcopy(plan.get('bridge_to_bachelor'))
+    if bridge_info and is_ar:
+        bridge_info['eligible_programs'] = [localize_program(p, lang='ar') for p in bridge_info.get('eligible_programs', [])]
+        bridge_info['description'] = (
+            'يؤهل الحصول على معدل تراكمي >= 75% في الدبلوم للانتقال المباشر (التجسير) إلى السنة الثالثة في برامج البكالوريوس بجامعة ظفار.'
+        )
+
+    result = {
         'student': student,
-        'program_title': plan['program_title'],
-        'degree_type': plan['degree_type'],
-        'bridge_info': plan.get('bridge_to_bachelor'),
+        'program_title': localize_program(plan['program_title'], lang=lang),
+        'degree_type': localize_degree_type(plan['degree_type'], lang=lang),
+        'bridge_info': bridge_info,
         'total_plan_credits': total_plan_credits,
         'completed_credits': completed_credits,
         'remaining_credits': remaining_credits,
@@ -325,7 +351,7 @@ def audit_student_degree(student_id: str, transcripts_dir: str = None, force_ref
         'data': result,
         'timestamp': now_ts
     }
-    return result
+    return copy.deepcopy(result)
 
 
 def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str, Any]:
@@ -340,6 +366,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
         except Exception:
             lang = 'en'
     is_ar = (lang == 'ar')
+    from app.i18n import localize_term, localize_course_name, localize_standing
 
     raw_semesters = get_student_semesters(student_id)
     
@@ -367,6 +394,8 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
     for idx, s in enumerate(graded_semesters):
         t_name = s['term']
         chart_label = re.sub(r'\(Year \d\)', '', t_name).strip()
+        if is_ar:
+            chart_label = localize_term(chart_label, lang='ar')
         
         sem_gpa = s.get('semester_gpa')
         cum_gpa = s.get('cumulative_gpa')
@@ -380,6 +409,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
         
         for c in courses:
             c_code = c['code']
+            c_name = localize_course_name(c['name'], lang=lang)
             c_grade = str(c.get('grade', '')).strip()
             c_score = c.get('score')
             c_credits = c.get('credits', 0)
@@ -387,14 +417,14 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
             if any(c_grade.upper().startswith(x) for x in ['WA', 'WF', 'W']):
                 withdrawn_courses.append({
                     'code': c_code,
-                    'name': c['name'],
+                    'name': c_name,
                     'grade': c_grade,
                     'credits': c_credits
                 })
             elif is_grade_passing(c_grade):
                 passed_courses.append({
                     'code': c_code,
-                    'name': c['name'],
+                    'name': c_name,
                     'grade': c_grade,
                     'score': c_score,
                     'credits': c_credits
@@ -402,7 +432,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
             else:
                 failed_courses.append({
                     'code': c_code,
-                    'name': c['name'],
+                    'name': c_name,
                     'grade': c_grade,
                     'score': c_score,
                     'credits': c_credits
@@ -411,7 +441,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
             if '(R:' in c_grade or 'R:' in c_grade:
                 repeated_courses.append({
                     'code': c_code,
-                    'name': c['name'],
+                    'name': c_name,
                     'grade': c_grade
                 })
                 
@@ -506,15 +536,19 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
     if len(all_cum_gpas) >= 2:
         if all_cum_gpas[-1] > all_cum_gpas[0] and (all_cum_gpas[-1] - all_cum_gpas[-2] >= 0):
             overall_trend = "مسار صاعد / تحسن ملحوظ" if is_ar else "Upward / Improving Trajectory"
+            overall_trend_code = "Improving"
             trend_badge = "success"
         elif all_cum_gpas[-1] < all_cum_gpas[-2]:
             overall_trend = "مسار هابط / تحت الخطر" if is_ar else "Downward / At-Risk Trajectory"
+            overall_trend_code = "Declining"
             trend_badge = "danger"
         else:
             overall_trend = "مسار متذبذب / متغير" if is_ar else "Fluctuating / Variable"
+            overall_trend_code = "Fluctuating"
             trend_badge = "warning"
     else:
         overall_trend = "خط الأساس الأكاديمي الأولي" if is_ar else "Initial Academic Baseline"
+        overall_trend_code = "Baseline"
         trend_badge = "info"
         
     chart_data = {
@@ -522,7 +556,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
         'term_gpas': [r['semester_gpa'] if r['semester_gpa'] is not None and r['semester_gpa'] > 0 else None for r in term_records],
         'cum_gpas': [r['cumulative_gpa'] if r['cumulative_gpa'] is not None and r['cumulative_gpa'] > 0 else None for r in term_records],
         'benchmark': 65.0,
-        'standings': [r['standing'] for r in term_records]
+        'standings': [localize_standing(r['standing'], lang=lang) for r in term_records]
     }
     
     return {
@@ -530,6 +564,7 @@ def analyze_semester_progression(student_id: str, lang: str = None) -> Dict[str,
         'terms': term_records,
         'chart_data': chart_data,
         'overall_trend': overall_trend,
+        'overall_trend_code': overall_trend_code,
         'trend_badge': trend_badge,
         'highest_gpa': round(highest_gpa, 2),
         'lowest_gpa': round(lowest_gpa, 2),
@@ -644,8 +679,10 @@ def generate_advisor_consultation_guide(
         except Exception:
             lang = 'en'
     is_ar = (lang == 'ar')
+    from app.i18n import localize_standing
 
     st = student.status or 'Normal / Good Standing'
+    st_disp = localize_standing(st, lang=lang)
     gpa = audit['current_gpa'] or 0.0
     deficit = audit['gpa_deficit']
     cap = audit['credit_cap']
@@ -690,7 +727,7 @@ def generate_advisor_consultation_guide(
                 'speaker': 'المرشد الأكاديمي (د. ناصر تبوك)',
                 'dialogue': (
                     f"دعنا ننظر إلى كشف درجاتك بكل شفافية. معدلك التراكمي الحالي هو **{gpa:.2f}%**، وهو "
-                    f"**يقل بمقدار {deficit:.2f} نقطة عن حد الوضع الأكاديمي السليم المطلوب (65.0%)**، مما يضعك تحت **{st}**. "
+                    f"**يقل بمقدار {deficit:.2f} نقطة عن حد الوضع الأكاديمي السليم المطلوب (65.0%)**، مما يضعك تحت **{st_disp}**. "
                     f"وفق المادتين 14 و 22 من لوائح جامعة ظفار الأكاديمية، يُعد هذا إنذاراً رسمياً. عبؤك الدراسي محدد بسقف صارم هو "
                     f"**{cap} ساعة معتمدة** هذا الفصل. لا يمكننا تسجيل أكثر من 12 ساعة، لأن استمرار المعدل دون 65% سيؤدي لتصاعد الملاحظة أو التعرض للفصل الأكاديمي."
                 )
@@ -812,11 +849,13 @@ def generate_student_advising_dossier(student_id: str, force_refresh: bool = Fal
         except Exception:
             lang = 'en'
     is_ar = (lang == 'ar')
+    from app.i18n import localize_standing
 
     audit = audit_student_degree(student_id, lang=lang)
     student = audit['student']
     cap = audit['credit_cap']
     st = student.status or 'Normal / Good Standing'
+    st_disp = localize_standing(st, lang=lang)
     gpa = audit['current_gpa']
     
     # -----------------------------------------------------------------
@@ -893,7 +932,7 @@ def generate_student_advising_dossier(student_id: str, force_refresh: bool = Fal
     if is_ar:
         if "Strict" in st:
             analysis_paragraphs.append(
-                f"**تنبيه أكاديمي حرج:** الطالب {student.name} مدرج حالياً تحت **{st}** بمعدل تراكمي قدره **{gpa:.2f}%**، "
+                f"**تنبيه أكاديمي حرج:** الطالب {student.name} مدرج حالياً تحت **{st_disp}** بمعدل تراكمي قدره **{gpa:.2f}%**، "
                 f"وهو **يقل بمقدار {audit['gpa_deficit']:.2f} نقطة** عن حد الوضع الأكاديمي السليم الإلزامي بجامعة ظفار (65.0%). "
                 f"استمرار هذا العجز يعرض الطالب لخطر الفصل الأكاديمي المباشر. الالتزام بجدول تعافٍ صارم محدد بـ 12 ساعة معتمدة أمر إلزامي."
             )
@@ -909,7 +948,7 @@ def generate_student_advising_dossier(student_id: str, force_refresh: bool = Fal
             )
         else:
             analysis_paragraphs.append(
-                f"**وضع أكاديمي سليم ومستوفٍ:** الطالب {student.name} في **{st}** بمعدل تراكمي قدره **{gpa:.2f}%** و **{audit['completed_credits']} ساعة معتمدة منجزة** "
+                f"**وضع أكاديمي سليم ومستوفٍ:** الطالب {student.name} في **{st_disp}** بمعدل تراكمي قدره **{gpa:.2f}%** و **{audit['completed_credits']} ساعة معتمدة منجزة** "
                 f"({audit['completion_percentage']}% من إجمالي ساعات الخطة الدراسية لتخصص {audit['program_title']})."
             )
             
@@ -1057,9 +1096,13 @@ def generate_student_advising_dossier(student_id: str, force_refresh: bool = Fal
     # Cross-reference recommended courses with live Section Schedule
     try:
         from app.schedule_engine import match_recommended_schedule_to_sections
-        matched_schedule = match_recommended_schedule_to_sections(recommended_schedule)
+        matched_schedule = match_recommended_schedule_to_sections(recommended_schedule, lang=lang)
     except Exception:
         matched_schedule = recommended_schedule
+
+    adv_name = student.advisor or 'Dr. Nasser Tabook'
+    if is_ar and ('Nasser' in adv_name or 'Tabook' in adv_name):
+        adv_name = 'د. ناصر تبوك'
 
     return {
         'audit': audit,
@@ -1074,6 +1117,6 @@ def generate_student_advising_dossier(student_id: str, force_refresh: bool = Fal
         'total_recommended_credits': accumulated_credits,
         'policy_citations': policy_citations,
         'action_items': action_items,
-        'advisor_name': student.advisor or 'Dr. Nasser Tabook',
+        'advisor_name': adv_name,
         'generated_at': 'العام الأكاديمي 2026/2027' if is_ar else 'Academic Year 2025/2026'
     }

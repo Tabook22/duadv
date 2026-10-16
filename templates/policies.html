@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Academic Policies & Advising Guidance Library - Dhofar University{% endblock %}
+{% block title %}{{ 'اللوائح الأكاديمية ومكتبة الإرشاد - جامعة ظفار' if is_rtl else 'Academic Policies & Advising Guidance Library - Dhofar University' }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
@@ -8,22 +8,22 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> Dhofar University</span>
-                <span class="badge bg-secondary px-2 py-1">Office of Academic Advising</span>
+                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> {{ 'جامعة ظفار' if is_rtl else 'Dhofar University' }}</span>
+                <span class="badge bg-secondary px-2 py-1">{{ 'مكتب الإرشاد الأكاديمي' if is_rtl else 'Office of Academic Advising' }}</span>
             </div>
             <h2 class="fw-bold mb-1" style="color: #1e3a8a;">
-                <i class="fas fa-book-reader me-2"></i>Academic Policies &amp; Guidance Library
+                <i class="fas fa-book-reader me-2"></i>{{ 'مكتبة اللوائح الأكاديمية وأدلة الإرشاد' if is_rtl else 'Academic Policies & Guidance Library' }}
             </h2>
             <p class="text-muted mb-0">
-                Official university policy books, student handbooks, and academic regulations used as advisor references.
+                {{ 'كتب السياسات الرسمية للجامعة، أدلة الطلبة، واللوائح الأكاديمية المعتمدة كمراجع للمرشد الأكاديمي.' if is_rtl else 'Official university policy books, student handbooks, and academic regulations used as advisor references.' }}
             </p>
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadPolicyModal">
-                <i class="fas fa-cloud-upload-alt me-1"></i> Upload Reference Document
+                <i class="fas fa-cloud-upload-alt me-1"></i> {{ 'رفع وثيقة مرجعية' if is_rtl else 'Upload Reference Document' }}
             </button>
             <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-outline-danger">
-                <i class="fas fa-exclamation-triangle me-1"></i> Students at Risk
+                <i class="fas fa-exclamation-triangle me-1"></i> {{ 'الطلبة المتعثرون' if is_rtl else 'Students at Risk' }}
             </a>
         </div>
     </div>
@@ -33,28 +33,28 @@
         <div class="card-body p-4 text-white">
             <div class="row align-items-center">
                 <div class="col-lg-8">
-                    <h5 class="fw-bold mb-1"><i class="fas fa-search me-2 text-warning"></i>Search Academic Regulations &amp; Guidance</h5>
+                    <h5 class="fw-bold mb-1"><i class="fas fa-search me-2 text-warning"></i>{{ 'البحث في اللوائح والأدلة الأكاديمية' if is_rtl else 'Search Academic Regulations & Guidance' }}</h5>
                     <p class="text-white-50 small mb-3">
-                        Instant full-text search across all uploaded DU policy books, regulations, and bylaws. Locates exact clauses, articles, and page numbers.
+                        {{ 'بحث نصي فوري في جميع كتب سياسات جامعة ظفار واللوائح والأنظمة المرفوعة، لتحديد البنود والمواد وأرقام الصفحات بدقة.' if is_rtl else 'Instant full-text search across all uploaded DU policy books, regulations, and bylaws. Locates exact clauses, articles, and page numbers.' }}
                     </p>
                     <form method="GET" action="{{ url_for('main.policies_library') }}" class="d-flex gap-2">
                         <div class="input-group">
                             <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" name="q" class="form-control border-0" placeholder="Search keywords (e.g. probation 12 credits, repeating D grade, withdrawal, incomplete)..." value="{{ search_query }}">
+                            <input type="text" name="q" class="form-control border-0" placeholder="{{ 'ابحث بالكلمات المفتاحية (مثل: إنذار 12 ساعة، إعادة مقرر بتقدير D، انسحاب، غير مكتمل)...' if is_rtl else 'Search keywords (e.g. probation 12 credits, repeating D grade, withdrawal, incomplete)...' }}" value="{{ search_query }}">
                         </div>
-                        <button type="submit" class="btn btn-warning fw-semibold text-dark px-4">Search</button>
+                        <button type="submit" class="btn btn-warning fw-semibold text-dark px-4">{{ 'بحث' if is_rtl else 'Search' }}</button>
                         {% if search_query %}
-                        <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-light">Clear</a>
+                        <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-light">{{ 'مسح' if is_rtl else 'Clear' }}</a>
                         {% endif %}
                     </form>
                     <!-- Search Suggestions -->
                     <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
-                        <small class="text-white-50 me-2">Suggested queries:</small>
-                        <a href="{{ url_for('main.policies_library', q='probation') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">Probation</a>
-                        <a href="{{ url_for('main.policies_library', q='12 credit hours') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">12 Credit Limit</a>
-                        <a href="{{ url_for('main.policies_library', q='repeat course') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">Repeat Course</a>
-                        <a href="{{ url_for('main.policies_library', q='withdrawal W WF') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">Withdrawal W/WF</a>
-                        <a href="{{ url_for('main.policies_library', q='grade 65%') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">CGPA 65%</a>
+                        <small class="text-white-50 me-2">{{ 'عمليات بحث مقترحة:' if is_rtl else 'Suggested queries:' }}</small>
+                        <a href="{{ url_for('main.policies_library', q='probation') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">{{ 'الإنذار الأكاديمي' if is_rtl else 'Probation' }}</a>
+                        <a href="{{ url_for('main.policies_library', q='12 credit hours') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">{{ 'حد 12 ساعة معتمدة' if is_rtl else '12 Credit Limit' }}</a>
+                        <a href="{{ url_for('main.policies_library', q='repeat course') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">{{ 'إعادة مقرر' if is_rtl else 'Repeat Course' }}</a>
+                        <a href="{{ url_for('main.policies_library', q='withdrawal W WF') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">{{ 'الانسحاب W/WF' if is_rtl else 'Withdrawal W/WF' }}</a>
+                        <a href="{{ url_for('main.policies_library', q='grade 65%') }}" class="badge bg-white bg-opacity-10 text-white text-decoration-none">{{ 'معدل 65%' if is_rtl else 'CGPA 65%' }}</a>
                     </div>
                 </div>
                 <div class="col-lg-4 text-center mt-3 mt-lg-0 border-start border-white border-opacity-10 ps-lg-4">
@@ -62,13 +62,13 @@
                         <div class="col-6">
                             <div class="bg-white bg-opacity-10 p-3 rounded">
                                 <div class="fs-3 fw-bold text-warning">{{ all_policies_count }}</div>
-                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Reference Books</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">{{ 'الوثائق المرجعية' if is_rtl else 'Reference Books' }}</div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="bg-white bg-opacity-10 p-3 rounded">
                                 <div class="fs-3 fw-bold text-info">{{ categories|length }}</div>
-                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Categories</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">{{ 'التصنيفات' if is_rtl else 'Categories' }}</div>
                             </div>
                         </div>
                     </div>
@@ -82,15 +82,16 @@
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="fw-bold mb-0 text-dark">
-                <i class="fas fa-list-check text-primary me-2"></i>Search Results for "<span class="text-primary">{{ search_query }}</span>"
-                <span class="badge bg-primary ms-2">{{ search_results|length }} Reference Document(s) Found</span>
+                <i class="fas fa-list-check text-primary me-2"></i>{{ 'نتائج البحث عن' if is_rtl else 'Search Results for' }} "<span class="text-primary">{{ search_query }}</span>"
+                <span class="badge bg-primary ms-2">{{ (search_results|length ~ ' وثيقة مرجعية') if is_rtl else (search_results|length ~ ' Reference Document(s) Found') }}</span>
             </h5>
-            <a href="{{ url_for('main.policies_library') }}" class="btn btn-sm btn-outline-secondary">Show All Documents</a>
+            <a href="{{ url_for('main.policies_library') }}" class="btn btn-sm btn-outline-secondary">{{ 'عرض جميع الوثائق' if is_rtl else 'Show All Documents' }}</a>
         </div>
 
         {% if search_results %}
         <div class="row g-3">
-            {% for res in search_results %}
+            {% for raw_res in search_results %}
+            {% set res = localize_policy_doc(raw_res) %}
             <div class="col-12">
                 <div class="card border shadow-sm">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
@@ -101,10 +102,10 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-sm btn-outline-primary btn-read-doc" data-url="{{ url_for('main.view_policy_file', policy_id=res.policy_id) }}" data-title="{{ res.title }}">
-                                <i class="fas fa-eye me-1"></i> Read Document
+                                <i class="fas fa-eye me-1"></i> {{ 'قراءة الوثيقة' if is_rtl else 'Read Document' }}
                             </button>
                             <a href="{{ url_for('main.download_policy_file', policy_id=res.policy_id) }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-download me-1"></i> Download
+                                <i class="fas fa-download me-1"></i> {{ 'تحميل' if is_rtl else 'Download' }}
                             </a>
                         </div>
 
@@ -115,8 +116,8 @@
                             {% for m in res.matches %}
                             <div class="list-group-item px-0 py-2 border-0 border-bottom">
                                 <div class="d-flex align-items-baseline gap-2">
-                                    <span class="badge bg-warning text-dark">Page {{ m.page }}</span>
-                                    <small class="text-secondary fw-semibold">Clause match: "<span class="text-primary">{{ m.matched_term }}</span>"</small>
+                                    <span class="badge bg-warning text-dark">{{ ('صفحة ' ~ m.page) if is_rtl else ('Page ' ~ m.page) }}</span>
+                                    <small class="text-secondary fw-semibold">{{ 'تطابق النص:' if is_rtl else 'Clause match:' }} "<span class="text-primary">{{ m.matched_term }}</span>"</small>
                                 </div>
                                 <div class="p-2 mt-1 rounded bg-light border-start border-3 border-warning small text-dark font-monospace" style="font-size: 12px;">
                                     {{ m.snippet }}
@@ -125,7 +126,7 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <p class="text-muted small mb-0">Matched document title / keywords: {{ res.description or 'Official reference guide' }}</p>
+                        <p class="text-muted small mb-0">{{ 'تطابق عنوان الوثيقة / الكلمات المفتاحية:' if is_rtl else 'Matched document title / keywords:' }} {{ res.description or ('دليل مرجعي رسمي' if is_rtl else 'Official reference guide') }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -134,7 +135,7 @@
         </div>
         {% else %}
         <div class="alert alert-warning">
-            <i class="fas fa-info-circle me-1"></i> No direct clause matches found for "<strong>{{ search_query }}</strong>". Try searching for broader terms such as <code>probation</code>, <code>credits</code>, <code>grades</code>, or <code>regulations</code>.
+            <i class="fas fa-info-circle me-1"></i> {{ ('لم يتم العثور على تطابقات نصية مباشرة لـ "' ~ search_query ~ '". جرب البحث بكلمات أعم مثل probation أو credits أو grades أو regulations.') if is_rtl else ('No direct clause matches found for "<strong>' ~ search_query ~ '</strong>". Try searching for broader terms such as <code>probation</code>, <code>credits</code>, <code>grades</code>, or <code>regulations</code>.')|safe }}
         </div>
         {% endif %}
     </div>
@@ -142,13 +143,13 @@
 
     <!-- Category Filter Tabs -->
     <div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
-        <span class="text-muted small fw-semibold me-1"><i class="fas fa-filter me-1"></i>Category:</span>
+        <span class="text-muted small fw-semibold me-1"><i class="fas fa-filter me-1"></i>{{ 'التصنيف:' if is_rtl else 'Category:' }}</span>
         <a href="{{ url_for('main.policies_library', category='All', q=search_query) }}" class="btn btn-sm {% if selected_category == 'All' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
-            All Documents ({{ all_policies_count }})
+            {{ ('جميع الوثائق (' ~ all_policies_count ~ ')') if is_rtl else ('All Documents (' ~ all_policies_count ~ ')') }}
         </a>
         {% for cat in categories %}
         <a href="{{ url_for('main.policies_library', category=cat, q=search_query) }}" class="btn btn-sm {% if selected_category == cat %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-            {{ cat }}
+            {{ localize_policy_doc({'category': cat}).category }}
         </a>
         {% endfor %}
     </div>
@@ -156,7 +157,8 @@
     <!-- Document Cards Grid -->
     <div class="row g-4 mb-5">
         {% if policies %}
-        {% for p in policies %}
+        {% for raw_p in policies %}
+        {% set p = localize_policy_doc(raw_p) %}
         <div class="col-md-6 col-lg-6">
             <div class="card h-100 shadow-sm border hover-shadow transition-all">
                 <div class="card-body p-4 d-flex flex-column">
@@ -181,7 +183,7 @@
                     </div>
 
                     <p class="text-secondary small mb-3 flex-grow-1" style="line-height: 1.5;">
-                        {{ p.description or 'Official Dhofar University academic reference guide and student advising bylaws.' }}
+                        {{ p.description or ('دليل مرجعي أكاديمي رسمي بجامعة ظفار ولوائح الإرشاد الطلابي.' if is_rtl else 'Official Dhofar University academic reference guide and student advising bylaws.') }}
                     </p>
 
                     <!-- Tags -->
@@ -196,12 +198,12 @@
                     <!-- Metadata row -->
                     <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 border-top text-muted small mb-3" style="font-size: 11px;">
                         <div>
-                            <i class="far fa-calendar-alt me-1"></i> {{ p.uploaded_at.strftime('%b %d, %Y') if p.uploaded_at else 'Recent' }}
+                            <i class="far fa-calendar-alt me-1"></i> {{ p.uploaded_at.strftime('%Y-%m-%d' if is_rtl else '%b %d, %Y') if p.uploaded_at else ('مؤخراً' if is_rtl else 'Recent') }}
                         </div>
                         <div class="d-flex gap-2">
                             <span><i class="fas fa-file me-1"></i> {{ p.file_size }}</span>
                             {% if p.page_count %}
-                            <span>&bull; {{ p.page_count }} page{{ 's' if p.page_count != 1 else '' }}</span>
+                            <span>&bull; {{ (p.page_count ~ ' صفحة') if is_rtl else (p.page_count ~ ' page' ~ ('s' if p.page_count != 1 else '')) }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -209,18 +211,18 @@
                     <!-- Action Buttons -->
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-primary btn-sm flex-fill btn-read-doc" data-url="{{ url_for('main.view_policy_file', policy_id=p.id) }}" data-title="{{ p.title }}">
-                            <i class="fas fa-book-open me-1"></i> Read Inline
+                            <i class="fas fa-book-open me-1"></i> {{ 'قراءة مباشرة' if is_rtl else 'Read Inline' }}
                         </button>
 
 
-                        <a href="{{ url_for('main.view_policy_file', policy_id=p.id) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="Open in new tab">
+                        <a href="{{ url_for('main.view_policy_file', policy_id=p.id) }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="{{ 'فتح في نافذة جديدة' if is_rtl else 'Open in new tab' }}">
                             <i class="fas fa-external-link-alt"></i>
                         </a>
-                        <a href="{{ url_for('main.download_policy_file', policy_id=p.id) }}" class="btn btn-outline-secondary btn-sm" title="Download file">
+                        <a href="{{ url_for('main.download_policy_file', policy_id=p.id) }}" class="btn btn-outline-secondary btn-sm" title="{{ 'تحميل الملف' if is_rtl else 'Download file' }}">
                             <i class="fas fa-download"></i>
                         </a>
-                        <form method="POST" action="{{ url_for('main.delete_policy', policy_id=p.id) }}" onsubmit="return confirm('Are you sure you want to remove this reference document from the library?');" class="d-inline">
-                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete document">
+                        <form method="POST" action="{{ url_for('main.delete_policy', policy_id=p.id) }}" onsubmit="return confirm('{{ 'هل أنت متأكد من حذف هذه الوثيقة المرجعية من المكتبة؟' if is_rtl else 'Are you sure you want to remove this reference document from the library?' }}');" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ 'حذف الوثيقة' if is_rtl else 'Delete document' }}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -233,10 +235,10 @@
         <div class="col-12">
             <div class="p-5 text-center bg-light rounded border">
                 <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                <h5>No reference documents found in this category</h5>
-                <p class="text-muted small">Upload your Dhofar University policy books, bylaws, and student guides using the button above.</p>
+                <h5>{{ 'لم يتم العثور على وثائق مرجعية في هذا التصنيف' if is_rtl else 'No reference documents found in this category' }}</h5>
+                <p class="text-muted small">{{ 'قم برفع كتب السياسات واللوائح وأدلة الطلبة الخاصة بجامعة ظفار باستخدام الزر أعلاه.' if is_rtl else 'Upload your Dhofar University policy books, bylaws, and student guides using the button above.' }}</p>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadPolicyModal">
-                    <i class="fas fa-cloud-upload-alt me-1"></i> Upload Document Now
+                    <i class="fas fa-cloud-upload-alt me-1"></i> {{ 'رفع وثيقة الآن' if is_rtl else 'Upload Document Now' }}
                 </button>
             </div>
         </div>
@@ -247,44 +249,44 @@
     <div class="card border-0 shadow-sm mb-5">
         <div class="card-header bg-white py-3 border-bottom">
             <h5 class="fw-bold mb-0" style="color: #1e3a8a;">
-                <i class="fas fa-shield-alt text-primary me-2"></i>Quick Advisor Reference: Dhofar University Core Academic Rules
+                <i class="fas fa-shield-alt text-primary me-2"></i>{{ 'المرجع السريع للمرشد: القواعد الأكاديمية الأساسية بجامعة ظفار' if is_rtl else 'Quick Advisor Reference: Dhofar University Core Academic Rules' }}
             </h5>
         </div>
         <div class="card-body p-4">
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="p-3 bg-light rounded border h-100">
-                        <div class="badge bg-danger mb-2">Rule 1 &bull; Academic Probation</div>
-                        <h6 class="fw-bold text-dark mb-1">Cumulative GPA &lt; 65.0%</h6>
+                        <div class="badge bg-danger mb-2">{{ 'القاعدة 1 • الإنذار الأكاديمي' if is_rtl else 'Rule 1 • Academic Probation' }}</div>
+                        <h6 class="fw-bold text-dark mb-1">{{ 'المعدل التراكمي أقل من 65.0%' if is_rtl else 'Cumulative GPA < 65.0%' }}</h6>
                         <p class="text-muted small mb-0">
-                            Any student with CGPA below 65.0% is placed on Academic Probation. Strictly restricted to max <strong>12 credit hours</strong> in following semester.
+                            {{ 'يوضع أي طالب يقل معدله التراكمي عن 65.0% تحت الإنذار الأكاديمي، ويُقيد بحد أقصى صارم قدره 12 ساعة معتمدة في الفصل الدراسي التالي.' if is_rtl else 'Any student with CGPA below 65.0% is placed on Academic Probation. Strictly restricted to max <strong>12 credit hours</strong> in following semester.'|safe }}
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="p-3 bg-light rounded border h-100">
-                        <div class="badge bg-warning text-dark mb-2">Rule 2 &bull; Repeating Courses</div>
-                        <h6 class="fw-bold text-dark mb-1">Grade Replacement (F/D)</h6>
+                        <div class="badge bg-warning text-dark mb-2">{{ 'القاعدة 2 • إعادة المقررات' if is_rtl else 'Rule 2 • Repeating Courses' }}</div>
+                        <h6 class="fw-bold text-dark mb-1">{{ 'استبدال التقدير (F / D)' if is_rtl else 'Grade Replacement (F/D)' }}</h6>
                         <p class="text-muted small mb-0">
-                            Students may repeat courses with F, D, or D+. The higher grade replaces the earlier grade in cumulative GPA calculation. Prioritize repeating prerequisite courses.
+                            {{ 'يحق للطلبة إعادة المقررات ذات التقدير F أو D أو D+. ويحل التقدير الأعلى محل التقدير السابق في حساب المعدل التراكمي، مع إعطاء الأولوية لإعادة المتطلبات السابقة.' if is_rtl else 'Students may repeat courses with F, D, or D+. The higher grade replaces the earlier grade in cumulative GPA calculation. Prioritize repeating prerequisite courses.' }}
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="p-3 bg-light rounded border h-100">
-                        <div class="badge bg-info text-dark mb-2">Rule 3 &bull; Course Load Limits</div>
-                        <h6 class="fw-bold text-dark mb-1">15–18 CH (Normal)</h6>
+                        <div class="badge bg-info text-dark mb-2">{{ 'القاعدة 3 • حدود العبء الدراسي' if is_rtl else 'Rule 3 • Course Load Limits' }}</div>
+                        <h6 class="fw-bold text-dark mb-1">{{ '15–18 ساعة (العبء الاعتيادي)' if is_rtl else '15–18 CH (Normal)' }}</h6>
                         <p class="text-muted small mb-0">
-                            Normal semester load is 15-18 credits. Probation: 12 credits max. Graduating seniors can take up to 21 credits with Dean authorization.
+                            {{ 'العبء الفصلي الاعتيادي هو 15-18 ساعة معتمدة. وتحت الإنذار: 12 ساعة كحد أقصى. ويمكن لطلبة التخرج تسجيل حتى 21 ساعة بموافقة العميد.' if is_rtl else 'Normal semester load is 15-18 credits. Probation: 12 credits max. Graduating seniors can take up to 21 credits with Dean authorization.' }}
                         </p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="p-3 bg-light rounded border h-100">
-                        <div class="badge bg-success text-white mb-2">Rule 4 &bull; Probation Removal</div>
-                        <h6 class="fw-bold text-dark mb-1">CGPA &ge; 65.0% Clear</h6>
+                        <div class="badge bg-success text-white mb-2">{{ 'القاعدة 4 • رفع الإنذار الأكاديمي' if is_rtl else 'Rule 4 • Probation Removal' }}</div>
+                        <h6 class="fw-bold text-dark mb-1">{{ 'بلوغ المعدل التراكمي 65.0% فأعلى' if is_rtl else 'CGPA ≥ 65.0% Clear' }}</h6>
                         <p class="text-muted small mb-0">
-                            Once cumulative GPA reaches 65.0%, student is returned to Good Standing with standard course load allowances restored.
+                            {{ 'بمجرد وصول المعدل التراكمي إلى 65.0% فأعلى، يعود الطالب إلى الوضع الأكاديمي المنتظم مع استعادة العبء الدراسي الاعتيادي.' if is_rtl else 'Once cumulative GPA reaches 65.0%, student is returned to Good Standing with standard course load allowances restored.' }}
                         </p>
                     </div>
                 </div>
@@ -300,9 +302,9 @@
             <div class="modal-header bg-primary text-white">
                 <div>
                     <h5 class="modal-title fw-bold mb-0" id="uploadPolicyModalLabel">
-                        <i class="fas fa-cloud-upload-alt me-2"></i>Upload Reference Documents &amp; Study Plans
+                        <i class="fas fa-cloud-upload-alt me-2"></i>{{ 'رفع الوثائق المرجعية والخطط الدراسية' if is_rtl else 'Upload Reference Documents & Study Plans' }}
                     </h5>
-                    <small class="text-white-50">Upload single or multiple PDF policies, study plans, degree requirements, or bylaws at once</small>
+                    <small class="text-white-50">{{ 'رفع ملف واحد أو عدة ملفات PDF للسياسات أو الخطط الدراسية أو متطلبات الدرجة العلمية أو اللوائح دفعة واحدة' if is_rtl else 'Upload single or multiple PDF policies, study plans, degree requirements, or bylaws at once' }}</small>
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -310,29 +312,29 @@
                 <div class="modal-body p-4">
                     <!-- Drop Zone -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-dark">Select or Drag &amp; Drop PDF / Document Files <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold small text-dark">{{ 'اختر أو اسحب وأفلت ملفات PDF / المستندات' if is_rtl else 'Select or Drag & Drop PDF / Document Files' }} <span class="text-danger">*</span></label>
                         <div id="dropZone" class="border border-2 border-dashed rounded p-4 text-center bg-light" style="border-color: #cbd5e1 !important; cursor: pointer; transition: all 0.2s ease;">
                             <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
-                            <h6 class="fw-bold text-dark mb-1">Drag &amp; Drop multiple PDF files here, or click to browse</h6>
+                            <h6 class="fw-bold text-dark mb-1">{{ 'اسحب وأفلت ملفات PDF هنا، أو انقر للاستعراض' if is_rtl else 'Drag & Drop multiple PDF files here, or click to browse' }}</h6>
                             <p class="text-muted small mb-2">
-                                (e.g., <i>Cybersecurity Plan of Study.pdf</i>, <i>Diploma in Computer Science Plan of Study.pdf</i>, <i>Requirements for Studying Computer Science Diploma.pdf</i>, etc.)
+                                (<i>Cybersecurity Plan of Study.pdf</i>, <i>Diploma in Computer Science Plan of Study.pdf</i>, ...)
                             </p>
                             <span class="btn btn-sm btn-outline-primary px-3">
-                                <i class="fas fa-folder-open me-1"></i> Browse Files
+                                <i class="fas fa-folder-open me-1"></i> {{ 'استعراض الملفات' if is_rtl else 'Browse Files' }}
                             </span>
                             <input type="file" id="policyFilesInput" name="files" class="d-none" accept=".pdf,.docx,.doc,.txt" multiple required>
                         </div>
-                        <div class="form-text mt-1">Supported formats: PDF (.pdf), Word (.docx, .doc), Text (.txt). Multiple files can be selected simultaneously.</div>
+                        <div class="form-text mt-1">{{ 'الصيغ المدعومة: PDF (.pdf)، وورد (.docx, .doc)، نص (.txt). يمكن اختيار عدة ملفات في وقت واحد.' if is_rtl else 'Supported formats: PDF (.pdf), Word (.docx, .doc), Text (.txt). Multiple files can be selected simultaneously.' }}</div>
                     </div>
 
                     <!-- Selected Files Preview List -->
                     <div id="selectedFilesContainer" class="mb-3 d-none">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label fw-bold small text-dark mb-0">
-                                <i class="fas fa-list-check text-primary me-1"></i>Selected Files for Batch Upload (<span id="selectedFilesCount">0</span>)
+                                <i class="fas fa-list-check text-primary me-1"></i>{{ 'الملفات المحددة للرفع الجماعي' if is_rtl else 'Selected Files for Batch Upload' }} (<span id="selectedFilesCount">0</span>)
                             </label>
                             <button type="button" id="clearFilesBtn" class="btn btn-sm btn-link text-danger text-decoration-none p-0">
-                                <i class="fas fa-times-circle me-1"></i>Clear all
+                                <i class="fas fa-times-circle me-1"></i>{{ 'مسح الكل' if is_rtl else 'Clear all' }}
                             </button>
                         </div>
                         <div id="selectedFilesList" class="list-group shadow-sm" style="max-height: 180px; overflow-y: auto;">
@@ -343,46 +345,46 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label fw-bold small text-dark">Category Classification <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold small text-dark">{{ 'تصنيف الوثيقة' if is_rtl else 'Category Classification' }} <span class="text-danger">*</span></label>
                                 <select name="category" id="uploadCategorySelect" class="form-select" required>
-                                    <option value="Auto-Detect" selected>Auto-Detect from Filename (Recommended)</option>
-                                    <option value="Plan of Study">Plan of Study</option>
-                                    <option value="Degree Requirements">Degree Requirements</option>
-                                    <option value="Academic Regulations">Academic Regulations</option>
-                                    <option value="Academic Probation &amp; Standing">Academic Probation &amp; Standing</option>
-                                    <option value="Student Handbook &amp; Guide">Student Handbook &amp; Guide</option>
-                                    <option value="Registration &amp; Add/Drop Bylaws">Registration &amp; Add/Drop Bylaws</option>
-                                    <option value="Grading &amp; Examination Policy">Grading &amp; Examination Policy</option>
-                                    <option value="General Guidance">General Guidance</option>
+                                    <option value="Auto-Detect" selected>{{ 'اكتشاف تلقائي من اسم الملف (موصى به)' if is_rtl else 'Auto-Detect from Filename (Recommended)' }}</option>
+                                    <option value="Plan of Study">{{ 'الخطة الدراسية' if is_rtl else 'Plan of Study' }}</option>
+                                    <option value="Degree Requirements">{{ 'متطلبات الدرجة العلمية' if is_rtl else 'Degree Requirements' }}</option>
+                                    <option value="Academic Regulations">{{ 'اللوائح الأكاديمية' if is_rtl else 'Academic Regulations' }}</option>
+                                    <option value="Academic Probation &amp; Standing">{{ 'الإنذار والوضع الأكاديمي' if is_rtl else 'Academic Probation & Standing' }}</option>
+                                    <option value="Student Handbook &amp; Guide">{{ 'دليل الطالب والإرشاد' if is_rtl else 'Student Handbook & Guide' }}</option>
+                                    <option value="Registration &amp; Add/Drop Bylaws">{{ 'ضوابط التسجيل والحذف والإضافة' if is_rtl else 'Registration & Add/Drop Bylaws' }}</option>
+                                    <option value="Grading &amp; Examination Policy">{{ 'سياسة التقييم والامتحانات' if is_rtl else 'Grading & Examination Policy' }}</option>
+                                    <option value="General Guidance">{{ 'إرشادات عامة' if is_rtl else 'General Guidance' }}</option>
                                 </select>
-                                <div class="form-text">"Auto-Detect" automatically assigns categories like <i>Plan of Study</i> or <i>Degree Requirements</i> based on document names.</div>
+                                <div class="form-text">{{ 'يقوم "الاكتشاف التلقائي" بتعيين التصنيف المناسب تلقائياً بناءً على اسم الملف.' if is_rtl else '"Auto-Detect" automatically assigns categories like Plan of Study or Degree Requirements based on document names.' }}</div>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label fw-bold small text-dark">Document Title (Single File Only)</label>
-                                <input type="text" name="title" id="uploadTitleInput" class="form-control" placeholder="Leave blank to use clean filename">
-                                <div class="form-text">For multiple files, titles are auto-generated from each filename.</div>
+                                <label class="form-label fw-bold small text-dark">{{ 'عنوان الوثيقة (لملف واحد فقط)' if is_rtl else 'Document Title (Single File Only)' }}</label>
+                                <input type="text" name="title" id="uploadTitleInput" class="form-control" placeholder="{{ 'اتركه فارغاً لاستخدام اسم الملف' if is_rtl else 'Leave blank to use clean filename' }}">
+                                <div class="form-text">{{ 'عند رفع عدة ملفات، يتم إنشاء العناوين تلقائياً من اسم كل ملف.' if is_rtl else 'For multiple files, titles are auto-generated from each filename.' }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold small text-dark">Summary / Description (Optional)</label>
-                        <textarea name="description" class="form-control" rows="2" placeholder="Brief summary of policy contents or degree requirements for advisor guidance..."></textarea>
+                        <label class="form-label fw-bold small text-dark">{{ 'ملخص / وصف (اختياري)' if is_rtl else 'Summary / Description (Optional)' }}</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="{{ 'ملخص موجز لمحتوى اللائحة أو متطلبات الدرجة العلمية لإرشاد الطلبة...' if is_rtl else 'Brief summary of policy contents or degree requirements for advisor guidance...' }}"></textarea>
                     </div>
                     
                     <div class="mb-2">
-                        <label class="form-label fw-bold small text-dark">Keywords / Tags (Optional)</label>
-                        <input type="text" name="tags" class="form-control" placeholder="e.g., cybersecurity, diploma, probation, degree plan, prerequisites">
-                        <div class="form-text">Comma or space-separated keywords to assist the search engine. Relevant tags are also automatically inferred.</div>
+                        <label class="form-label fw-bold small text-dark">{{ 'الكلمات المفتاحية / الوسوم (اختياري)' if is_rtl else 'Keywords / Tags (Optional)' }}</label>
+                        <input type="text" name="tags" class="form-control" placeholder="{{ 'مثال: الأمن السيبراني، دبلوم، إنذار، خطة دراسية، متطلبات سابقة' if is_rtl else 'e.g., cybersecurity, diploma, probation, degree plan, prerequisites' }}">
+                        <div class="form-text">{{ 'كلمات مفتاحية مفصولة بفواصل لمساعدة محرك البحث، كما يتم استنتاج الوسوم تلقائياً.' if is_rtl else 'Comma or space-separated keywords to assist the search engine. Relevant tags are also automatically inferred.' }}</div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ 'إلغاء' if is_rtl else 'Cancel' }}</button>
                     <button type="submit" id="uploadSubmitBtn" class="btn btn-primary btn-sm px-4">
-                        <i class="fas fa-cloud-upload-alt me-1"></i> Upload &amp; Index Documents
+                        <i class="fas fa-cloud-upload-alt me-1"></i> {{ 'رفع وفهرسة الوثائق' if is_rtl else 'Upload & Index Documents' }}
                     </button>
                 </div>
             </form>
@@ -397,13 +399,13 @@
             <div class="modal-header bg-dark text-white py-2">
                 <div class="d-flex align-items-center gap-2">
                     <i class="fas fa-file-pdf text-danger"></i>
-                    <h6 class="modal-title fw-bold mb-0" id="viewerDocTitle">Document Viewer</h6>
+                    <h6 class="modal-title fw-bold mb-0" id="viewerDocTitle">{{ 'عارض الوثائق' if is_rtl else 'Document Viewer' }}</h6>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <a id="viewerDownloadBtn" href="#" class="btn btn-sm btn-outline-light py-0 px-2" title="Download">
+                    <a id="viewerDownloadBtn" href="#" class="btn btn-sm btn-outline-light py-0 px-2" title="{{ 'تحميل' if is_rtl else 'Download' }}">
                         <i class="fas fa-download"></i>
                     </a>
-                    <a id="viewerOpenTabBtn" href="#" target="_blank" class="btn btn-sm btn-outline-light py-0 px-2" title="Open in new tab">
+                    <a id="viewerOpenTabBtn" href="#" target="_blank" class="btn btn-sm btn-outline-light py-0 px-2" title="{{ 'فتح في نافذة جديدة' if is_rtl else 'Open in new tab' }}">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                     <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -420,6 +422,7 @@
 
 {% block scripts %}
 <script>
+const IS_RTL_POLICIES = {{ 'true' if is_rtl else 'false' }};
 function openInlineViewer(url, title) {
     document.getElementById('viewerDocTitle').innerText = title;
     document.getElementById('docViewerIframe').src = url;
@@ -511,12 +514,12 @@ document.addEventListener('click', function(e) {
 
     function inferBadge(name) {
         var n = name.toLowerCase();
-        if (n.includes('plan') && n.includes('study')) return '<span class="badge bg-primary">Plan of Study</span>';
-        if (n.includes('require')) return '<span class="badge bg-info text-dark">Degree Requirements</span>';
-        if (n.includes('probation')) return '<span class="badge bg-danger">Probation</span>';
-        if (n.includes('handbook') || n.includes('guide')) return '<span class="badge bg-success">Handbook</span>';
-        if (n.includes('regulat')) return '<span class="badge bg-secondary">Regulations</span>';
-        return '<span class="badge bg-light text-dark border">Document</span>';
+        if (n.includes('plan') && n.includes('study')) return '<span class="badge bg-primary">' + (IS_RTL_POLICIES ? 'الخطة الدراسية' : 'Plan of Study') + '</span>';
+        if (n.includes('require')) return '<span class="badge bg-info text-dark">' + (IS_RTL_POLICIES ? 'متطلبات الدرجة العلمية' : 'Degree Requirements') + '</span>';
+        if (n.includes('probation')) return '<span class="badge bg-danger">' + (IS_RTL_POLICIES ? 'الإنذار الأكاديمي' : 'Probation') + '</span>';
+        if (n.includes('handbook') || n.includes('guide')) return '<span class="badge bg-success">' + (IS_RTL_POLICIES ? 'دليل إرشادي' : 'Handbook') + '</span>';
+        if (n.includes('regulat')) return '<span class="badge bg-secondary">' + (IS_RTL_POLICIES ? 'اللوائح الأكاديمية' : 'Regulations') + '</span>';
+        return '<span class="badge bg-light text-dark border">' + (IS_RTL_POLICIES ? 'وثيقة' : 'Document') + '</span>';
     }
 
     function renderFileList(files) {
@@ -534,10 +537,10 @@ document.addEventListener('click', function(e) {
 
         if (files.length > 1 && uploadTitleInput) {
             uploadTitleInput.disabled = true;
-            uploadTitleInput.placeholder = 'Disabled: titles derived automatically from each filename';
+            uploadTitleInput.placeholder = IS_RTL_POLICIES ? 'معطل: يتم استنتاج العناوين تلقائياً من اسم كل ملف' : 'Disabled: titles derived automatically from each filename';
         } else if (uploadTitleInput) {
             uploadTitleInput.disabled = false;
-            uploadTitleInput.placeholder = 'Leave blank to use clean filename';
+            uploadTitleInput.placeholder = IS_RTL_POLICIES ? 'اتركه فارغاً لاستخدام اسم الملف' : 'Leave blank to use clean filename';
         }
 
         Array.from(files).forEach(function(file, idx) {

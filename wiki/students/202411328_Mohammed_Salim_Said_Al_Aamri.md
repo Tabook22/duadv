@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 67.79
 semester_gpa: 73.5
-last_updated: "2026-10-14"
+last_updated: "2026-10-16"
 ---
 
 # Student Advising Dossier: Mohammed Salim Said Al Aamri

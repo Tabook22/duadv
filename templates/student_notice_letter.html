@@ -401,8 +401,8 @@
                         <div>
                             <div class="fw-bold text-dark fs-6">{{ notice.advisor_name }}</div>
                             <div class="text-secondary small">{{ notice.advisor_title }}</div>
-                            <div class="text-muted small">{{ notice.dept_name }} | {{ notice.college_name }}</div>
-                            <div class="text-muted small">{{ notice.university_name }}</div>
+                            <div class="text-muted small">{{ notice.ar_dept if is_rtl else notice.dept_name }} | {{ notice.ar_college if is_rtl else notice.college_name }}</div>
+                            <div class="text-muted small">{{ notice.ar_uni if is_rtl else notice.university_name }}</div>
                             <div class="sig-line"></div>
                             <small class="text-muted">{{ 'توقيع وختم المرشد الأكاديمي' if is_rtl else 'Academic Advisor Signature & Seal' }}</small>
                         </div>
@@ -473,11 +473,11 @@
             <span class="badge bg-primary-subtle text-primary border px-2 py-1 mt-0.5">{{ localize_outreach_status(h.status) }}</span>
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between">
-                    <strong class="text-dark"><i class="fas fa-tag me-1 text-muted"></i>{{ h.method }}</strong>
+                    <strong class="text-dark"><i class="fas fa-tag me-1 text-muted"></i>{{ ('تم إرسال إخطار بالبريد' if 'Email' in h.method else h.method) if is_rtl else h.method }}</strong>
                     <span class="text-muted font-monospace" style="font-size: 0.76rem;"><i class="far fa-clock me-1"></i>{{ h.formatted_time }}</span>
                 </div>
                 {% if h.notes %}
-                    <div class="text-secondary mt-1 bg-light p-2 rounded">{{ h.notes }}</div>
+                    <div class="text-secondary mt-1 bg-light p-2 rounded">{{ ('تم إرسال الإخطار الأكاديمي الرسمي وتوجيهات التسجيل عبر البوابة.' if 'Official academic' in h.notes else h.notes) if is_rtl else h.notes }}</div>
                 {% endif %}
             </div>
         </div>

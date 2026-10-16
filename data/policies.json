@@ -1,5 +1,65 @@
 [
   {
+    "id": "pol_20261016_102109_1_1669",
+    "title": "Requirements For Studying Computer Science Diploma V2",
+    "category": "Degree Requirements",
+    "filename": "20261016_102109_1_Requirements_for_Studying_Computer_Science_Diploma_v2.pdf",
+    "original_filename": "Requirements_for_Studying_Computer_Science_Diploma_v2.pdf",
+    "file_size": "26 B",
+    "file_type": "pdf",
+    "description": "Test batch upload",
+    "tags": [
+      "diploma"
+    ],
+    "page_count": 1,
+    "uploaded_at": "2026-10-16T10:21:09.836746"
+  },
+  {
+    "id": "pol_20261016_102109_0_1669",
+    "title": "Cybersecurity Plan Of Study V2",
+    "category": "Plan of Study",
+    "filename": "20261016_102109_0_Cybersecurity_Plan_of_Study_v2.pdf",
+    "original_filename": "Cybersecurity_Plan_of_Study_v2.pdf",
+    "file_size": "24 B",
+    "file_type": "pdf",
+    "description": "Test batch upload",
+    "tags": [
+      "cybersecurity"
+    ],
+    "page_count": 1,
+    "uploaded_at": "2026-10-16T10:21:09.822962"
+  },
+  {
+    "id": "pol_20261016_095303_1_9983",
+    "title": "Requirements For Studying Computer Science Diploma V2",
+    "category": "Degree Requirements",
+    "filename": "20261016_095303_1_Requirements_for_Studying_Computer_Science_Diploma_v2.pdf",
+    "original_filename": "Requirements_for_Studying_Computer_Science_Diploma_v2.pdf",
+    "file_size": "26 B",
+    "file_type": "pdf",
+    "description": "Test batch upload",
+    "tags": [
+      "diploma"
+    ],
+    "page_count": 1,
+    "uploaded_at": "2026-10-16T09:53:03.895747"
+  },
+  {
+    "id": "pol_20261016_095303_0_9983",
+    "title": "Cybersecurity Plan Of Study V2",
+    "category": "Plan of Study",
+    "filename": "20261016_095303_0_Cybersecurity_Plan_of_Study_v2.pdf",
+    "original_filename": "Cybersecurity_Plan_of_Study_v2.pdf",
+    "file_size": "24 B",
+    "file_type": "pdf",
+    "description": "Test batch upload",
+    "tags": [
+      "cybersecurity"
+    ],
+    "page_count": 1,
+    "uploaded_at": "2026-10-16T09:53:03.893442"
+  },
+  {
     "id": "pol_20261014_230823_1_4903",
     "title": "Requirements For Studying Computer Science Diploma V2",
     "category": "Degree Requirements",

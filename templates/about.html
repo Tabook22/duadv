@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}About This Application - {{ app_settings.about.app_name }}{% endblock %}
+{% block title %}{{ 'حول التطبيق' if is_rtl else 'About This Application' }} - {{ app_settings.about.app_name }}{% endblock %}
 
 {% block content %}
 <div class="container py-3">
@@ -30,18 +30,18 @@
 
             <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary px-4 py-2 rounded-3">
-                    <i class="fas fa-chart-pie me-2"></i> Advisor Dashboard
+                    <i class="fas fa-chart-pie me-2"></i> {{ 'لوحة تحكم المرشد' if is_rtl else 'Advisor Dashboard' }}
                 </a>
                 <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-outline-light px-4 py-2 rounded-3">
-                    <i class="fas fa-video me-2"></i> Virtual Office
+                    <i class="fas fa-video me-2"></i> {{ t('virtual_office') }}
                 </a>
                 {% if is_admin_logged_in %}
                 <a href="{{ url_for('main.admin_settings') }}" class="btn btn-outline-warning px-4 py-2 rounded-3">
-                    <i class="fas fa-sliders me-2"></i> Admin Settings
+                    <i class="fas fa-sliders me-2"></i> {{ t('admin_settings') }}
                 </a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-info px-4 py-2 rounded-3">
-                    <i class="fas fa-user-shield me-2"></i> Admin Sign In
+                    <i class="fas fa-user-shield me-2"></i> {{ t('sign_in') }}
                 </a>
                 {% endif %}
             </div>
@@ -56,7 +56,7 @@
             </div>
             <div>
                 <h5 class="alert-heading text-warning fw-bold mb-2">
-                    <i class="fas fa-circle-exclamation me-1"></i> Independent Academic Advisory Tool Notice
+                    <i class="fas fa-circle-exclamation me-1"></i> {{ 'إشعار أداة الإرشاد الأكاديمي المستقلة' if is_rtl else 'Independent Academic Advisory Tool Notice' }}
                 </h5>
                 <p class="mb-2 text-light" style="line-height: 1.6; font-size: 0.95rem;">
                     {{ app_settings.about.institutional_disclaimer }}
@@ -75,7 +75,7 @@
             <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                     <h5 class="card-title mb-0 text-white fw-bold">
-                        <i class="fas fa-user-tie text-primary me-2"></i> Academic Advisor Profile
+                        <i class="fas fa-user-tie text-primary me-2"></i> {{ 'ملف المرشد الأكاديمي' if is_rtl else 'Academic Advisor Profile' }}
                     </h5>
                 </div>
                 <div class="card-body p-4 text-center">
@@ -85,23 +85,23 @@
                     <h5 class="text-white fw-bold mb-1">{{ app_settings.about.advisor_name }}</h5>
                     <div class="badge bg-primary bg-opacity-25 text-primary mb-3">{{ app_settings.about.advisor_role }}</div>
                     
-                    <div class="list-group list-group-flush text-start small border-top border-secondary border-opacity-25 pt-2">
+                    <div class="list-group list-group-flush {{ 'text-end' if is_rtl else 'text-start' }} small border-top border-secondary border-opacity-25 pt-2">
                         <div class="list-group-item bg-transparent text-white-50 px-0 d-flex justify-content-between">
-                            <span><i class="fas fa-university text-primary me-2"></i> College:</span>
+                            <span><i class="fas fa-university text-primary me-2"></i> {{ 'الكلية:' if is_rtl else 'College:' }}</span>
                             <span class="text-white fw-medium">{{ app_settings.about.college }}</span>
                         </div>
                         <div class="list-group-item bg-transparent text-white-50 px-0 d-flex justify-content-between">
-                            <span><i class="fas fa-laptop-code text-info me-2"></i> Department:</span>
+                            <span><i class="fas fa-laptop-code text-info me-2"></i> {{ 'القسم:' if is_rtl else 'Department:' }}</span>
                             <span class="text-white fw-medium">{{ app_settings.about.department }}</span>
                         </div>
                         <div class="list-group-item bg-transparent text-white-50 px-0 d-flex justify-content-between">
-                            <span><i class="fas fa-shield-halved text-success me-2"></i> Supervision:</span>
-                            <span class="text-success fw-medium">Active Advisee Roster</span>
+                            <span><i class="fas fa-shield-halved text-success me-2"></i> {{ 'الإشراف:' if is_rtl else 'Supervision:' }}</span>
+                            <span class="text-success fw-medium">{{ 'قائمة طلبة إرشاد نشطة' if is_rtl else 'Active Advisee Roster' }}</span>
                         </div>
                     </div>
 
                     <a href="{{ url_for('main.advisor_profile_view') }}" class="btn btn-outline-info btn-sm w-100 mt-3">
-                        <i class="fas fa-id-card me-1"></i> View Full Advisor Bio & Contacts
+                        <i class="fas fa-id-card me-1"></i> {{ 'عرض السيرة الكاملة ومعلومات التواصل' if is_rtl else 'View Full Advisor Bio & Contacts' }}
                     </a>
                 </div>
             </div>
@@ -112,7 +112,7 @@
             <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 h-100">
                 <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                     <h5 class="card-title mb-0 text-white fw-bold">
-                        <i class="fas fa-microchip text-info me-2"></i> Advisory Capabilities & Architecture
+                        <i class="fas fa-microchip text-info me-2"></i> {{ 'إمكانيات النظام والبنية المعمارية' if is_rtl else 'Advisory Capabilities & Architecture' }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
@@ -121,9 +121,9 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
                                 <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold">
                                     <i class="fas fa-chart-line fa-lg"></i>
-                                    <span>Advisee Analytics & Standing</span>
+                                    <span>{{ 'تحليلات الطلبة والوضع الأكاديمي' if is_rtl else 'Advisee Analytics & Standing' }}</span>
                                 </div>
-                                <p class="text-white-50 small mb-0">Live calculation of cumulative GPAs, degree completion percentages, credit-hour velocity, and term trends.</p>
+                                <p class="text-white-50 small mb-0">{{ 'حساب فوري للمعدلات التراكمية، ونسب إنجاز الخطة الدراسية، وسرعة الساعات المعتمدة، واتجاهات الفصول الدراسية.' if is_rtl else 'Live calculation of cumulative GPAs, degree completion percentages, credit-hour velocity, and term trends.' }}</p>
                             </div>
                         </div>
 
@@ -131,9 +131,9 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
                                 <div class="d-flex align-items-center gap-2 mb-2 text-danger fw-bold">
                                     <i class="fas fa-triangle-exclamation fa-lg"></i>
-                                    <span>Probation & At-Risk Matrix</span>
+                                    <span>{{ 'مصفوفة الإنذار الأكاديمي والمخاطر' if is_rtl else 'Probation & At-Risk Matrix' }}</span>
                                 </div>
-                                <p class="text-white-50 small mb-0">Automated probation status tracking (P1, P2, P3), enforcement of 12-credit caps, and target GPA simulation to achieve 65% exit threshold.</p>
+                                <p class="text-white-50 small mb-0">{{ 'تتبع آلي لحالات الإنذار الأكاديمي (الأول، الثاني، المشروط)، وتطبيق سقف 12 ساعة معتمدة، ومحاكاة المعدل المستهدف لتجاوز عتبة 65%.' if is_rtl else 'Automated probation status tracking (P1, P2, P3), enforcement of 12-credit caps, and target GPA simulation to achieve 65% exit threshold.' }}</p>
                             </div>
                         </div>
 
@@ -141,9 +141,9 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
                                 <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold">
                                     <i class="fas fa-video fa-lg"></i>
-                                    <span>Virtual Office WebRTC Hub</span>
+                                    <span>{{ 'مركز المكتب الافتراضي (WebRTC)' if is_rtl else 'Virtual Office WebRTC Hub' }}</span>
                                 </div>
-                                <p class="text-white-50 small mb-0">High-performance peer-to-peer advising conference room with camera flip, screen sharing, in-call chat, and advisor admission control.</p>
+                                <p class="text-white-50 small mb-0">{{ 'غرفة اجتماعات إرشادية عالية الأداء مع تبديل الكاميرا، ومشاركة الشاشة، والمحادثة الفورية، والتحكم في قبول الطلبة.' if is_rtl else 'High-performance peer-to-peer advising conference room with camera flip, screen sharing, in-call chat, and advisor admission control.' }}</p>
                             </div>
                         </div>
 
@@ -151,9 +151,9 @@
                             <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
                                 <div class="d-flex align-items-center gap-2 mb-2 text-warning fw-bold">
                                     <i class="fas fa-book-open fa-lg"></i>
-                                    <span>Interactive Advising Notebook</span>
+                                    <span>{{ 'دفتر الإرشاد التفاعلي' if is_rtl else 'Interactive Advising Notebook' }}</span>
                                 </div>
-                                <p class="text-white-50 small mb-0">Multi-page drawing whiteboard (ruled, blank, dot grid, tabular math) with direct synchronization into persistent student dossiers.</p>
+                                <p class="text-white-50 small mb-0">{{ 'سبورة رسم متعددة الصفحات (مسطرة، فارغة، منقطة، شبكة رياضية) مع مزامنة مباشرة في ملفات الطلبة الدائمة.' if is_rtl else 'Multi-page drawing whiteboard (ruled, blank, dot grid, tabular math) with direct synchronization into persistent student dossiers.' }}</p>
                             </div>
                         </div>
                     </div>

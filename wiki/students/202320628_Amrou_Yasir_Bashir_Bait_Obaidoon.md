@@ -12,7 +12,7 @@ credit_cap: 18
 urgency: "NORMAL"
 cgpa: 70.77
 semester_gpa: 71.18
-last_updated: "2026-10-14"
+last_updated: "2026-10-16"
 ---
 
 # Student Advising Dossier: Amrou Yasir Bashir Bait Obaidoon

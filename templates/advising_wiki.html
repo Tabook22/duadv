@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dhofar University Academic Advising LLM Wiki & Knowledge Hub{% endblock %}
+{% block title %}{{ 'موسوعة الإرشاد الأكاديمي الذكية ومركز المعرفة - جامعة ظفار' if is_rtl else 'Dhofar University Academic Advising LLM Wiki & Knowledge Hub' }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
@@ -8,23 +8,23 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> Dhofar University</span>
-                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> LLM Advising Wiki</span>
-                <span class="badge bg-success px-2 py-1">Department of Computer Science</span>
+                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> {{ 'جامعة ظفار' if is_rtl else 'Dhofar University' }}</span>
+                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> {{ 'موسوعة الإرشاد بالذكاء الاصطناعي' if is_rtl else 'LLM Advising Wiki' }}</span>
+                <span class="badge bg-success px-2 py-1">{{ 'قسم علوم الحاسوب' if is_rtl else 'Department of Computer Science' }}</span>
             </div>
             <h2 class="fw-bold mb-1" style="color: #1e3a8a;">
-                <i class="fas fa-atlas me-2"></i>Academic Advising Wiki &amp; Intelligence Hub
+                <i class="fas fa-atlas me-2"></i>{{ 'موسوعة الإرشاد الأكاديمي ومركز الذكاء المعرفي' if is_rtl else 'Academic Advising Wiki & Intelligence Hub' }}
             </h2>
             <p class="text-muted mb-0">
-                Official synthesized reference manual: Degree Curricula, Course Sequences, Prerequisite Trees, and University Regulations.
+                {{ 'الدليل المرجعي المتكامل الرسمي: المناهج الدراسية، تسلسل المقررات، شجرة المتطلبات السابقة، ولوائح الجامعة.' if is_rtl else 'Official synthesized reference manual: Degree Curricula, Course Sequences, Prerequisite Trees, and University Regulations.' }}
             </p>
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
             <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-primary">
-                <i class="fas fa-book-open me-1"></i> Policy Documents Vault
+                <i class="fas fa-book-open me-1"></i> {{ 'خزانة وثائق اللوائح' if is_rtl else 'Policy Documents Vault' }}
             </a>
             <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger">
-                <i class="fas fa-exclamation-triangle me-1"></i> Students at Risk (18)
+                <i class="fas fa-exclamation-triangle me-1"></i> {{ 'الطلبة المتعثرون (18)' if is_rtl else 'Students at Risk (18)' }}
             </a>
         </div>
     </div>
@@ -35,30 +35,30 @@
             <div class="row align-items-center">
                 <div class="col-lg-8">
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-warning text-dark px-2 py-1 fw-bold"><i class="fas fa-robot me-1"></i> Advisor AI Assistant</span>
-                        <small class="text-white-50">Natural Language Policy &amp; Curriculum Inquiries</small>
+                        <span class="badge bg-warning text-dark px-2 py-1 fw-bold"><i class="fas fa-robot me-1"></i> {{ 'المساعد الذكي للمرشد الأكاديمي' if is_rtl else 'Advisor AI Assistant' }}</span>
+                        <small class="text-white-50">{{ 'استفسارات اللوائح والخطط الدراسية باللغة الطبيعية' if is_rtl else 'Natural Language Policy & Curriculum Inquiries' }}</small>
                     </div>
-                    <h4 class="fw-bold mb-2">Ask the Advising Wiki</h4>
+                    <h4 class="fw-bold mb-2">{{ 'اسأل موسوعة الإرشاد الأكاديمي' if is_rtl else 'Ask the Advising Wiki' }}</h4>
                     <p class="text-white-50 small mb-3">
-                        Ask any question regarding student probation thresholds, repeating D/F grades, credit load caps, or Diploma-to-Bachelor bridge requirements. Cites exact DU articles.
+                        {{ 'اطرح أي سؤال حول ضوابط الإنذار الأكاديمي، إعادة المقررات ذات التقدير D/F، حدود العبء الدراسي، أو شروط التجسير من الدبلوم إلى البكالوريوس مع الاستشهاد بمواد لوائح جامعة ظفار.' if is_rtl else 'Ask any question regarding student probation thresholds, repeating D/F grades, credit load caps, or Diploma-to-Bachelor bridge requirements. Cites exact DU articles.' }}
                     </p>
                     <form id="wikiAskForm" class="d-flex gap-2">
                         <div class="input-group">
                             <span class="input-group-text bg-white border-0"><i class="fas fa-comment-dots text-primary"></i></span>
-                            <input type="text" id="wikiQuestionInput" class="form-control border-0" placeholder="e.g. What are the rules for students on Second Strict Probation? What courses can replace a D grade?..." required>
+                            <input type="text" id="wikiQuestionInput" class="form-control border-0" placeholder="{{ 'مثال: ما هي ضوابط الإنذار الأكاديمي المشدد الثاني؟ ما هي المقررات المسموح بإعادتها؟...' if is_rtl else 'e.g. What are the rules for students on Second Strict Probation? What courses can replace a D grade?...' }}" required>
                         </div>
                         <button type="submit" id="wikiSubmitBtn" class="btn btn-warning fw-bold text-dark px-4">
-                            <i class="fas fa-paper-plane me-1"></i> Ask AI
+                            <i class="fas fa-paper-plane me-1"></i> {{ 'اسأل الذكاء الاصطناعي' if is_rtl else 'Ask AI' }}
                         </button>
                     </form>
 
                     <!-- Quick Suggestions -->
                     <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
-                        <small class="text-white-50 me-2">Quick queries:</small>
-                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the credit limit for a student on probation?">Probation Credit Cap</button>
-                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the rule for repeating courses with D or F grades?">Repeating D/F Grades</button>
-                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What are the bridge requirements from Diploma to Bachelor?">Diploma to Bachelor Bridge</button>
-                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the withdrawal W and WF policy?">Withdrawal W vs WF</button>
+                        <small class="text-white-50 me-2">{{ 'استفسارات سريعة:' if is_rtl else 'Quick queries:' }}</small>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the credit limit for a student on probation?">{{ 'حد الساعات للإنذار الأكاديمي' if is_rtl else 'Probation Credit Cap' }}</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the rule for repeating courses with D or F grades?">{{ 'إعادة مقررات التقدير D/F' if is_rtl else 'Repeating D/F Grades' }}</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What are the bridge requirements from Diploma to Bachelor?">{{ 'شروط التجسير من الدبلوم للبكالوريوس' if is_rtl else 'Diploma to Bachelor Bridge' }}</button>
+                        <button type="button" class="btn btn-sm btn-outline-light py-0 px-2 quick-ask" data-q="What is the withdrawal W and WF policy?">{{ 'سياسة الانسحاب W مقابل WF' if is_rtl else 'Withdrawal W vs WF' }}</button>
                     </div>
                 </div>
 
@@ -67,13 +67,13 @@
                         <div class="col-6">
                             <div class="bg-white bg-opacity-10 p-3 rounded">
                                 <div class="fs-3 fw-bold text-warning">{{ study_plans|length }}</div>
-                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Degree Roadmaps</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">{{ 'خطط الدرجات العلمية' if is_rtl else 'Degree Roadmaps' }}</div>
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="bg-white bg-opacity-10 p-3 rounded">
                                 <div class="fs-3 fw-bold text-info">{{ policy_modules|length }}</div>
-                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">Bylaw Modules</div>
+                                <div class="text-uppercase small text-white-50" style="font-size: 10px;">{{ 'وحدات اللوائح' if is_rtl else 'Bylaw Modules' }}</div>
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-check-circle text-success fs-5"></i>
-                            <strong class="text-primary" id="aiResponseEngine">Advising Intelligence Synthesis</strong>
+                            <strong class="text-primary" id="aiResponseEngine">{{ 'تحليل الذكاء الاصطناعي للإرشاد الأكاديمي' if is_rtl else 'Advising Intelligence Synthesis' }}</strong>
                         </div>
                         <button type="button" id="closeAiResponseBtn" class="btn-close btn-sm" aria-label="Close"></button>
                     </div>
@@ -105,17 +105,17 @@
     <ul class="nav nav-pills mb-4 gap-2" id="wikiTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active fw-bold" id="tab-regulations" data-bs-toggle="pill" data-bs-target="#content-regulations" type="button" role="tab">
-                <i class="fas fa-gavel me-1 text-danger"></i> Academic Regulations &amp; Bylaws
+                <i class="fas fa-gavel me-1 text-danger"></i> {{ 'اللوائح والأنظمة الأكاديمية' if is_rtl else 'Academic Regulations & Bylaws' }}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="tab-plans" data-bs-toggle="pill" data-bs-target="#content-plans" type="button" role="tab">
-                <i class="fas fa-graduation-cap me-1 text-primary"></i> Degree Plans of Study
+                <i class="fas fa-graduation-cap me-1 text-primary"></i> {{ 'الخطط الدراسية للبرامج' if is_rtl else 'Degree Plans of Study' }}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="tab-bridge" data-bs-toggle="pill" data-bs-target="#content-bridge" type="button" role="tab">
-                <i class="fas fa-route me-1 text-success"></i> Diploma-to-Bachelor Articulation
+                <i class="fas fa-route me-1 text-success"></i> {{ 'التجسير من الدبلوم إلى البكالوريوس' if is_rtl else 'Diploma-to-Bachelor Articulation' }}
             </button>
         </li>
     </ul>
@@ -156,9 +156,9 @@
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                <span class="small text-muted"><i class="fas fa-shield-alt text-success me-1"></i>Official DU Policy</span>
+                                <span class="small text-muted"><i class="fas fa-shield-alt text-success me-1"></i>{{ 'لائحة رسمية بجامعة ظفار' if is_rtl else 'Official DU Policy' }}</span>
                                 <a href="{{ url_for('main.policies_library', q=mod.title) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-search me-1"></i> Search in Documents
+                                    <i class="fas fa-search me-1"></i> {{ 'البحث في الوثائق' if is_rtl else 'Search in Documents' }}
                                 </a>
                             </div>
                         </div>
@@ -179,11 +179,11 @@
                                 <i class="fas fa-graduation-cap text-primary fs-4"></i>
                                 <div>
                                     <h5 class="fw-bold text-dark mb-0">{{ p.program_title }}</h5>
-                                    <small class="text-muted">{{ p.degree_type }} &bull; {{ p.total_credits }} Total Credit Hours &bull; {{ p.standard_semesters }} Semesters</small>
+                                    <small class="text-muted">{{ p.degree_type }} &bull; {{ p.total_credits }} {{ 'ساعة معتمدة إجمالية' if is_rtl else 'Total Credit Hours' }} &bull; {{ p.standard_semesters }} {{ 'فصول دراسية' if is_rtl else 'Semesters' }}</small>
                                 </div>
                             </div>
                             <div>
-                                <span class="badge bg-primary fs-6">{{ p.curriculum|length }} Required Courses</span>
+                                <span class="badge bg-primary fs-6">{{ p.curriculum|length }} {{ 'مقررات مطلوبة' if is_rtl else 'Required Courses' }}</span>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -191,12 +191,12 @@
                                 <table class="table table-hover table-striped align-middle mb-0">
                                     <thead class="table-light small text-muted">
                                         <tr>
-                                            <th style="width: 12%;">Code</th>
-                                            <th>Course Title</th>
-                                            <th style="width: 8%; text-align: center;">Credits</th>
-                                            <th style="width: 20%;">Category</th>
-                                            <th style="width: 15%;">Recommended Term</th>
-                                            <th style="width: 20%;">Prerequisites</th>
+                                            <th style="width: 12%;">{{ 'رمز المقرر' if is_rtl else 'Code' }}</th>
+                                            <th>{{ 'اسم المقرر' if is_rtl else 'Course Title' }}</th>
+                                            <th style="width: 8%; text-align: center;">{{ 'الساعات' if is_rtl else 'Credits' }}</th>
+                                            <th style="width: 20%;">{{ 'التصنيف' if is_rtl else 'Category' }}</th>
+                                            <th style="width: 15%;">{{ 'الفصل المقترح' if is_rtl else 'Recommended Term' }}</th>
+                                            <th style="width: 20%;">{{ 'المتطلبات السابقة' if is_rtl else 'Prerequisites' }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -213,7 +213,7 @@
                                                     <span class="badge bg-warning text-dark border me-1 font-monospace">{{ pr }}</span>
                                                     {% endfor %}
                                                 {% else %}
-                                                    <span class="text-muted small">None</span>
+                                                    <span class="text-muted small">{{ 'لا يوجد' if is_rtl else 'None' }}</span>
                                                 {% endif %}
                                             </td>
                                         </tr>
@@ -232,39 +232,39 @@
         <div class="tab-pane fade" id="content-bridge" role="tabpanel">
             <div class="card shadow-sm border mb-5">
                 <div class="card-header bg-success text-white py-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-route me-2"></i>Dhofar University Diploma-to-Bachelor Articulation Bridge</h5>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-route me-2"></i>{{ 'مسار التجسير من الدبلوم إلى البكالوريوس بجامعة ظفار' if is_rtl else 'Dhofar University Diploma-to-Bachelor Articulation Bridge' }}</h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4 align-items-center mb-4">
                         <div class="col-lg-4 text-center">
                             <div class="p-4 bg-light rounded border">
-                                <span class="badge bg-success mb-2 px-3 py-1">Minimum Qualifying Standard</span>
-                                <h2 class="fw-bold text-success display-6 mb-1">CGPA &ge; 75.0%</h2>
-                                <p class="text-muted small mb-0">Graduation Cumulative GPA from Diploma in Computer Science</p>
+                                <span class="badge bg-success mb-2 px-3 py-1">{{ 'الحد الأدنى لمعيار التأهل' if is_rtl else 'Minimum Qualifying Standard' }}</span>
+                                <h2 class="fw-bold text-success display-6 mb-1">{{ 'المعدل التراكمي ≥ 75.0%' if is_rtl else 'CGPA ≥ 75.0%' }}</h2>
+                                <p class="text-muted small mb-0">{{ 'المعدل التراكمي للتخرج من دبلوم علوم الحاسوب' if is_rtl else 'Graduation Cumulative GPA from Diploma in Computer Science' }}</p>
                             </div>
                         </div>
                         <div class="col-lg-8">
-                            <h5 class="fw-bold text-dark mb-2">Articulation &amp; Course Transfer Bylaws</h5>
+                            <h5 class="fw-bold text-dark mb-2">{{ 'ضوابط التجسير ومعادلة المقررات' if is_rtl else 'Articulation & Course Transfer Bylaws' }}</h5>
                             <p class="text-secondary small mb-3">
-                                Under official Dhofar University academic regulations, high-performing Diploma graduates have direct pathways to transition into any Department of Computer Science Bachelor of Science degree.
+                                {{ 'بموجب اللوائح الأكاديمية الرسمية بجامعة ظفار، يتاح لخريجي الدبلوم المتفوقين مسار مباشر للانتقال إلى أي برنامج بكالوريوس علوم في قسم علوم الحاسوب.' if is_rtl else 'Under official Dhofar University academic regulations, high-performing Diploma graduates have direct pathways to transition into any Department of Computer Science Bachelor of Science degree.' }}
                             </p>
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white h-100 shadow-sm">
-                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-shield-alt me-1"></i> B.Sc. Cybersecurity</div>
-                                        <p class="small text-muted mb-0">Direct transfer of up to 60 credit hours; students advance directly to Year 3 core subjects.</p>
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-shield-alt me-1"></i> {{ 'بكالوريوس الأمن السيبراني' if is_rtl else 'B.Sc. Cybersecurity' }}</div>
+                                        <p class="small text-muted mb-0">{{ 'معادلة مباشرة لما يصل إلى 60 ساعة معتمدة؛ وينتقل الطالب مباشرة إلى مقررات التخصص في السنة الثالثة.' if is_rtl else 'Direct transfer of up to 60 credit hours; students advance directly to Year 3 core subjects.' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white h-100 shadow-sm">
-                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-brain me-1"></i> B.Sc. Data Science</div>
-                                        <p class="small text-muted mb-0">Full articulation for programming and math courses; enter directly into Machine Learning sequence.</p>
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-brain me-1"></i> {{ 'بكالوريوس علم البيانات' if is_rtl else 'B.Sc. Data Science' }}</div>
+                                        <p class="small text-muted mb-0">{{ 'معادلة كاملة لمقررات البرمجة والرياضيات؛ والدخول المباشر في مسار تعلم الآلة.' if is_rtl else 'Full articulation for programming and math courses; enter directly into Machine Learning sequence.' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="p-3 border rounded bg-white h-100 shadow-sm">
-                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-laptop-code me-1"></i> B.Sc. Computer Science</div>
-                                        <p class="small text-muted mb-0">Standard software &amp; systems pathway; complete upper-division requirements in ~4 semesters.</p>
+                                        <div class="fw-bold text-primary mb-1"><i class="fas fa-laptop-code me-1"></i> {{ 'بكالوريوس علوم الحاسوب' if is_rtl else 'B.Sc. Computer Science' }}</div>
+                                        <p class="small text-muted mb-0">{{ 'مسار البرمجيات والأنظمة القياسي؛ استكمال متطلبات المستويات المتقدمة في حوالي 4 فصول دراسية.' if is_rtl else 'Standard software & systems pathway; complete upper-division requirements in ~4 semesters.' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -280,6 +280,7 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var isRtl = {{ 'true' if is_rtl else 'false' }};
     var wikiForm = document.getElementById('wikiAskForm');
     var questionInput = document.getElementById('wikiQuestionInput');
     var aiContainer = document.getElementById('aiResponseContainer');
@@ -309,17 +310,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!q) return;
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Searching...';
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (isRtl ? 'جاري البحث...' : 'Searching...');
 
             fetch('{{ url_for("main.api_wiki_ask") }}?question=' + encodeURIComponent(q))
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Ask AI';
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> ' + (isRtl ? 'اسأل الذكاء الاصطناعي' : 'Ask AI');
 
                     if (data.status === 'success') {
                         aiContainer.classList.remove('d-none');
-                        aiEngine.innerText = data.engine || 'Dhofar University Advising Intelligence Engine';
+                        aiEngine.innerText = data.engine || (isRtl ? 'محرك الذكاء الاصطناعي للإرشاد الأكاديمي بجامعة ظفار' : 'Dhofar University Advising Intelligence Engine');
                         
                         // Render formatted markdown
                         var formatted = data.answer
@@ -330,18 +331,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         aiText.innerHTML = '<ul class="ps-3 mb-0">' + formatted + '</ul>';
 
                         if (data.citations && data.citations.length > 0) {
-                            aiCitations.innerHTML = '<i class="fas fa-book-reader text-warning me-1"></i> <strong>Cited Bylaws:</strong> ' + data.citations.join(' &bull; ');
+                            aiCitations.innerHTML = '<i class="fas fa-book-reader text-warning me-1"></i> <strong>' + (isRtl ? 'المواد المرجعية المستشهد بها:' : 'Cited Bylaws:') + '</strong> ' + data.citations.join(' &bull; ');
                         } else {
                             aiCitations.innerHTML = '';
                         }
                     } else {
-                        alert(data.message || 'Error processing request.');
+                        alert(data.message || (isRtl ? 'حدث خطأ أثناء معالجة الطلب.' : 'Error processing request.'));
                     }
                 })
                 .catch(function(err) {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Ask AI';
-                    alert('Error reaching AI assistant: ' + err);
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> ' + (isRtl ? 'اسأل الذكاء الاصطناعي' : 'Ask AI');
+                    alert((isRtl ? 'خطأ في الاتصال بالمساعد الذكي: ' : 'Error reaching AI assistant: ') + err);
                 });
         });
     }

@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ room.title }} - DU Virtual Advising Room</title>
+    <title>{{ room.title }} - {{ 'غرفة الإرشاد الافتراضية بجامعة ظفار' if is_rtl else 'DU Virtual Advising Room' }}</title>
+    {% if is_rtl %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% else %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% endif %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -813,7 +817,7 @@
             <span class="badge bg-primary px-3 py-1 font-monospace">{{ room.room_id }}</span>
         </div>
         <h4 class="fw-bold mb-1">{{ room.title }}</h4>
-        <p class="text-muted small mb-3">Host: {{ room.advisor_name }} &bull; Dhofar University</p>
+        <p class="text-muted small mb-3">{{ 'المضيف:' if is_rtl else 'Host:' }} {{ room.advisor_name }} &bull; {{ t('dhofar_university') }}</p>
 
         <!-- Live Camera & Mic Preview -->
         <div class="lobby-video-preview-wrapper">
@@ -822,10 +826,10 @@
                 <i class="fas fa-user"></i>
             </div>
             <div class="lobby-controls-bar">
-                <button type="button" class="lobby-btn" id="lobbyBtnMic" onclick="toggleLobbyMic()" title="Toggle Mic">
+                <button type="button" class="lobby-btn" id="lobbyBtnMic" onclick="toggleLobbyMic()" title="{{ 'تشغيل/إيقاف الميكروفون' if is_rtl else 'Toggle Mic' }}">
                     <i class="fas fa-microphone"></i>
                 </button>
-                <button type="button" class="lobby-btn" id="lobbyBtnCam" onclick="toggleLobbyCam()" title="Toggle Camera">
+                <button type="button" class="lobby-btn" id="lobbyBtnCam" onclick="toggleLobbyCam()" title="{{ 'تشغيل/إيقاف الكاميرا' if is_rtl else 'Toggle Camera' }}">
                     <i class="fas fa-video"></i>
                 </button>
             </div>
@@ -835,46 +839,50 @@
         <div id="lobbyFormArea">
             <div class="row g-2 mb-2 text-start">
                 <div class="col-md-7">
-                    <label class="small text-muted fw-semibold">Your Full Name:</label>
+                    <label class="small text-muted fw-semibold">{{ 'الاسم الكامل:' if is_rtl else 'Your Full Name:' }}</label>
                     <input type="text" id="lobbyUserName" class="form-control form-control-sm bg-dark text-light border-secondary" 
-                           value="{{ user_name }}" placeholder="Enter your full name">
+                           value="{{ user_name }}" placeholder="{{ 'أدخل اسمك الكامل' if is_rtl else 'Enter your full name' }}">
                 </div>
                 <div class="col-md-5">
-                    <label class="small text-muted fw-semibold">Your Role:</label>
+                    <label class="small text-muted fw-semibold">{{ 'صفتك في الاجتماع:' if is_rtl else 'Your Role:' }}</label>
                     <select id="lobbyUserRole" class="form-select form-select-sm bg-dark text-light border-secondary">
-                        <option value="student" {{ 'selected' if role == 'student' or not role else '' }}>Student Advisee</option>
-                        <option value="guest">External Guest</option>
-                        <option value="parent">Parent / Guardian</option>
-                        <option value="co_advisor">Co-Advisor / Faculty</option>
-                        <option value="evaluator">External Evaluator</option>
+                        <option value="student" {{ 'selected' if role == 'student' or not role else '' }}>{{ 'طالب تحت الإرشاد' if is_rtl else 'Student Advisee' }}</option>
+                        <option value="guest">{{ 'ضيف خارجي' if is_rtl else 'External Guest' }}</option>
+                        <option value="parent">{{ 'ولي أمر' if is_rtl else 'Parent / Guardian' }}</option>
+                        <option value="co_advisor">{{ 'مرشد مشارك / عضو هيئة تدريس' if is_rtl else 'Co-Advisor / Faculty' }}</option>
+                        <option value="evaluator">{{ 'مُقيّم خارجي' if is_rtl else 'External Evaluator' }}</option>
                     </select>
                 </div>
             </div>
 
             {% if require_passcode %}
             <div class="mb-3 text-start">
-                <label class="small text-muted fw-semibold"><i class="fas fa-lock text-warning me-1"></i> Meeting Passcode / PIN:</label>
+                <label class="small text-muted fw-semibold"><i class="fas fa-lock text-warning me-1"></i> {{ 'رمز مرور الاجتماع / PIN:' if is_rtl else 'Meeting Passcode / PIN:' }}</label>
                 <input type="text" id="lobbyPasscode" class="form-control form-control-sm bg-dark text-light border-secondary font-monospace" 
-                       placeholder="Enter room passcode (e.g. DU-XXXX)">
+                       placeholder="{{ 'أدخل رمز مرور الغرفة (مثال: DU-XXXX)' if is_rtl else 'Enter room passcode (e.g. DU-XXXX)' }}">
             </div>
             {% endif %}
 
             <div id="lobbyErrorMessage" class="alert alert-danger py-2 small" style="display: none;"></div>
 
             <button type="button" class="btn btn-primary w-100 py-2 fw-bold" onclick="submitKnockRequest()">
-                <i class="fas fa-hand-paper me-2"></i> Ask to Join Meeting
+                <i class="fas fa-hand-paper me-2"></i> {{ 'طلب الانضمام إلى الاجتماع' if is_rtl else 'Ask to Join Meeting' }}
             </button>
         </div>
 
         <!-- Waiting for Host Approval Spinner -->
         <div id="lobbyWaitingArea" style="display: none;">
             <div class="pulsing-ring"></div>
-            <h5 class="fw-bold mb-2">Asking to join...</h5>
+            <h5 class="fw-bold mb-2">{{ 'جارٍ طلب الانضمام...' if is_rtl else 'Asking to join...' }}</h5>
             <p class="text-muted small mb-3">
+                {% if is_rtl %}
+                ستنضم إلى الاجتماع عندما يسمح لك المضيف <strong>{{ room.advisor_name }}</strong> بالدخول.
+                {% else %}
                 You'll join the meeting when host <strong>{{ room.advisor_name }}</strong> admits you.
+                {% endif %}
             </p>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelKnockRequest()">
-                Cancel Request
+                {{ 'إلغاء الطلب' if is_rtl else 'Cancel Request' }}
             </button>
         </div>
 
@@ -883,12 +891,12 @@
             <div class="text-danger mb-3">
                 <i class="fas fa-times-circle fa-3x"></i>
             </div>
-            <h5 class="fw-bold text-danger mb-2">Entry Request Declined</h5>
+            <h5 class="fw-bold text-danger mb-2">{{ 'تم رفض طلب الدخول' if is_rtl else 'Entry Request Declined' }}</h5>
             <p class="text-muted small mb-3">
-                The meeting host was unable to admit you to this session at this time.
+                {{ 'لم يتمكن مضيف الاجتماع من السماح لك بالدخول إلى هذه الجلسة في الوقت الحالي.' if is_rtl else 'The meeting host was unable to admit you to this session at this time.' }}
             </p>
             <a href="{{ url_for('main.meetings_hub') }}" class="btn btn-outline-primary btn-sm">
-                Return to Advising Portal
+                {{ 'العودة إلى بوابة الإرشاد' if is_rtl else 'Return to Advising Portal' }}
             </a>
         </div>
     </div>
@@ -902,16 +910,16 @@
     <div class="d-flex align-items-center">
         <i class="fas fa-user-clock text-warning fa-lg me-2"></i>
         <div>
-            <div class="fw-bold small" id="knockBannerText">Participant is asking to join</div>
-            <small class="text-muted" id="knockBannerSub">Waiting in lobby</small>
+            <div class="fw-bold small" id="knockBannerText">{{ 'مشارك يطلب الانضمام' if is_rtl else 'Participant is asking to join' }}</div>
+            <small class="text-muted" id="knockBannerSub">{{ 'ينتظر في ردهة الانتظار' if is_rtl else 'Waiting in lobby' }}</small>
         </div>
     </div>
     <div class="d-flex gap-2">
         <button class="btn btn-sm btn-success px-3 fw-bold" onclick="admitKnockFromBanner()">
-            <i class="fas fa-check me-1"></i> Admit
+            <i class="fas fa-check me-1"></i> {{ 'قبول' if is_rtl else 'Admit' }}
         </button>
         <button class="btn btn-sm btn-outline-danger px-3" onclick="denyKnockFromBanner()">
-            <i class="fas fa-times me-1"></i> Deny
+            <i class="fas fa-times me-1"></i> {{ 'رفض' if is_rtl else 'Deny' }}
         </button>
     </div>
 </div>
@@ -920,7 +928,7 @@
 <!-- Floating Audio Unlock Notification for Mobile Devices -->
 <div id="audioUnlockBanner" class="audio-unlock-banner" onclick="unlockAudio()">
     <i class="fas fa-volume-up fa-lg"></i>
-    <span><strong>Tap here to enable audio</strong> (sound is muted by device)</span>
+    <span><strong>{{ 'انقر هنا لتفعيل الصوت' if is_rtl else 'Tap here to enable audio' }}</strong> ({{ 'الصوت مكتوم بواسطة الجهاز' if is_rtl else 'sound is muted by device' }})</span>
 </div>
 
 <!-- ========================================================================= -->
@@ -934,7 +942,7 @@
                 <span class="badge bg-primary text-uppercase me-2 font-monospace">{{ room.room_id }}</span>
                 <span class="fw-semibold text-truncate me-2" style="max-width: 300px;">{{ room.title }}</span>
                 {% if room.require_passcode %}
-                <span class="badge bg-warning text-dark me-2 small"><i class="fas fa-lock me-1"></i>Passcode Protected</span>
+                <span class="badge bg-warning text-dark me-2 small"><i class="fas fa-lock me-1"></i>{{ 'محمي برمز مرور' if is_rtl else 'Passcode Protected' }}</span>
                 {% endif %}
             </div>
             
@@ -942,7 +950,7 @@
                 <!-- Recording Active Badge -->
                 <span id="recordingBadge" class="badge bg-danger text-white d-none align-items-center">
                     <i class="fas fa-circle me-1" style="font-size: 0.6rem; animation: blink 1s infinite;"></i>
-                    <span id="recordingTimerText">REC 00:00</span>
+                    <span id="recordingTimerText">{{ 'تسجيل 00:00' if is_rtl else 'REC 00:00' }}</span>
                 </span>
 
                 <!-- Duration Countdown Timer -->
@@ -952,18 +960,18 @@
 
                 <!-- Host Quick Duration Extension -->
                 {% if role == 'advisor' %}
-                <button class="btn btn-sm btn-outline-light py-1 px-2" onclick="extendMeetingDuration(15)" title="Add 15 minutes to session">
-                    <i class="fas fa-plus me-1"></i> +15m
+                <button class="btn btn-sm btn-outline-light py-1 px-2" onclick="extendMeetingDuration(15)" title="{{ 'إضافة 15 دقيقة للجلسة' if is_rtl else 'Add 15 minutes to session' }}">
+                    <i class="fas fa-plus me-1"></i> {{ '+15 د' if is_rtl else '+15m' }}
                 </button>
-                <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="endCallForAll()" title="End call for everyone">
-                    <i class="fas fa-power-off me-1"></i> End Call
+                <button class="btn btn-sm btn-outline-danger py-1 px-2" onclick="endCallForAll()" title="{{ 'إنهاء المكالمة للجميع' if is_rtl else 'End call for everyone' }}">
+                    <i class="fas fa-power-off me-1"></i> {{ 'إنهاء المكالمة' if is_rtl else 'End Call' }}
                 </button>
-                <button class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2" onclick="toggleNotebookPanel()" title="Open Interactive Advising Notebook & Whiteboard">
-                    <i class="fas fa-book-open me-1"></i> Notebook
+                <button class="btn btn-sm btn-warning text-dark fw-bold py-1 px-2" onclick="toggleNotebookPanel()" title="{{ 'فتح دفتر الملاحظات والسبورة التفاعلية' if is_rtl else 'Open Interactive Advising Notebook & Whiteboard' }}">
+                    <i class="fas fa-book-open me-1"></i> {{ 'دفتر الملاحظات' if is_rtl else 'Notebook' }}
                 </button>
                 {% endif %}
-                <button class="btn btn-sm btn-outline-light" onclick="copyInviteLink()" title="Copy invite link">
-                    <i class="fas fa-link me-1"></i> Copy Link
+                <button class="btn btn-sm btn-outline-light" onclick="copyInviteLink()" title="{{ 'نسخ رابط الدعوة' if is_rtl else 'Copy invite link' }}">
+                    <i class="fas fa-link me-1"></i> {{ 'نسخ الرابط' if is_rtl else 'Copy Link' }}
                 </button>
             </div>
         </div>
@@ -973,7 +981,7 @@
             <!-- Local Participant Card -->
             <div class="video-card" id="localCard">
                 <video id="localVideo" autoplay playsinline webkit-playsinline="true" muted class="mirrored"></video>
-                <button type="button" class="video-fit-btn" onclick="toggleFitMode()" title="Toggle Fit to Screen / Fill Mode">
+                <button type="button" class="video-fit-btn" onclick="toggleFitMode()" title="{{ 'تبديل وضع ملء الشاشة / الاحتواء' if is_rtl else 'Toggle Fit to Screen / Fill Mode' }}">
                     <i class="fas fa-compress-arrows-alt"></i>
                 </button>
                 <div class="avatar-placeholder" id="localAvatar" style="display: none;">
@@ -981,15 +989,15 @@
                 </div>
                 <div class="video-overlay-name">
                     <i class="fas fa-microphone" id="localMicIcon"></i>
-                    <span>{{ user_name }} (You)</span>
-                    <span class="badge bg-primary" style="font-size: 0.65rem;">{{ 'Host' if role == 'advisor' else 'Participant' }}</span>
+                    <span>{{ user_name }} ({{ 'أنت' if is_rtl else 'You' }})</span>
+                    <span class="badge bg-primary" style="font-size: 0.65rem;">{{ ('المضيف' if is_rtl else 'Host') if role == 'advisor' else ('مشارك' if is_rtl else 'Participant') }}</span>
                 </div>
             </div>
 
             <!-- Remote Participant Card -->
             <div class="video-card" id="remoteCard">
                 <video id="remoteVideo" autoplay playsinline webkit-playsinline="true" style="display: none;"></video>
-                <button type="button" class="video-fit-btn" onclick="toggleFitMode()" title="Toggle Fit to Screen / Fill Mode">
+                <button type="button" class="video-fit-btn" onclick="toggleFitMode()" title="{{ 'تبديل وضع ملء الشاشة / الاحتواء' if is_rtl else 'Toggle Fit to Screen / Fill Mode' }}">
                     <i class="fas fa-compress-arrows-alt"></i>
                 </button>
                 <div class="avatar-placeholder" id="remoteAvatar">
@@ -997,7 +1005,7 @@
                 </div>
                 <div class="video-overlay-name">
                     <i class="fas fa-microphone" id="remoteMicIcon"></i>
-                    <span id="remoteNameLabel">Waiting for student or guest to join...</span>
+                    <span id="remoteNameLabel">{{ 'بانتظار انضمام الطالب أو الضيف...' if is_rtl else 'Waiting for student or guest to join...' }}</span>
                 </div>
             </div>
         </div>
@@ -1007,34 +1015,34 @@
             <!-- Left Info -->
             <div class="d-flex align-items-center text-truncate" style="width: 250px;">
                 <small class="text-muted d-none d-md-block">
-                    Dhofar University SIS &bull; Video Conference
+                    {{ 'نظام معلومات الطلبة بجامعة ظفار • اجتماع مرئي' if is_rtl else 'Dhofar University SIS • Video Conference' }}
                 </small>
             </div>
 
             <!-- Center Controls -->
             <div class="d-flex align-items-center justify-content-center">
-                <button class="dock-btn" id="btnMic" onclick="toggleMic()" title="Turn off microphone (Ctrl + D)">
+                <button class="dock-btn" id="btnMic" onclick="toggleMic()" title="{{ 'كتم/تشغيل الميكروفون (Ctrl + D)' if is_rtl else 'Turn off microphone (Ctrl + D)' }}">
                     <i class="fas fa-microphone"></i>
                 </button>
-                <button class="dock-btn" id="btnCam" onclick="toggleCam()" title="Turn off camera (Ctrl + E)">
+                <button class="dock-btn" id="btnCam" onclick="toggleCam()" title="{{ 'إيقاف/تشغيل الكاميرا (Ctrl + E)' if is_rtl else 'Turn off camera (Ctrl + E)' }}">
                     <i class="fas fa-video"></i>
                 </button>
-                <button class="dock-btn d-inline-flex d-md-none" id="btnFlipCam" onclick="flipCamera()" title="Switch Front/Rear Camera">
+                <button class="dock-btn d-inline-flex d-md-none" id="btnFlipCam" onclick="flipCamera()" title="{{ 'تبديل الكاميرا الأمامية/الخلفية' if is_rtl else 'Switch Front/Rear Camera' }}">
                     <i class="fas fa-sync-alt"></i>
                 </button>
-                <button class="dock-btn" id="btnFitScreen" onclick="toggleFitMode()" title="Toggle Fit to Screen / Fill Mode">
+                <button class="dock-btn" id="btnFitScreen" onclick="toggleFitMode()" title="{{ 'تبديل وضع ملء الشاشة / الاحتواء' if is_rtl else 'Toggle Fit to Screen / Fill Mode' }}">
                     <i class="fas fa-compress-arrows-alt" id="fitIcon"></i>
                 </button>
-                <button class="dock-btn" id="btnScreen" onclick="toggleScreenShare()" title="Present now / Share screen">
+                <button class="dock-btn" id="btnScreen" onclick="toggleScreenShare()" title="{{ 'مشاركة الشاشة الآن' if is_rtl else 'Present now / Share screen' }}">
                     <i class="fas fa-desktop"></i>
                 </button>
-                <button class="dock-btn" id="btnRecord" onclick="toggleSessionRecording()" title="Record this advising session">
+                <button class="dock-btn" id="btnRecord" onclick="toggleSessionRecording()" title="{{ 'تسجيل جلسة الإرشاد هذه' if is_rtl else 'Record this advising session' }}">
                     <i class="fas fa-record-vinyl"></i>
                 </button>
-                <button class="dock-btn" id="btnDevices" onclick="openDeviceSettingsModal()" title="Microphone & Camera Settings">
+                <button class="dock-btn" id="btnDevices" onclick="openDeviceSettingsModal()" title="{{ 'إعدادات الميكروفون والكاميرا' if is_rtl else 'Microphone & Camera Settings' }}">
                     <i class="fas fa-cog"></i>
                 </button>
-                <button class="dock-btn btn-leave" onclick="leaveMeeting()" title="Leave meeting">
+                <button class="dock-btn btn-leave" onclick="leaveMeeting()" title="{{ 'مغادرة الاجتماع' if is_rtl else 'Leave meeting' }}">
                     <i class="fas fa-phone-slash"></i>
                 </button>
             </div>
@@ -1043,29 +1051,29 @@
             <div class="d-flex align-items-center justify-content-end" style="width: 280px;">
                 <!-- Host Waiting Room Control Button -->
                 {% if role == 'advisor' %}
-                <button class="dock-btn" id="btnWaitingRoom" onclick="togglePanel('waiting')" title="Waiting Room / Knock Requests">
+                <button class="dock-btn" id="btnWaitingRoom" onclick="togglePanel('waiting')" title="{{ 'غرفة الانتظار / طلبات الدخول' if is_rtl else 'Waiting Room / Knock Requests' }}">
                     <i class="fas fa-user-clock"></i>
                     <span id="waitingBadge" class="badge-count" style="display: none;">0</span>
                 </button>
                 {% endif %}
 
                 {% if audit or group_students %}
-                <button class="dock-btn" onclick="togglePanel('dossier')" title="Student Degree Audit & Standing">
+                <button class="dock-btn" onclick="togglePanel('dossier')" title="{{ 'تدقيق الخطة الدراسية والوضع الأكاديمي للطالب' if is_rtl else 'Student Degree Audit & Standing' }}">
                     <i class="fas fa-id-card"></i>
                 </button>
                 {% endif %}
 
-                <button class="dock-btn text-warning" id="btnNotebook" onclick="toggleNotebookPanel()" title="Advisor Multi-Page Notebook & Whiteboard">
+                <button class="dock-btn text-warning" id="btnNotebook" onclick="toggleNotebookPanel()" title="{{ 'دفتر الملاحظات والسبورة التفاعلية متعددة الصفحات' if is_rtl else 'Advisor Multi-Page Notebook & Whiteboard' }}">
                     <i class="fas fa-book-open"></i>
                 </button>
-                <button class="dock-btn" onclick="togglePanel('notes')" title="Shared Advising Notes">
+                <button class="dock-btn" onclick="togglePanel('notes')" title="{{ 'مفكرة الإرشاد المشتركة' if is_rtl else 'Shared Advising Notes' }}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="dock-btn" onclick="togglePanel('files')" title="Share Files & Session Recordings">
+                <button class="dock-btn" onclick="togglePanel('files')" title="{{ 'مشاركة الملفات وتسجيلات الجلسة' if is_rtl else 'Share Files & Session Recordings' }}">
                     <i class="fas fa-folder-open"></i>
                     <span id="filesBadge" class="badge-count" style="display: none;">0</span>
                 </button>
-                <button class="dock-btn" onclick="togglePanel('chat')" title="In-call chat messages">
+                <button class="dock-btn" onclick="togglePanel('chat')" title="{{ 'رسائل المحادثة أثناء المكالمة' if is_rtl else 'In-call chat messages' }}">
                     <i class="fas fa-comment-alt"></i>
                     <span id="chatBadge" class="badge-count" style="display: none;">0</span>
                 </button>
@@ -1081,17 +1089,17 @@
     {% if role == 'advisor' %}
     <div class="side-panel" id="panelWaiting">
         <div class="panel-header bg-primary text-white">
-            <h6 class="fw-bold mb-0"><i class="fas fa-user-clock me-2"></i> Waiting Room Lobby</h6>
+            <h6 class="fw-bold mb-0"><i class="fas fa-user-clock me-2"></i> {{ 'ردهة غرفة الانتظار' if is_rtl else 'Waiting Room Lobby' }}</h6>
             <button class="btn-close btn-close-white" onclick="closePanels()"></button>
         </div>
         <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
-            <small class="text-muted"><span id="waitingCountLabel">0</span> people waiting to join</small>
+            <small class="text-muted"><span id="waitingCountLabel">0</span> {{ 'بانتظار الانضمام' if is_rtl else 'people waiting to join' }}</small>
             <button class="btn btn-sm btn-outline-success py-0" onclick="admitAllWaiting()">
-                <i class="fas fa-check-double me-1"></i> Admit All
+                <i class="fas fa-check-double me-1"></i> {{ 'قبول الجميع' if is_rtl else 'Admit All' }}
             </button>
         </div>
         <div class="panel-content" id="waitingListContainer">
-            <div class="text-muted small text-center py-4">No attendees currently in the waiting room.</div>
+            <div class="text-muted small text-center py-4">{{ 'لا يوجد مشاركون في غرفة الانتظار حالياً.' if is_rtl else 'No attendees currently in the waiting room.' }}</div>
         </div>
     </div>
     {% endif %}
@@ -1099,18 +1107,18 @@
     <!-- Side Panel 1: Chat -->
     <div class="side-panel" id="panelChat">
         <div class="panel-header">
-            <h6 class="fw-bold mb-0"><i class="fas fa-comment-alt me-2 text-primary"></i> In-call messages</h6>
+            <h6 class="fw-bold mb-0"><i class="fas fa-comment-alt me-2 text-primary"></i> {{ 'الرسائل أثناء المكالمة' if is_rtl else 'In-call messages' }}</h6>
             <button class="btn-close" onclick="closePanels()"></button>
         </div>
         <div class="panel-content" id="chatBox">
-            <div class="text-muted small text-center mb-3">Messages are shared only with participants in this meeting.</div>
+            <div class="text-muted small text-center mb-3">{{ 'تتم مشاركة الرسائل فقط مع المشاركين في هذا الاجتماع.' if is_rtl else 'Messages are shared only with participants in this meeting.' }}</div>
             <div id="chatMessagesList"></div>
         </div>
         <div class="p-3 border-top bg-light">
             {% if role == 'advisor' or app_settings.permissions.allow_guest_chat %}
             <form id="chatForm" onsubmit="sendChat(event)">
                 <div class="input-group">
-                    <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Send a message to everyone..." autocomplete="off">
+                    <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="{{ 'أرسل رسالة إلى الجميع...' if is_rtl else 'Send a message to everyone...' }}" autocomplete="off">
                     <button class="btn btn-primary btn-sm" type="submit">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -1118,7 +1126,7 @@
             </form>
             {% else %}
             <div class="text-center text-muted small p-2 bg-white rounded border">
-                <i class="fas fa-comment-slash me-1 text-secondary"></i> In-call chat has been restricted by the advisor.
+                <i class="fas fa-comment-slash me-1 text-secondary"></i> {{ 'تم تقييد المحادثة أثناء المكالمة من قِبل المرشد الأكاديمي.' if is_rtl else 'In-call chat has been restricted by the advisor.' }}
             </div>
             {% endif %}
         </div>
@@ -1127,13 +1135,13 @@
     <!-- Side Panel 2: Shared Advising Notes Pad -->
     <div class="side-panel" id="panelNotes">
         <div class="panel-header">
-            <h6 class="fw-bold mb-0"><i class="fas fa-edit me-2 text-warning"></i> Advising Notes Pad</h6>
+            <h6 class="fw-bold mb-0"><i class="fas fa-edit me-2 text-warning"></i> {{ 'مفكرة ملاحظات الإرشاد' if is_rtl else 'Advising Notes Pad' }}</h6>
             <button class="btn-close" onclick="closePanels()"></button>
         </div>
         <div class="p-2 bg-light border-bottom d-flex justify-content-between align-items-center">
-            <small class="text-muted" id="notesStatus"><i class="fas fa-check text-success me-1"></i> Synced</small>
+            <small class="text-muted" id="notesStatus"><i class="fas fa-check text-success me-1"></i> {{ 'متزامن' if is_rtl else 'Synced' }}</small>
             <button class="btn btn-sm btn-outline-secondary py-0" onclick="copyNotes()">
-                <i class="fas fa-copy me-1"></i> Copy Notes
+                <i class="fas fa-copy me-1"></i> {{ 'نسخ الملاحظات' if is_rtl else 'Copy Notes' }}
             </button>
         </div>
         <div class="panel-content p-2 d-flex flex-column">
@@ -1148,15 +1156,15 @@
             <div class="d-flex align-items-center gap-2">
                 <i class="fas fa-book-open text-warning fs-5"></i>
                 <div>
-                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">Advisor Notebook &amp; Whiteboard</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Multi-page sketchpad, notes &amp; student records</small>
+                    <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem;">{{ 'دفتر ملاحظات المرشد والسبورة التفاعلية' if is_rtl else 'Advisor Notebook & Whiteboard' }}</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">{{ 'كراسة رسم وملاحظات وسجلات طلبة متعددة الصفحات' if is_rtl else 'Multi-page sketchpad, notes & student records' }}</small>
                 </div>
             </div>
             <div class="d-flex align-items-center gap-1">
-                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="btnNotebookExpand" onclick="toggleNotebookExpand()" title="Expand / Contract Workspace">
+                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="btnNotebookExpand" onclick="toggleNotebookExpand()" title="{{ 'توسيع / تقليص مساحة العمل' if is_rtl else 'Expand / Contract Workspace' }}">
                     <i class="fas fa-expand-alt" id="expandNotebookIcon"></i>
                 </button>
-                <button type="button" class="btn-close ms-2" onclick="closePanels()" title="Close notebook"></button>
+                <button type="button" class="btn-close ms-2" onclick="closePanels()" title="{{ 'إغلاق الدفتر' if is_rtl else 'Close notebook' }}"></button>
             </div>
         </div>
 
@@ -1164,33 +1172,33 @@
         <div class="notebook-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom py-1.5 px-3 bg-white">
             <!-- Left: Page Switcher -->
             <div class="d-flex align-items-center gap-1">
-                <button type="button" class="notebook-tool-btn" onclick="prevNotebookPage()" title="Previous Page">
-                    <i class="fas fa-chevron-left"></i>
+                <button type="button" class="notebook-tool-btn" onclick="prevNotebookPage()" title="{{ 'الصفحة السابقة' if is_rtl else 'Previous Page' }}">
+                    <i class="fas fa-chevron-{{ 'right' if is_rtl else 'left' }}"></i>
                 </button>
                 <span class="badge bg-light text-dark border px-2 py-1 font-monospace" id="nbPageCounter" style="font-size: 0.78rem;">
-                    Page 1 / 1
+                    {{ 'صفحة 1 / 1' if is_rtl else 'Page 1 / 1' }}
                 </span>
-                <button type="button" class="notebook-tool-btn" onclick="nextNotebookPage()" title="Next Page">
-                    <i class="fas fa-chevron-right"></i>
+                <button type="button" class="notebook-tool-btn" onclick="nextNotebookPage()" title="{{ 'الصفحة التالية' if is_rtl else 'Next Page' }}">
+                    <i class="fas fa-chevron-{{ 'left' if is_rtl else 'right' }}"></i>
                 </button>
-                <button type="button" class="btn btn-sm btn-primary py-0 px-2 fw-semibold ms-1" onclick="addNotebookPage()" title="Add New Blank Page" style="font-size: 0.75rem;">
-                    <i class="fas fa-plus me-1"></i> New Page
+                <button type="button" class="btn btn-sm btn-primary py-0 px-2 fw-semibold ms-1" onclick="addNotebookPage()" title="{{ 'إضافة صفحة فارغة جديدة' if is_rtl else 'Add New Blank Page' }}" style="font-size: 0.75rem;">
+                    <i class="fas fa-plus me-1"></i> {{ 'صفحة جديدة' if is_rtl else 'New Page' }}
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1.5" onclick="deleteCurrentNotebookPage()" title="Delete Current Page" style="font-size: 0.75rem;">
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1.5" onclick="deleteCurrentNotebookPage()" title="{{ 'حذف الصفحة الحالية' if is_rtl else 'Delete Current Page' }}" style="font-size: 0.75rem;">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
 
             <!-- Right: Facility Mode Toggle (Split, Draw Only, Type Only) -->
             <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="notebook-tool-btn active" id="btnModeSplit" onclick="setNotebookMode('split')" title="Canvas + Typed Notes Split">
-                    <i class="fas fa-columns me-1"></i> Split
+                <button type="button" class="notebook-tool-btn active" id="btnModeSplit" onclick="setNotebookMode('split')" title="{{ 'تقسيم: سبورة رسم + ملاحظات مكتوبة' if is_rtl else 'Canvas + Typed Notes Split' }}">
+                    <i class="fas fa-columns me-1"></i> {{ 'مقسّم' if is_rtl else 'Split' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="btnModeDraw" onclick="setNotebookMode('draw')" title="Freehand Drawing Canvas Only">
-                    <i class="fas fa-pen-fancy me-1"></i> Draw Only
+                <button type="button" class="notebook-tool-btn" id="btnModeDraw" onclick="setNotebookMode('draw')" title="{{ 'لوحة الرسم الحر فقط' if is_rtl else 'Freehand Drawing Canvas Only' }}">
+                    <i class="fas fa-pen-fancy me-1"></i> {{ 'رسم فقط' if is_rtl else 'Draw Only' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="btnModeText" onclick="setNotebookMode('text')" title="Typing & Structured Notes Only">
-                    <i class="fas fa-keyboard me-1"></i> Type Only
+                <button type="button" class="notebook-tool-btn" id="btnModeText" onclick="setNotebookMode('text')" title="{{ 'كتابة وملاحظات منظمة فقط' if is_rtl else 'Typing & Structured Notes Only' }}">
+                    <i class="fas fa-keyboard me-1"></i> {{ 'كتابة فقط' if is_rtl else 'Type Only' }}
                 </button>
             </div>
         </div>
@@ -1199,30 +1207,30 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-1.5 bg-light border-bottom" style="font-size: 0.8rem;">
             <!-- Pattern Type Selector -->
             <div class="d-flex align-items-center gap-1">
-                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">PATTERN:</span>
-                <button type="button" class="notebook-tool-btn active" id="btnPatLined" onclick="setPaperPattern('lined')" title="Ruled Notebook Lines">
-                    <i class="fas fa-align-justify me-1 text-primary"></i> Lined
+                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">{{ 'التسطير:' if is_rtl else 'PATTERN:' }}</span>
+                <button type="button" class="notebook-tool-btn active" id="btnPatLined" onclick="setPaperPattern('lined')" title="{{ 'ورق مسطّر' if is_rtl else 'Ruled Notebook Lines' }}">
+                    <i class="fas fa-align-justify me-1 text-primary"></i> {{ 'مسطّر' if is_rtl else 'Lined' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="btnPatBlank" onclick="setPaperPattern('blank')" title="Plain Blank Sheet">
-                    <i class="far fa-file me-1"></i> Blank
+                <button type="button" class="notebook-tool-btn" id="btnPatBlank" onclick="setPaperPattern('blank')" title="{{ 'ورق أبيض سادة' if is_rtl else 'Plain Blank Sheet' }}">
+                    <i class="far fa-file me-1"></i> {{ 'سادة' if is_rtl else 'Blank' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="btnPatDot" onclick="setPaperPattern('dot')" title="Bullet Journal Dot Grid">
-                    <i class="fas fa-braille me-1 text-secondary"></i> Dot Grid
+                <button type="button" class="notebook-tool-btn" id="btnPatDot" onclick="setPaperPattern('dot')" title="{{ 'شبكة نقاط' if is_rtl else 'Bullet Journal Dot Grid' }}">
+                    <i class="fas fa-braille me-1 text-secondary"></i> {{ 'منقّط' if is_rtl else 'Dot Grid' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="btnPatTabular" onclick="setPaperPattern('tabular')" title="Tabular Math / Graph Grid">
-                    <i class="fas fa-table-cells me-1 text-success"></i> Tabular
+                <button type="button" class="notebook-tool-btn" id="btnPatTabular" onclick="setPaperPattern('tabular')" title="{{ 'شبكة مربعات' if is_rtl else 'Tabular Math / Graph Grid' }}">
+                    <i class="fas fa-table-cells me-1 text-success"></i> {{ 'مربعات' if is_rtl else 'Tabular' }}
                 </button>
             </div>
 
             <!-- Paper Color Palette Swatches -->
             <div class="d-flex align-items-center gap-1.5">
-                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">COLOR:</span>
-                <button type="button" class="paper-swatch-btn active" id="swatchColorWhite" style="background-color: #ffffff;" onclick="setPaperColor('#ffffff')" title="Classic White"></button>
-                <button type="button" class="paper-swatch-btn" id="swatchColorIvory" style="background-color: #fffdf0;" onclick="setPaperColor('#fffdf0')" title="Warm Ivory Cream"></button>
-                <button type="button" class="paper-swatch-btn" id="swatchColorYellow" style="background-color: #fef9c3;" onclick="setPaperColor('#fef9c3')" title="Legal Pad Yellow"></button>
-                <button type="button" class="paper-swatch-btn" id="swatchColorMint" style="background-color: #f0fdf4;" onclick="setPaperColor('#f0fdf4')" title="Soft Mint Green"></button>
-                <button type="button" class="paper-swatch-btn" id="swatchColorBlue" style="background-color: #eff6ff;" onclick="setPaperColor('#eff6ff')" title="Sky Blue Paper"></button>
-                <button type="button" class="paper-swatch-btn" id="swatchColorDark" style="background-color: #1e293b;" onclick="setPaperColor('#1e293b')" title="Dark Chalkboard / Slate"></button>
+                <span class="text-muted fw-bold me-1" style="font-size: 0.72rem;">{{ 'اللون:' if is_rtl else 'COLOR:' }}</span>
+                <button type="button" class="paper-swatch-btn active" id="swatchColorWhite" style="background-color: #ffffff;" onclick="setPaperColor('#ffffff')" title="{{ 'أبيض كلاسيكي' if is_rtl else 'Classic White' }}"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorIvory" style="background-color: #fffdf0;" onclick="setPaperColor('#fffdf0')" title="{{ 'عاجي دافئ' if is_rtl else 'Warm Ivory Cream' }}"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorYellow" style="background-color: #fef9c3;" onclick="setPaperColor('#fef9c3')" title="{{ 'أصفر مفكرة قانونية' if is_rtl else 'Legal Pad Yellow' }}"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorMint" style="background-color: #f0fdf4;" onclick="setPaperColor('#f0fdf4')" title="{{ 'أخضر نعناعي هادئ' if is_rtl else 'Soft Mint Green' }}"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorBlue" style="background-color: #eff6ff;" onclick="setPaperColor('#eff6ff')" title="{{ 'أزرق سماوي' if is_rtl else 'Sky Blue Paper' }}"></button>
+                <button type="button" class="paper-swatch-btn" id="swatchColorDark" style="background-color: #1e293b;" onclick="setPaperColor('#1e293b')" title="{{ 'سبورة داكنة' if is_rtl else 'Dark Chalkboard / Slate' }}"></button>
             </div>
         </div>
 
@@ -1230,44 +1238,44 @@
         <div id="drawingToolsBar" class="notebook-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom py-1.5 px-3">
             <!-- Tool: Pen, Highlighter, Eraser -->
             <div class="d-flex align-items-center gap-1">
-                <button type="button" class="notebook-tool-btn active" id="toolBtnPen" onclick="setDrawTool('pen')" title="Pen Tool">
-                    <i class="fas fa-pen"></i> Pen
+                <button type="button" class="notebook-tool-btn active" id="toolBtnPen" onclick="setDrawTool('pen')" title="{{ 'أداة القلم' if is_rtl else 'Pen Tool' }}">
+                    <i class="fas fa-pen"></i> {{ 'قلم' if is_rtl else 'Pen' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="toolBtnMarker" onclick="setDrawTool('marker')" title="Translucent Highlighter">
-                    <i class="fas fa-highlighter text-warning"></i> Marker
+                <button type="button" class="notebook-tool-btn" id="toolBtnMarker" onclick="setDrawTool('marker')" title="{{ 'قلم تظليل شفاف' if is_rtl else 'Translucent Highlighter' }}">
+                    <i class="fas fa-highlighter text-warning"></i> {{ 'تظليل' if is_rtl else 'Marker' }}
                 </button>
-                <button type="button" class="notebook-tool-btn" id="toolBtnEraser" onclick="setDrawTool('eraser')" title="Eraser Tool">
-                    <i class="fas fa-eraser text-danger"></i> Eraser
+                <button type="button" class="notebook-tool-btn" id="toolBtnEraser" onclick="setDrawTool('eraser')" title="{{ 'أداة الممحاة' if is_rtl else 'Eraser Tool' }}">
+                    <i class="fas fa-eraser text-danger"></i> {{ 'ممحاة' if is_rtl else 'Eraser' }}
                 </button>
             </div>
 
             <!-- Drawing Ink Color Swatches -->
             <div class="d-flex align-items-center gap-1" id="inkColorSwatches">
-                <button type="button" class="color-swatch-btn active" style="background-color: #0f172a;" onclick="setInkColor('#0f172a')" title="Black Ink"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #1e3a8a;" onclick="setInkColor('#1e3a8a')" title="DU Navy Ink"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #2563eb;" onclick="setInkColor('#2563eb')" title="Royal Blue"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #059669;" onclick="setInkColor('#059669')" title="Emerald Green"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #dc2626;" onclick="setInkColor('#dc2626')" title="Crimson Red"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #d97706;" onclick="setInkColor('#d97706')" title="Amber Orange"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #7c3aed;" onclick="setInkColor('#7c3aed')" title="Iris Purple"></button>
-                <button type="button" class="color-swatch-btn" style="background-color: #ffffff;" onclick="setInkColor('#ffffff')" title="Chalk White"></button>
+                <button type="button" class="color-swatch-btn active" style="background-color: #0f172a;" onclick="setInkColor('#0f172a')" title="{{ 'حبر أسود' if is_rtl else 'Black Ink' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #1e3a8a;" onclick="setInkColor('#1e3a8a')" title="{{ 'كحلي جامعة ظفار' if is_rtl else 'DU Navy Ink' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #2563eb;" onclick="setInkColor('#2563eb')" title="{{ 'أزرق ملكي' if is_rtl else 'Royal Blue' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #059669;" onclick="setInkColor('#059669')" title="{{ 'أخضر زمردي' if is_rtl else 'Emerald Green' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #dc2626;" onclick="setInkColor('#dc2626')" title="{{ 'أحمر قرمزي' if is_rtl else 'Crimson Red' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #d97706;" onclick="setInkColor('#d97706')" title="{{ 'برتقالي كهرماني' if is_rtl else 'Amber Orange' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #7c3aed;" onclick="setInkColor('#7c3aed')" title="{{ 'بنفسجي' if is_rtl else 'Iris Purple' }}"></button>
+                <button type="button" class="color-swatch-btn" style="background-color: #ffffff;" onclick="setInkColor('#ffffff')" title="{{ 'أبيض طباشيري' if is_rtl else 'Chalk White' }}"></button>
             </div>
 
             <!-- Stroke Thickness & Undo / Redo -->
             <div class="d-flex align-items-center gap-1">
                 <select class="form-select form-select-sm py-0 ps-2 pe-4" id="selectStrokeWidth" onchange="setStrokeWidth(this.value)" style="font-size: 0.75rem; width: auto;">
-                    <option value="2">Fine (2px)</option>
-                    <option value="4" selected>Medium (4px)</option>
-                    <option value="8">Bold (8px)</option>
-                    <option value="16">Marker (16px)</option>
+                    <option value="2">{{ 'رفيع (2px)' if is_rtl else 'Fine (2px)' }}</option>
+                    <option value="4" selected>{{ 'متوسط (4px)' if is_rtl else 'Medium (4px)' }}</option>
+                    <option value="8">{{ 'عريض (8px)' if is_rtl else 'Bold (8px)' }}</option>
+                    <option value="16">{{ 'تظليل (16px)' if is_rtl else 'Marker (16px)' }}</option>
                 </select>
-                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="undoDrawing()" title="Undo (Ctrl+Z)">
+                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="undoDrawing()" title="{{ 'تراجع (Ctrl+Z)' if is_rtl else 'Undo (Ctrl+Z)' }}">
                     <i class="fas fa-undo"></i>
                 </button>
-                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="redoDrawing()" title="Redo (Ctrl+Y)">
+                <button type="button" class="notebook-tool-btn py-0 px-2" onclick="redoDrawing()" title="{{ 'إعادة (Ctrl+Y)' if is_rtl else 'Redo (Ctrl+Y)' }}">
                     <i class="fas fa-redo"></i>
                 </button>
-                <button type="button" class="notebook-tool-btn text-danger py-0 px-2" onclick="clearPageCanvas()" title="Clear drawing layer">
+                <button type="button" class="notebook-tool-btn text-danger py-0 px-2" onclick="clearPageCanvas()" title="{{ 'مسح طبقة الرسم' if is_rtl else 'Clear drawing layer' }}">
                     <i class="fas fa-trash-can"></i>
                 </button>
             </div>
@@ -1278,9 +1286,9 @@
             <!-- Page Header Title Input -->
             <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text bg-white border-end-0 text-muted" style="font-size: 0.75rem;">
-                    <i class="fas fa-heading me-1"></i> Title:
+                    <i class="fas fa-heading me-1"></i> {{ 'العنوان:' if is_rtl else 'Title:' }}
                 </span>
-                <input type="text" id="nbPageTitleInput" class="form-control form-control-sm border-start-0 fw-semibold" placeholder="e.g. Advising Strategy & GPA Recovery Plan" oninput="onNotebookTitleChanged()">
+                <input type="text" id="nbPageTitleInput" class="form-control form-control-sm border-start-0 fw-semibold" placeholder="{{ 'مثال: استراتيجية الإرشاد وخطة تعافي المعدل التراكمي' if is_rtl else 'e.g. Advising Strategy & GPA Recovery Plan' }}" oninput="onNotebookTitleChanged()">
             </div>
 
             <!-- Paper Sheet Viewport (Canvas + Patterned Background) -->
@@ -1292,13 +1300,13 @@
                 <div id="notebookNotesContainer" class="notebook-notes-layer">
                     <!-- Helper Template Snippet Pills -->
                     <div class="d-flex flex-wrap gap-1 mb-1.5 align-items-center">
-                        <small class="text-muted me-1 fw-bold" style="font-size: 0.7rem;"><i class="fas fa-bolt text-warning me-1"></i>Templates:</small>
-                        <button type="button" class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('cap')">+ 12-CH Cap</button>
-                        <button type="button" class="badge bg-warning-subtle text-dark border border-warning-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('repeat')">+ Repeat Plan</button>
-                        <button type="button" class="badge bg-success-subtle text-success border border-success-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('goal')">+ 65% Target</button>
-                        <button type="button" class="badge bg-info-subtle text-info border border-info-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('action')">+ Action Items</button>
+                        <small class="text-muted me-1 fw-bold" style="font-size: 0.7rem;"><i class="fas fa-bolt text-warning me-1"></i>{{ 'قوالب جاهزة:' if is_rtl else 'Templates:' }}</small>
+                        <button type="button" class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('cap')">{{ '+ سقف 12 ساعة' if is_rtl else '+ 12-CH Cap' }}</button>
+                        <button type="button" class="badge bg-warning-subtle text-dark border border-warning-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('repeat')">{{ '+ خطة إعادة المقررات' if is_rtl else '+ Repeat Plan' }}</button>
+                        <button type="button" class="badge bg-success-subtle text-success border border-success-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('goal')">{{ '+ هدف 65%' if is_rtl else '+ 65% Target' }}</button>
+                        <button type="button" class="badge bg-info-subtle text-info border border-info-subtle py-1 px-1.5 text-decoration-none" onclick="insertNotebookSnippet('action')">{{ '+ بنود العمل' if is_rtl else '+ Action Items' }}</button>
                     </div>
-                    <textarea id="notebookNotesText" class="form-control font-monospace" rows="6" style="resize: vertical; font-size: 0.82rem; line-height: 1.45;" placeholder="Type advisor notes, academic agreements, recommended schedule..." oninput="onNotebookTextChanged()"></textarea>
+                    <textarea id="notebookNotesText" class="form-control font-monospace" rows="6" style="resize: vertical; font-size: 0.82rem; line-height: 1.45;" placeholder="{{ 'اكتب ملاحظات المرشد، الاتفاقيات الأكاديمية، الجدول المقترح...' if is_rtl else 'Type advisor notes, academic agreements, recommended schedule...' }}" oninput="onNotebookTextChanged()"></textarea>
                 </div>
             </div>
         </div>
@@ -1307,21 +1315,21 @@
         <div class="p-2 px-3 bg-white border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex align-items-center gap-2">
                 <span id="nbSyncStatus" class="small text-muted" style="font-size: 0.75rem;">
-                    <i class="fas fa-check text-success me-1"></i> Synced to Room
+                    <i class="fas fa-check text-success me-1"></i> {{ 'متزامن مع الغرفة' if is_rtl else 'Synced to Room' }}
                 </span>
             </div>
             <div class="d-flex align-items-center gap-1.5">
-                <button type="button" class="btn btn-sm btn-outline-secondary py-1" onclick="exportNotebookPageImage()" title="Download current page as image">
-                    <i class="fas fa-image me-1"></i> Export Image
+                <button type="button" class="btn btn-sm btn-outline-secondary py-1" onclick="exportNotebookPageImage()" title="{{ 'تنزيل الصفحة الحالية كصورة' if is_rtl else 'Download current page as image' }}">
+                    <i class="fas fa-image me-1"></i> {{ 'تصدير صورة' if is_rtl else 'Export Image' }}
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-dark py-1" onclick="printNotebookPages()" title="Print / PDF preview of all pages">
-                    <i class="fas fa-print me-1"></i> Print / PDF
+                <button type="button" class="btn btn-sm btn-outline-dark py-1" onclick="printNotebookPages()" title="{{ 'طباعة / معاينة PDF لجميع الصفحات' if is_rtl else 'Print / PDF preview of all pages' }}">
+                    <i class="fas fa-print me-1"></i> {{ 'طباعة / PDF' if is_rtl else 'Print / PDF' }}
                 </button>
-                <button type="button" class="btn btn-sm btn-primary py-1 fw-bold" onclick="saveNotebookToServer()" title="Save all pages to this conference">
-                    <i class="fas fa-save me-1"></i> Save
+                <button type="button" class="btn btn-sm btn-primary py-1 fw-bold" onclick="saveNotebookToServer()" title="{{ 'حفظ جميع الصفحات في هذا الاجتماع' if is_rtl else 'Save all pages to this conference' }}">
+                    <i class="fas fa-save me-1"></i> {{ 'حفظ' if is_rtl else 'Save' }}
                 </button>
-                <button type="button" class="btn btn-sm btn-success py-1 fw-bold shadow-sm" onclick="saveNotebookToStudentRecord()" title="Register notes to student persistent dossier for future guidance">
-                    <i class="fas fa-user-check me-1"></i> Save to Student Dossier
+                <button type="button" class="btn btn-sm btn-success py-1 fw-bold shadow-sm" onclick="saveNotebookToStudentRecord()" title="{{ 'تسجيل الملاحظات في الملف الأكاديمي الدائم للطالب' if is_rtl else 'Register notes to student persistent dossier for future guidance' }}">
+                    <i class="fas fa-user-check me-1"></i> {{ 'حفظ في ملف الطالب' if is_rtl else 'Save to Student Dossier' }}
                 </button>
             </div>
         </div>
@@ -1330,28 +1338,28 @@
     <!-- Side Panel 3: In-Meeting Documents & Saved Recordings -->
     <div class="side-panel" id="panelFiles">
         <div class="panel-header">
-            <h6 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-success"></i> Documents & Recordings</h6>
+            <h6 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-success"></i> {{ 'المستندات والتسجيلات' if is_rtl else 'Documents & Recordings' }}</h6>
             <button class="btn-close" onclick="closePanels()"></button>
         </div>
         <div class="panel-content">
             <div class="border rounded p-3 mb-3 bg-light text-center">
                 <input type="file" id="fileUploadInput" class="d-none" onchange="uploadMeetingFile(event)">
                 <button class="btn btn-outline-primary btn-sm w-100" onclick="document.getElementById('fileUploadInput').click()">
-                    <i class="fas fa-cloud-upload-alt me-1"></i> Share Document or Schedule
+                    <i class="fas fa-cloud-upload-alt me-1"></i> {{ 'مشاركة مستند أو جدول دراسي' if is_rtl else 'Share Document or Schedule' }}
                 </button>
-                <small class="text-muted d-block mt-1">Upload PDF, Excel or transcript</small>
+                <small class="text-muted d-block mt-1">{{ 'رفع ملف PDF أو Excel أو كشف درجات' if is_rtl else 'Upload PDF, Excel or transcript' }}</small>
             </div>
 
             <!-- Saved Session Recordings Section -->
-            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-film text-danger me-1"></i> Session Video Recordings</h6>
+            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-film text-danger me-1"></i> {{ 'تسجيلات الفيديو للجلسة' if is_rtl else 'Session Video Recordings' }}</h6>
             <div id="savedRecordingsList" class="list-group list-group-flush mb-4">
-                <div class="text-muted small text-center py-2">No recordings saved yet.</div>
+                <div class="text-muted small text-center py-2">{{ 'لا توجد تسجيلات محفوظة بعد.' if is_rtl else 'No recordings saved yet.' }}</div>
             </div>
 
             <!-- Shared Documents Section -->
-            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-file-alt text-primary me-1"></i> Shared Documents</h6>
+            <h6 class="small fw-bold text-dark mb-2"><i class="fas fa-file-alt text-primary me-1"></i> {{ 'المستندات المشتركة' if is_rtl else 'Shared Documents' }}</h6>
             <div id="sharedFilesList" class="list-group list-group-flush">
-                <div class="text-muted small text-center py-2">No documents shared yet.</div>
+                <div class="text-muted small text-center py-2">{{ 'لم تتم مشاركة أي مستندات بعد.' if is_rtl else 'No documents shared yet.' }}</div>
             </div>
         </div>
     </div>
@@ -1361,9 +1369,9 @@
     <div class="side-panel" id="panelDossier">
         <div class="panel-header bg-primary text-white">
             <h6 class="fw-bold mb-0">
-                <i class="fas fa-user-graduate me-2"></i> Advisee Academic Snapshot
+                <i class="fas fa-user-graduate me-2"></i> {{ 'ملخص الوضع الأكاديمي للطالب' if is_rtl else 'Advisee Academic Snapshot' }}
                 {% if group_students|length > 1 %}
-                <span class="badge bg-light text-primary ms-1">{{ group_students|length }} Advisees</span>
+                <span class="badge bg-light text-primary ms-1">{{ group_students|length }} {{ 'طلبة' if is_rtl else 'Advisees' }}</span>
                 {% endif %}
             </h6>
             <button class="btn-close btn-close-white" onclick="closePanels()"></button>
@@ -1375,12 +1383,12 @@
             <div class="card mb-3 border-0 bg-light">
                 <div class="card-body p-3">
                     <h5 class="fw-bold text-primary mb-1">{{ cur_student.name }}</h5>
-                    <div class="font-monospace small text-muted mb-2">ID: {{ cur_student.id }} &bull; {{ cur_student.program or 'Computer Science' }}</div>
+                    <div class="font-monospace small text-muted mb-2">{{ 'الرقم الجامعي:' if is_rtl else 'ID:' }} {{ cur_student.id }} &bull; {{ localize_degree_type(cur_student.program or 'Computer Science') }}</div>
                     
                     <div class="row g-2 mb-2 text-center">
                         <div class="col-4">
                             <div class="p-2 border rounded bg-white">
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">CGPA</small>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">{{ t('cgpa') }}</small>
                                 <strong class="fs-6 {{ 'text-danger' if (cur_student.cgpa or cur_student.gpa or 0) < 2.0 else 'text-success' }}">
                                     {{ "%.2f"|format(cur_student.cgpa or cur_student.gpa or 0.0) }}
                                 </strong>
@@ -1388,14 +1396,14 @@
                         </div>
                         <div class="col-4">
                             <div class="p-2 border rounded bg-white">
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">Passed Cr</small>
-                                <strong class="fs-6 text-primary">{{ cur_student.credits_completed or 'N/A' }}</strong>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">{{ 'الساعات المجتازة' if is_rtl else 'Passed Cr' }}</small>
+                                <strong class="fs-6 text-primary">{{ cur_student.credits_completed or ('غير متوفر' if is_rtl else 'N/A') }}</strong>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="p-2 border rounded bg-white">
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">Status</small>
-                                <strong class="fs-6" style="font-size: 0.8rem;">{{ cur_student.status or 'Normal' }}</strong>
+                                <small class="text-muted d-block" style="font-size: 0.7rem;">{{ t('status') }}</small>
+                                <strong class="fs-6" style="font-size: 0.8rem;">{{ t(cur_student.status or 'Normal') }}</strong>
                             </div>
                         </div>
                     </div>
@@ -1414,27 +1422,27 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow border-0 bg-dark text-light">
             <div class="modal-header border-secondary">
-                <h5 class="modal-title fw-bold"><i class="fas fa-sliders-h me-2 text-primary"></i> Audio &amp; Video Settings</h5>
+                <h5 class="modal-title fw-bold"><i class="fas fa-sliders-h me-2 text-primary"></i> {{ 'إعدادات الصوت والفيديو' if is_rtl else 'Audio & Video Settings' }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Microphone:</label>
+                    <label class="form-label small fw-bold">{{ 'الميكروفون:' if is_rtl else 'Microphone:' }}</label>
                     <select id="selectAudioInput" class="form-select bg-dark text-light border-secondary"></select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Camera:</label>
+                    <label class="form-label small fw-bold">{{ 'الكاميرا:' if is_rtl else 'Camera:' }}</label>
                     <select id="selectVideoInput" class="form-select bg-dark text-light border-secondary"></select>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label small fw-bold">Mic Volume Test:</label>
+                    <label class="form-label small fw-bold">{{ 'اختبار مستوى صوت الميكروفون:' if is_rtl else 'Mic Volume Test:' }}</label>
                     <div class="progress bg-secondary" style="height: 10px;">
                         <div id="micVolumeBar" class="progress-bar bg-success" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Done</button>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">{{ 'تم' if is_rtl else 'Done' }}</button>
             </div>
         </div>
     </div>

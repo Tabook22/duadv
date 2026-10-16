@@ -104,7 +104,7 @@ def _create_default_seed_notices() -> List[Dict[str, Any]]:
         }
     ]
 
-def get_all_notices() -> List[Dict[str, Any]]:
+def get_all_notices(lang: Optional[str] = None) -> List[Dict[str, Any]]:
     """Retrieve all notices sorted by pinned status, custom order, and updated_at."""
     _ensure_storage()
     with _lock:
@@ -122,7 +122,12 @@ def get_all_notices() -> List[Dict[str, Any]]:
         n.get("order", 9999),
         n.get("created_at", "")
     ))
-    return notices
+    try:
+        from app.i18n import localize_notice, get_current_language
+        active_lang = lang or get_current_language()
+        return [localize_notice(n, lang=active_lang) for n in notices]
+    except Exception:
+        return notices
 
 def get_notice_by_id(notice_id: str) -> Optional[Dict[str, Any]]:
     notices = get_all_notices()

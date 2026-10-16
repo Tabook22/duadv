@@ -274,8 +274,8 @@ def generate_student_persona(student_id: str, transcripts_dir: str = None, lang:
     if not student:
         raise ValueError(f"Student with ID '{student_id}' not found.")
 
-    audit = audit_student_degree(student_id, transcripts_dir)
-    progression = analyze_semester_progression(student_id)
+    audit = audit_student_degree(student_id, transcripts_dir, lang=lang)
+    progression = analyze_semester_progression(student_id, lang=lang)
     raw_semesters = get_student_semesters(student_id, transcripts_dir)
     discipline_stats = _analyze_discipline_performance(raw_semesters, lang=lang)
 
@@ -295,7 +295,7 @@ def generate_student_persona(student_id: str, transcripts_dir: str = None, lang:
     # 1. ARCHETYPE CLASSIFICATION
     # -------------------------------------------------------------
     # Archetype determination based on standing, completion rate, repeats, and momentum
-    recent_trend = progression.get('overall_trend', 'Stable')
+    recent_trend = progression.get('overall_trend_code') or progression.get('overall_trend', 'Stable')
     has_critical_repeats = len(critical_repeats) > 0
     severe_probation = ('Strict' in status or 'Third' in status or 'Second Strict' in status)
     

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Academic Advising Wiki (Second Brain) - Dhofar University{% endblock %}
+{% block title %}{{ 'موسوعة الإرشاد الأكاديمي (العقل الثاني) - جامعة ظفار' if is_rtl else 'Academic Advising Wiki (Second Brain) - Dhofar University' }}{% endblock %}
 
 {% block styles %}
 <style>
@@ -21,7 +21,7 @@
         min-width: 280px;
         max-width: 360px;
         background-color: #ffffff;
-        border-right: 1px solid #e2e8f0;
+        border-inline-end: 1px solid #e2e8f0;
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -47,7 +47,7 @@
         color: #64748b;
         margin-top: 0.85rem;
         margin-bottom: 0.35rem;
-        padding-left: 0.4rem;
+        padding-inline-start: 0.4rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -81,7 +81,7 @@
     
     .wiki-file-item i {
         width: 18px;
-        margin-right: 6px;
+        margin-inline-end: 6px;
         opacity: 0.85;
     }
     
@@ -121,7 +121,7 @@
         width: 290px;
         min-width: 260px;
         background-color: #f8fafc;
-        border-left: 1px solid #e2e8f0;
+        border-inline-start: 1px solid #e2e8f0;
         padding: 1.15rem;
         overflow-y: auto;
         font-size: 0.85rem;
@@ -172,7 +172,7 @@
         background-color: #f1f5f9;
         color: #1e293b;
         font-weight: 600;
-        text-align: left;
+        text-align: start;
         padding: 0.65rem 0.85rem;
         border: 1px solid #cbd5e1;
     }
@@ -249,29 +249,29 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> Dhofar University</span>
-                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> Andrej Karpathy LLM Wiki Vault</span>
-                <span class="badge bg-success px-2 py-1"><i class="fas fa-cube me-1"></i> Obsidian-Compatible</span>
+                <span class="badge bg-primary px-2 py-1"><i class="fas fa-university me-1"></i> {{ 'جامعة ظفار' if is_rtl else 'Dhofar University' }}</span>
+                <span class="badge bg-dark px-2 py-1"><i class="fas fa-brain me-1"></i> {{ 'خزانة المعرفة الذكية للإرشاد الأكاديمي' if is_rtl else 'Andrej Karpathy LLM Wiki Vault' }}</span>
+                <span class="badge bg-success px-2 py-1"><i class="fas fa-cube me-1"></i> {{ 'متوافق مع Obsidian' if is_rtl else 'Obsidian-Compatible' }}</span>
             </div>
             <h3 class="fw-bold mb-0 text-dark">
-                <i class="fas fa-project-diagram me-2 text-primary"></i>Academic Advising Wiki (Second Brain)
+                <i class="fas fa-project-diagram me-2 text-primary"></i>{{ 'موسوعة الإرشاد الأكاديمي (العقل الثاني)' if is_rtl else 'Academic Advising Wiki (Second Brain)' }}
             </h3>
             <p class="text-muted small mb-0">
-                Persistent, compounding markdown knowledge vault with bi-directional <code>[[wikilinks]]</code>, curriculum graphs, and student advising dossiers.
+                {{ 'خزانة معرفة تراكمية مستمرة بصيغة Markdown مع روابط ثنائية الاتجاه [[wikilinks]]، وخرائط مناهج، وملفات إرشاد الطلبة.' if is_rtl else 'Persistent, compounding markdown knowledge vault with bi-directional [[wikilinks]], curriculum graphs, and student advising dossiers.' }}
             </p>
         </div>
         <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-            <button id="btnRecompile" class="btn btn-primary btn-sm shadow-sm" title="Re-ingest all regulations, study plans, and transcripts">
-                <i class="fas fa-sync-alt me-1"></i> <span id="recompileBtnText">Recompile / Sync Vault</span>
+            <button id="btnRecompile" class="btn btn-primary btn-sm shadow-sm" title="{{ 'إعادة استيراد جميع اللوائح والخطط الدراسية وكشوف الدرجات' if is_rtl else 'Re-ingest all regulations, study plans, and transcripts' }}">
+                <i class="fas fa-sync-alt me-1"></i> <span id="recompileBtnText">{{ 'إعادة بناء / مزامنة الموسوعة' if is_rtl else 'Recompile / Sync Vault' }}</span>
             </button>
-            <button id="btnLint" class="btn btn-outline-secondary btn-sm shadow-sm" title="Run health check on links and pages">
-                <i class="fas fa-stethoscope me-1"></i> Vault Health
+            <button id="btnLint" class="btn btn-outline-secondary btn-sm shadow-sm" title="{{ 'فحص سلامة الروابط والصفحات' if is_rtl else 'Run health check on links and pages' }}">
+                <i class="fas fa-stethoscope me-1"></i> {{ 'فحص سلامة الموسوعة' if is_rtl else 'Vault Health' }}
             </button>
             <a href="{{ url_for('main.students_at_risk') }}" class="btn btn-danger btn-sm shadow-sm">
-                <i class="fas fa-exclamation-triangle me-1"></i> Students at Risk
+                <i class="fas fa-exclamation-triangle me-1"></i> {{ 'الطلبة المتعثرون' if is_rtl else 'Students at Risk' }}
             </a>
             <a href="{{ url_for('main.policies_library') }}" class="btn btn-outline-dark btn-sm shadow-sm">
-                <i class="fas fa-folder-open me-1"></i> Policy PDFs
+                <i class="fas fa-folder-open me-1"></i> {{ 'ملفات اللوائح PDF' if is_rtl else 'Policy PDFs' }}
             </a>
         </div>
     </div>
@@ -283,20 +283,20 @@
             <div class="wiki-sidebar-header">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" id="wikiSearchInput" class="form-control border-start-0" placeholder="Filter vault notes...">
+                    <input type="text" id="wikiSearchInput" class="form-control border-start-0" placeholder="{{ 'تصفية ملاحظات الموسوعة...' if is_rtl else 'Filter vault notes...' }}">
                 </div>
             </div>
             
             <div class="wiki-file-tree" id="wikiFileTreeContainer">
                 <div class="text-center py-4 text-muted">
                     <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
-                    <div class="small">Loading Wiki Vault...</div>
+                    <div class="small">{{ 'جاري تحميل خزانة الموسوعة...' if is_rtl else 'Loading Wiki Vault...' }}</div>
                 </div>
             </div>
             
             <div class="p-2 border-top bg-light small text-muted d-flex justify-content-between align-items-center">
-                <span><i class="fas fa-folder me-1"></i> <code id="vaultPageCount">--</code> files</span>
-                <a href="#" id="reloadTreeBtn" class="text-decoration-none text-secondary"><i class="fas fa-redo-alt"></i></a>
+                <span><i class="fas fa-folder me-1"></i> <code id="vaultPageCount">--</code> {{ 'ملف' if is_rtl else 'files' }}</span>
+                <a href="#" id="reloadTreeBtn" class="text-decoration-none text-secondary" title="{{ 'تحديث القائمة' if is_rtl else 'Reload tree' }}"><i class="fas fa-redo-alt"></i></a>
             </div>
         </div>
 
@@ -309,10 +309,10 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <span id="wikiLastModified" class="badge bg-light text-muted border small">--</span>
-                    <button id="toggleRawBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Toggle between Rendered HTML and Raw Markdown">
-                        <i class="fas fa-code me-1"></i> Raw
+                    <button id="toggleRawBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="{{ 'التبديل بين العرض المنسق والنص المصدري' if is_rtl else 'Toggle between Rendered HTML and Raw Markdown' }}">
+                        <i class="fas fa-code me-1"></i> {{ 'النص المصدري' if is_rtl else 'Raw' }}
                     </button>
-                    <button id="copyMdBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Copy Raw Markdown">
+                    <button id="copyMdBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" title="{{ 'نسخ النص المصدري' if is_rtl else 'Copy Raw Markdown' }}">
                         <i class="fas fa-copy"></i>
                     </button>
                 </div>
@@ -323,8 +323,8 @@
                 <!-- Frontmatter Badge Metadata Box -->
                 <div id="frontmatterContainer" class="frontmatter-card d-none">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="text-secondary"><i class="fas fa-tag me-1"></i> YAML Frontmatter Metadata</strong>
-                        <span id="fmTypeBadge" class="badge bg-primary frontmatter-badge">type</span>
+                        <strong class="text-secondary"><i class="fas fa-tag me-1"></i> {{ 'البيانات الوصفية للوثيقة (YAML)' if is_rtl else 'YAML Frontmatter Metadata' }}</strong>
+                        <span id="fmTypeBadge" class="badge bg-primary frontmatter-badge">{{ 'النوع' if is_rtl else 'type' }}</span>
                     </div>
                     <div id="frontmatterFields" class="d-flex flex-wrap gap-2 mt-2">
                         <!-- Injected badges -->
@@ -335,7 +335,7 @@
                 <div id="renderedMarkdownContent" class="markdown-rendered">
                     <div class="text-center py-5 text-muted">
                         <div class="spinner-border text-primary mb-2" role="status"></div>
-                        <div>Loading document from vault...</div>
+                        <div>{{ 'جاري تحميل الوثيقة من الخزانة...' if is_rtl else 'Loading document from vault...' }}</div>
                     </div>
                 </div>
 
@@ -349,32 +349,32 @@
         <!-- 3. Right Drawer: Backlinks & Entity Context -->
         <div class="wiki-drawer">
             <div class="fw-bold text-dark mb-2 pb-1 border-bottom d-flex align-items-center justify-content-between">
-                <span><i class="fas fa-link text-primary me-1"></i> Inbound Backlinks</span>
+                <span><i class="fas fa-link text-primary me-1"></i> {{ 'الروابط الواردة' if is_rtl else 'Inbound Backlinks' }}</span>
                 <span id="backlinksBadge" class="badge bg-secondary rounded-pill">0</span>
             </div>
             <p class="text-muted small mb-2" style="font-size: 11px;">
-                Pages in vault referencing this note via <code>[[wikilink]]</code>:
+                {{ 'صفحات في الموسوعة تشير إلى هذه الملاحظة عبر [[wikilink]]:' if is_rtl else 'Pages in vault referencing this note via [[wikilink]]:' }}
             </p>
             <div id="backlinksContainer" class="mb-4">
-                <em class="text-muted small">No inbound backlinks.</em>
+                <em class="text-muted small">{{ 'لا توجد روابط واردة.' if is_rtl else 'No inbound backlinks.' }}</em>
             </div>
 
             <div class="fw-bold text-dark mb-2 pb-1 border-bottom">
-                <i class="fas fa-info-circle text-info me-1"></i> Second Brain Context
+                <i class="fas fa-info-circle text-info me-1"></i> {{ 'سياق العقل الثاني' if is_rtl else 'Second Brain Context' }}
             </div>
             <div id="entityActionsContainer" class="small">
                 <div class="alert alert-light border p-2 mb-2 text-muted" style="font-size: 11px;">
-                    Select any note or click any <code>[[wikilink]]</code> to navigate the graph.
+                    {{ 'اختر أي ملاحظة أو انقر على أي [[wikilink]] للتنقل عبر الشبكة المعرفية.' if is_rtl else 'Select any note or click any [[wikilink]] to navigate the graph.' }}
                 </div>
             </div>
             
             <div class="mt-4 pt-2 border-top">
-                <small class="text-muted d-block mb-1 font-monospace" style="font-size: 10px;">VAULT LOCATION:</small>
+                <small class="text-muted d-block mb-1 font-monospace" style="font-size: 10px;">{{ 'موقع الخزانة:' if is_rtl else 'VAULT LOCATION:' }}</small>
                 <code class="d-block p-1 bg-white border rounded text-truncate text-muted" style="font-size: 10px;" title="{{ wiki_dir }}">
                     {{ wiki_dir }}
                 </code>
                 <small class="text-muted mt-1 d-block" style="font-size: 10px;">
-                    Directly compatible with <strong>Obsidian</strong> desktop app!
+                    {{ 'متوافق مباشرة مع تطبيق سطح المكتب Obsidian!' if is_rtl else 'Directly compatible with Obsidian desktop app!' }}
                 </small>
             </div>
         </div>
@@ -387,6 +387,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
+    const IS_RTL_WIKI = {{ 'true' if is_rtl else 'false' }};
     let currentPath = "{{ initial_page or 'index.md' }}";
     let rawMode = false;
     let vaultTree = [];
@@ -418,14 +419,16 @@
             rawMode = !rawMode;
             document.getElementById('renderedMarkdownContent').classList.toggle('d-none', rawMode);
             document.getElementById('rawMarkdownContainer').classList.toggle('d-none', !rawMode);
-            this.innerHTML = rawMode ? '<i class="fas fa-eye me-1"></i> Preview' : '<i class="fas fa-code me-1"></i> Raw';
+            this.innerHTML = rawMode
+                ? '<i class="fas fa-eye me-1"></i> ' + (IS_RTL_WIKI ? 'معاينة' : 'Preview')
+                : '<i class="fas fa-code me-1"></i> ' + (IS_RTL_WIKI ? 'النص المصدري' : 'Raw');
         });
 
         // Copy MD
         document.getElementById('copyMdBtn').addEventListener('click', function() {
             if (currentRawMarkdown) {
                 navigator.clipboard.writeText(currentRawMarkdown).then(() => {
-                    alert('Markdown copied to clipboard!');
+                    alert(IS_RTL_WIKI ? 'تم نسخ النص إلى الحافظة!' : 'Markdown copied to clipboard!');
                 });
             }
         });
@@ -443,7 +446,7 @@
             .catch(err => {
                 console.error("Tree load error:", err);
                 document.getElementById('wikiFileTreeContainer').innerHTML = 
-                    '<div class="text-danger p-2 small">Error loading tree.</div>';
+                    '<div class="text-danger p-2 small">' + (IS_RTL_WIKI ? 'خطأ في تحميل الشجرة.' : 'Error loading tree.') + '</div>';
             });
     }
 
@@ -529,7 +532,7 @@
             })
             .then(data => {
                 currentRawMarkdown = data.content_markdown;
-                document.getElementById('wikiLastModified').textContent = `Modified: ${data.last_modified}`;
+                document.getElementById('wikiLastModified').textContent = (IS_RTL_WIKI ? 'آخر تعديل: ' : 'Modified: ') + data.last_modified;
                 document.getElementById('rawMarkdownCode').textContent = data.content_markdown;
 
                 // Handle Frontmatter
@@ -552,8 +555,8 @@
             .catch(err => {
                 document.getElementById('renderedMarkdownContent').innerHTML = `
                     <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Page Not Found</h5>
-                        <p>Could not resolve wiki page: <code>${relPath}</code></p>
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>${IS_RTL_WIKI ? 'الصفحة غير موجودة' : 'Page Not Found'}</h5>
+                        <p>${IS_RTL_WIKI ? 'تعذر العثور على صفحة الموسوعة:' : 'Could not resolve wiki page:'} <code>${relPath}</code></p>
                     </div>
                 `;
             });
@@ -568,17 +571,17 @@
         }
 
         container.classList.remove('d-none');
-        document.getElementById('fmTypeBadge').textContent = fm.type || 'document';
+        document.getElementById('fmTypeBadge').textContent = fm.type || (IS_RTL_WIKI ? 'وثيقة' : 'document');
 
         let html = '';
         for (const [k, v] of Object.entries(fm)) {
             if (k === 'type') continue;
             let badgeClass = 'bg-light text-dark border';
-            if (k === 'standing' && (v.includes('Probation') || v.includes('Strict'))) {
+            if (k === 'standing' && (v.includes('Probation') || v.includes('Strict') || v.includes('إنذار'))) {
                 badgeClass = 'bg-danger text-white';
             } else if (k === 'gpa') {
                 badgeClass = 'bg-warning text-dark fw-bold';
-            } else if (k === 'urgency' && v === 'CRITICAL') {
+            } else if (k === 'urgency' && (v === 'CRITICAL' || v === 'حرج')) {
                 badgeClass = 'bg-danger text-white fw-bold';
             }
             html += `<span class="badge ${badgeClass} frontmatter-badge"><strong class="text-muted">${k}:</strong> ${v}</span>`;
@@ -628,7 +631,7 @@
         badge.textContent = backlinks ? backlinks.length : 0;
 
         if (!backlinks || backlinks.length === 0) {
-            container.innerHTML = '<em class="text-muted small">No inbound backlinks found.</em>';
+            container.innerHTML = '<em class="text-muted small">' + (IS_RTL_WIKI ? 'لم يتم العثور على روابط واردة.' : 'No inbound backlinks found.') + '</em>';
             return;
         }
 
@@ -636,7 +639,7 @@
         backlinks.forEach(bl => {
             html += `
                 <a href="javascript:void(0)" class="list-group-item list-group-item-action py-1 px-2 small border-0 rounded mb-1 bg-white shadow-sm" onclick="loadPage('${bl.rel_path}')">
-                    <i class="fas fa-chevron-right text-primary me-1" style="font-size: 10px;"></i>
+                    <i class="fas fa-chevron-${IS_RTL_WIKI ? 'left' : 'right'} text-primary me-1" style="font-size: 10px;"></i>
                     <span class="text-dark fw-medium">${bl.title}</span>
                 </a>
             `;
@@ -653,16 +656,16 @@
         if (fm.type === 'student_dossier' && fm.student_id) {
             container.innerHTML = `
                 <div class="card border-primary bg-primary bg-opacity-10 p-2 mb-2">
-                    <strong class="text-primary mb-1 d-block"><i class="fas fa-user-graduate me-1"></i> Student Action Hub</strong>
+                    <strong class="text-primary mb-1 d-block"><i class="fas fa-user-graduate me-1"></i> ${IS_RTL_WIKI ? 'مركز إجراءات الطالب' : 'Student Action Hub'}</strong>
                     <div class="d-grid gap-1 mt-1">
                         <a href="${prefix}/student/${fm.student_id}/advising-plan" target="_blank" class="btn btn-warning btn-sm fw-bold text-dark">
-                            <i class="fas fa-print me-1"></i> Official Advising Memo
+                            <i class="fas fa-print me-1"></i> ${IS_RTL_WIKI ? 'مذكرة الإرشاد الرسمية' : 'Official Advising Memo'}
                         </a>
                         <a href="${prefix}/student/${fm.student_id}/transcript/pdf" target="_blank" class="btn btn-outline-danger btn-sm">
-                            <i class="fas fa-file-pdf me-1"></i> View Transcript PDF
+                            <i class="fas fa-file-pdf me-1"></i> ${IS_RTL_WIKI ? 'عرض كشف الدرجات PDF' : 'View Transcript PDF'}
                         </a>
                         <a href="${prefix}/student/${fm.student_id}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-user me-1"></i> Student Profile
+                            <i class="fas fa-user me-1"></i> ${IS_RTL_WIKI ? 'ملف الطالب' : 'Student Profile'}
                         </a>
                     </div>
                 </div>
@@ -670,24 +673,24 @@
         } else if (fm.type === 'source_summary' && fm.source_file) {
             container.innerHTML = `
                 <div class="card border-secondary bg-light p-2 mb-2">
-                    <strong class="text-dark mb-1 d-block"><i class="fas fa-file-pdf me-1 text-danger"></i> Raw Source File</strong>
+                    <strong class="text-dark mb-1 d-block"><i class="fas fa-file-pdf me-1 text-danger"></i> ${IS_RTL_WIKI ? 'الملف المصدري الأصلي' : 'Raw Source File'}</strong>
                     <div class="small text-muted mb-2">${fm.source_file}</div>
                     <a href="${prefix}/wiki/raw/${encodeURIComponent(fm.source_file)}" target="_blank" class="btn btn-outline-dark btn-sm">
-                        <i class="fas fa-external-link-alt me-1"></i> Open Raw Document
+                        <i class="fas fa-external-link-alt me-1"></i> ${IS_RTL_WIKI ? 'فتح الوثيقة الأصلية' : 'Open Raw Document'}
                     </a>
                 </div>
             `;
         } else if (fm.type === 'concept') {
             container.innerHTML = `
                 <div class="card border-warning bg-warning bg-opacity-10 p-2 mb-2">
-                    <strong class="text-dark mb-1 d-block"><i class="fas fa-balance-scale me-1 text-warning"></i> DU Bylaw Reference</strong>
-                    <p class="small text-muted mb-0">Official academic regulation. Applies across all undergraduate programs at Dhofar University.</p>
+                    <strong class="text-dark mb-1 d-block"><i class="fas fa-balance-scale me-1 text-warning"></i> ${IS_RTL_WIKI ? 'مرجع لوائح جامعة ظفار' : 'DU Bylaw Reference'}</strong>
+                    <p class="small text-muted mb-0">${IS_RTL_WIKI ? 'لائحة أكاديمية رسمية تطبق على جميع برامج البكالوريوس والدبلوم في جامعة ظفار.' : 'Official academic regulation. Applies across all undergraduate programs at Dhofar University.'}</p>
                 </div>
             `;
         } else {
             container.innerHTML = `
                 <div class="alert alert-light border p-2 mb-2 text-muted" style="font-size: 11px;">
-                    Markdown document in Obsidian vault. Interlinked with <code>${vaultTree.length}</code> topic domains.
+                    ${IS_RTL_WIKI ? `وثيقة Markdown في خزانة Obsidian، مرتبطة بـ <code>${vaultTree.length}</code> مجالات معرفية.` : `Markdown document in Obsidian vault. Interlinked with <code>${vaultTree.length}</code> topic domains.`}
                 </div>
             `;
         }
@@ -697,22 +700,24 @@
         const btn = document.getElementById('btnRecompile');
         const text = document.getElementById('recompileBtnText');
         btn.disabled = true;
-        text.textContent = 'Compiling Vault...';
+        text.textContent = IS_RTL_WIKI ? 'جاري بناء الموسوعة...' : 'Compiling Vault...';
 
         const prefix = window.APP_PREFIX || '';
         fetch(`${prefix}/api/wiki/recompile`, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
-                alert(`Wiki Recompiled Successfully!\n- ${data.student_dossiers_compiled} Student Dossiers Updated\n- Core concepts, curricula, and synthesis regenerated.`);
+                alert(IS_RTL_WIKI
+                    ? `تم إعادة بناء الموسوعة بنجاح!\n- تم تحديث ${data.student_dossiers_compiled} ملف طالب\n- تم تحديث المفاهيم الأساسية والمناهج والتقارير.`
+                    : `Wiki Recompiled Successfully!\n- ${data.student_dossiers_compiled} Student Dossiers Updated\n- Core concepts, curricula, and synthesis regenerated.`);
                 loadVaultTree();
                 loadPage(currentPath);
             })
             .catch(err => {
-                alert('Error recompiling wiki vault.');
+                alert(IS_RTL_WIKI ? 'حدث خطأ أثناء إعادة بناء الموسوعة.' : 'Error recompiling wiki vault.');
             })
             .finally(() => {
                 btn.disabled = false;
-                text.textContent = 'Recompile / Sync Vault';
+                text.textContent = IS_RTL_WIKI ? 'إعادة بناء / مزامنة الموسوعة' : 'Recompile / Sync Vault';
             });
     }
 
@@ -722,13 +727,17 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'healthy') {
-                    alert(`Vault Health: EXCELLENT!\n- Total Pages: ${data.total_pages}\n- Broken Links: 0\nAll [[wikilinks]] resolve correctly!`);
+                    alert(IS_RTL_WIKI
+                        ? `سلامة الموسوعة: ممتازة!\n- إجمالي الصفحات: ${data.total_pages}\n- الروابط المعطلة: 0\nجميع الروابط [[wikilinks]] تعمل بشكل صحيح!`
+                        : `Vault Health: EXCELLENT!\n- Total Pages: ${data.total_pages}\n- Broken Links: 0\nAll [[wikilinks]] resolve correctly!`);
                 } else {
-                    alert(`Vault Health Warnings:\n- Total Pages: ${data.total_pages}\n- Broken Links Found: ${data.broken_links_count}\nFirst missing targets: ` + 
-                          data.broken_links.map(b => `${b.target} (in ${b.source})`).join(', '));
+                    alert((IS_RTL_WIKI
+                        ? `تنبيهات سلامة الموسوعة:\n- إجمالي الصفحات: ${data.total_pages}\n- الروابط المعطلة: ${data.broken_links_count}\nأبرز الأهداف المفقودة: `
+                        : `Vault Health Warnings:\n- Total Pages: ${data.total_pages}\n- Broken Links Found: ${data.broken_links_count}\nFirst missing targets: `) + 
+                        data.broken_links.map(b => `${b.target} (${b.source})`).join(', '));
                 }
             })
-            .catch(err => alert('Error checking vault health.'));
+            .catch(err => alert(IS_RTL_WIKI ? 'خطأ أثناء فحص سلامة الموسوعة.' : 'Error checking vault health.'));
     }
 </script>
 {% endblock %}

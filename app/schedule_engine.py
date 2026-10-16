@@ -533,18 +533,41 @@ def get_sections_for_course(course_code: str) -> List[Dict[str, Any]]:
     return matched
 
 
-def match_recommended_schedule_to_sections(recommended_schedule: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def match_recommended_schedule_to_sections(recommended_schedule: List[Dict[str, Any]], lang: str = None) -> List[Dict[str, Any]]:
     """
     Enrich an advisee's recommended course list with live offered sections,
     meeting times, instructors, rooms, and seat availability.
     """
+    if lang is None:
+        try:
+            from app.i18n import get_current_language
+            lang = get_current_language()
+        except Exception:
+            lang = 'en'
+    is_ar = (lang == 'ar')
+    from app.i18n import (
+        localize_course_name, localize_days, localize_session_type,
+        localize_language, localize_instructor, localize_remark
+    )
+
     enriched = []
     data = load_section_schedule()
     all_sections = data.get('sections', [])
 
     for rec in recommended_schedule:
         c_code = rec.get('code', '')
-        offered = [s for s in all_sections if is_course_code_match(c_code, s.get('course_code', ''))]
+        raw_offered = [s for s in all_sections if is_course_code_match(c_code, s.get('course_code', ''))]
+        offered = []
+        for s in raw_offered:
+            s_copy = dict(s)
+            if is_ar:
+                s_copy['title'] = localize_course_name(s_copy.get('title', ''), lang='ar')
+                s_copy['days'] = localize_days(s_copy.get('days', ''), lang='ar')
+                s_copy['session_type_display'] = localize_session_type(s_copy.get('session_type', ''), lang='ar')
+                s_copy['language_display'] = localize_language(s_copy.get('language', ''), lang='ar')
+                s_copy['instructor'] = localize_instructor(s_copy.get('instructor', ''), lang='ar')
+                s_copy['remark'] = localize_remark(s_copy.get('remark', ''), lang='ar')
+            offered.append(s_copy)
 
         rec_copy = dict(rec)
         rec_copy['is_offered'] = len(offered) > 0
@@ -555,13 +578,16 @@ def match_recommended_schedule_to_sections(recommended_schedule: List[Dict[str, 
             open_secs = [s for s in offered if s.get('enrolled', 0) < s.get('capacity', 30)]
             best_sec = open_secs[0] if open_secs else offered[0]
             rec_copy['primary_section'] = best_sec
-            rec_copy['primary_slot'] = f"Sec {best_sec.get('section')} | {best_sec.get('days')} {best_sec.get('time')} | Room: {best_sec.get('room')} | {best_sec.get('instructor')}"
+            if is_ar:
+                rec_copy['primary_slot'] = f"شعبة {best_sec.get('section')} | {best_sec.get('days')} {best_sec.get('time')} | قاعة: {best_sec.get('room')} | {best_sec.get('instructor')}"
+            else:
+                rec_copy['primary_slot'] = f"Sec {best_sec.get('section')} | {best_sec.get('days')} {best_sec.get('time')} | Room: {best_sec.get('room')} | {best_sec.get('instructor')}"
             seats_left = max(0, best_sec.get('capacity', 30) - best_sec.get('enrolled', 0))
             rec_copy['seats_available'] = seats_left
             rec_copy['seat_status'] = "Open" if seats_left > 0 else "Full"
         else:
             rec_copy['primary_section'] = None
-            rec_copy['primary_slot'] = "Not Offered in Current Term"
+            rec_copy['primary_slot'] = "غير مطروح في الفصل الحالي" if is_ar else "Not Offered in Current Term"
             rec_copy['seats_available'] = 0
             rec_copy['seat_status'] = "Not Offered"
 

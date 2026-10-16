@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Course Offerings & Section Schedule - Dhofar University{% endblock %}
+{% block title %}{{ 'المقررات المطروحة وجدول الشعب - جامعة ظفار' if is_rtl else 'Course Offerings & Section Schedule - Dhofar University' }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -99,26 +99,26 @@
             <div>
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <span class="badge bg-primary px-3 py-1 text-uppercase fw-semibold" style="letter-spacing: 1px;">
-                        <i class="fas fa-university me-1"></i> Dhofar University SIS
+                        <i class="fas fa-university me-1"></i> {{ 'نظام معلومات الطلبة بجامعة ظفار' if is_rtl else 'Dhofar University SIS' }}
                     </span>
                     <span class="badge bg-light text-dark px-3 py-1 fw-bold">
-                        <i class="fas fa-calendar-alt me-1 text-primary"></i> {{ schedule_data.semester }}
+                        <i class="fas fa-calendar-alt me-1 text-primary"></i> {{ localize_term(schedule_data.semester) }}
                     </span>
                 </div>
-                <h2 class="h3 fw-bold mb-1">Official Course Offerings & Section Schedule</h2>
+                <h2 class="h3 fw-bold mb-1">{{ 'جدول المقررات والشعب الدراسية الرسمي' if is_rtl else 'Official Course Offerings & Section Schedule' }}</h2>
                 <p class="text-slate-200 mb-0 opacity-90 small">
-                    <i class="fas fa-info-circle me-1"></i> Live university timetable, classroom venues, scheduled days, instructors, and seat capacities cross-referenced with student advising plans.
+                    <i class="fas fa-info-circle me-1"></i> {{ 'الجدول الزمني المباشر للجامعة، القاعات الدراسية، الأيام المجدولة، المحاضرون، وسعة المقاعد المرتبطة بخطط الإرشاد الأكاديمي للطلبة.' if is_rtl else 'Live university timetable, classroom venues, scheduled days, instructors, and seat capacities cross-referenced with student advising plans.' }}
                 </p>
             </div>
             <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
                 <a href="{{ url_for('main.download_section_schedule_pdf') }}" class="btn btn-warning fw-semibold shadow-sm">
-                    <i class="fas fa-file-pdf me-1"></i> Download Official PDF
+                    <i class="fas fa-file-pdf me-1"></i> {{ 'تحميل ملف PDF الرسمي' if is_rtl else 'Download Official PDF' }}
                 </a>
                 <button type="button" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#uploadScheduleModal">
-                    <i class="fas fa-file-upload me-1"></i> Upload Schedule
+                    <i class="fas fa-file-upload me-1"></i> {{ 'رفع ملف الجدول' if is_rtl else 'Upload Schedule' }}
                 </button>
                 <button type="button" class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#syncScheduleModal">
-                    <i class="fas fa-sync-alt me-1"></i> Sync from DU SIS
+                    <i class="fas fa-sync-alt me-1"></i> {{ 'مزامنة من نظام معلومات الطلبة' if is_rtl else 'Sync from DU SIS' }}
                 </button>
             </div>
         </div>
@@ -132,9 +132,9 @@
         <div class="col-6 col-md-3">
             <div class="metric-card d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-semibold text-uppercase">Total Offerings</div>
+                    <div class="text-muted small fw-semibold text-uppercase">{{ 'إجمالي الشعب المطروحة' if is_rtl else 'Total Offerings' }}</div>
                     <div class="h3 fw-bold mb-0 text-dark" id="metricTotalSections">{{ schedule_data.total_sections }}</div>
-                    <div class="small text-muted">Course sections active</div>
+                    <div class="small text-muted">{{ 'شعبة دراسية نشطة' if is_rtl else 'Course sections active' }}</div>
                 </div>
                 <div class="p-3 bg-blue-50 text-primary rounded-circle">
                     <i class="fas fa-chalkboard-teacher fa-2x"></i>
@@ -145,9 +145,9 @@
         <div class="col-6 col-md-3">
             <div class="metric-card d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-semibold text-uppercase">Unique Courses</div>
+                    <div class="text-muted small fw-semibold text-uppercase">{{ 'المقررات الفريدة' if is_rtl else 'Unique Courses' }}</div>
                     <div class="h3 fw-bold mb-0 text-dark" id="metricUniqueCourses">{{ unique_courses_count }}</div>
-                    <div class="small text-muted">Across departments</div>
+                    <div class="small text-muted">{{ 'عبر الأقسام الأكاديمية' if is_rtl else 'Across departments' }}</div>
                 </div>
                 <div class="p-3 bg-indigo-50 text-indigo rounded-circle">
                     <i class="fas fa-book fa-2x" style="color: #4f46e5;"></i>
@@ -158,9 +158,9 @@
         <div class="col-6 col-md-3">
             <div class="metric-card d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-semibold text-uppercase">Total Enrollment</div>
+                    <div class="text-muted small fw-semibold text-uppercase">{{ 'إجمالي التسجيل' if is_rtl else 'Total Enrollment' }}</div>
                     <div class="h3 fw-bold mb-0 text-success" id="metricTotalEnrolled">{{ total_enrolled }} / {{ total_capacity }}</div>
-                    <div class="small text-muted">{{ (total_enrolled / total_capacity * 100)|round(1) if total_capacity > 0 else 0 }}% seat utilization</div>
+                    <div class="small text-muted">{{ (total_enrolled / total_capacity * 100)|round(1) if total_capacity > 0 else 0 }}% {{ 'نسبة إشغال المقاعد' if is_rtl else 'seat utilization' }}</div>
                 </div>
                 <div class="p-3 bg-green-50 text-success rounded-circle">
                     <i class="fas fa-user-graduate fa-2x"></i>
@@ -171,9 +171,9 @@
         <div class="col-6 col-md-3">
             <div class="metric-card d-flex align-items-center justify-content-between">
                 <div>
-                    <div class="text-muted small fw-semibold text-uppercase">Available Seats</div>
+                    <div class="text-muted small fw-semibold text-uppercase">{{ 'المقاعد المتاحة' if is_rtl else 'Available Seats' }}</div>
                     <div class="h3 fw-bold mb-0 text-primary" id="metricAvailableSeats">{{ total_capacity - total_enrolled }}</div>
-                    <div class="small text-muted">Open registration slots</div>
+                    <div class="small text-muted">{{ 'مقاعد متاحة للتسجيل' if is_rtl else 'Open registration slots' }}</div>
                 </div>
                 <div class="p-3 bg-amber-50 text-warning rounded-circle">
                     <i class="fas fa-chair fa-2x" style="color: #d97706;"></i>
@@ -192,14 +192,14 @@
                         <span class="input-group-text bg-white border-end-0 text-muted">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="text" id="scheduleSearchInput" class="form-control border-start-0 ps-0" placeholder="Search course code, title, instructor, room...">
+                        <input type="text" id="scheduleSearchInput" class="form-control border-start-0 ps-0" placeholder="{{ 'ابحث برمز المقرر، اسم المقرر، المحاضر، القاعة...' if is_rtl else 'Search course code, title, instructor, room...' }}">
                     </div>
                 </div>
 
                 <!-- Department Filter Buttons -->
                 <div class="col-12 col-md-5">
                     <div class="d-flex flex-wrap gap-1" id="deptFilterGroup">
-                        <button class="btn btn-sm btn-outline-secondary filter-btn active" data-filter="dept" data-value="ALL">All Depts</button>
+                        <button class="btn btn-sm btn-outline-secondary filter-btn active" data-filter="dept" data-value="ALL">{{ 'جميع الأقسام' if is_rtl else 'All Depts' }}</button>
                         <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="CMPS">CMPS</button>
                         <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="MATH">MATH</button>
                         <button class="btn btn-sm btn-outline-secondary filter-btn" data-filter="dept" data-value="ACCT">ACCT</button>
@@ -212,14 +212,14 @@
                 <!-- Session & Availability Dropdowns -->
                 <div class="col-6 col-md-3 d-flex gap-2">
                     <select id="sessionFilter" class="form-select form-select-sm">
-                        <option value="ALL">All Sessions</option>
-                        <option value="Morning">Morning</option>
-                        <option value="Evening">Evening</option>
+                        <option value="ALL">{{ 'جميع الفترات' if is_rtl else 'All Sessions' }}</option>
+                        <option value="Morning">{{ 'صباحي' if is_rtl else 'Morning' }}</option>
+                        <option value="Evening">{{ 'مسائي' if is_rtl else 'Evening' }}</option>
                     </select>
                     <select id="seatFilter" class="form-select form-select-sm">
-                        <option value="ALL">All Seats</option>
-                        <option value="OPEN">Open Only</option>
-                        <option value="FULL">Full Only</option>
+                        <option value="ALL">{{ 'جميع المقاعد' if is_rtl else 'All Seats' }}</option>
+                        <option value="OPEN">{{ 'المتاحة فقط' if is_rtl else 'Open Only' }}</option>
+                        <option value="FULL">{{ 'المكتملة فقط' if is_rtl else 'Full Only' }}</option>
                     </select>
                 </div>
             </div>
@@ -230,61 +230,63 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold text-dark">
-                <i class="fas fa-list-alt text-primary me-2"></i>Course Offerings Timetable
-                <span class="badge bg-secondary ms-2 small" id="showingCountBadge">Showing {{ schedule_data.total_sections }} sections</span>
+                <i class="fas fa-list-alt text-primary me-2"></i>{{ 'الجدول الزمني للمقررات المطروحة' if is_rtl else 'Course Offerings Timetable' }}
+                <span class="badge bg-secondary ms-2 small" id="showingCountBadge">{{ ('عرض ' ~ schedule_data.total_sections ~ ' شعبة') if is_rtl else ('Showing ' ~ schedule_data.total_sections ~ ' sections') }}</span>
             </h5>
             <div class="text-muted small">
-                <i class="fas fa-history me-1"></i>Last Updated: {{ schedule_data.last_updated[:16]|replace('T', ' ') if schedule_data.last_updated else 'N/A' }}
+                <i class="fas fa-history me-1"></i>{{ 'آخر تحديث:' if is_rtl else 'Last Updated:' }} {{ schedule_data.last_updated[:16]|replace('T', ' ') if schedule_data.last_updated else ('غير متوفر' if is_rtl else 'N/A') }}
             </div>
         </div>
         <div class="table-responsive">
             <table class="table table-hover table-striped table-schedule mb-0" id="sectionScheduleTable">
                 <thead>
                     <tr>
-                        <th>Crs. #</th>
-                        <th>Course Title</th>
-                        <th class="text-center">Cr</th>
-                        <th class="text-center">Sec</th>
-                        <th class="text-center">Session</th>
-                        <th class="text-center">Lang</th>
-                        <th class="text-center">Cap</th>
-                        <th class="text-center">Enr</th>
-                        <th style="min-width: 100px;">Seats</th>
-                        <th>Instructor</th>
-                        <th class="text-center">Room</th>
-                        <th class="text-center">Days</th>
-                        <th>Time</th>
-                        <th>Remark / Prereq</th>
+                        <th>{{ 'رمز المقرر' if is_rtl else 'Crs. #' }}</th>
+                        <th>{{ 'اسم المقرر' if is_rtl else 'Course Title' }}</th>
+                        <th class="text-center">{{ 'س.م' if is_rtl else 'Cr' }}</th>
+                        <th class="text-center">{{ 'الشعبة' if is_rtl else 'Sec' }}</th>
+                        <th class="text-center">{{ 'الفترة' if is_rtl else 'Session' }}</th>
+                        <th class="text-center">{{ 'اللغة' if is_rtl else 'Lang' }}</th>
+                        <th class="text-center">{{ 'السعة' if is_rtl else 'Cap' }}</th>
+                        <th class="text-center">{{ 'المسجلون' if is_rtl else 'Enr' }}</th>
+                        <th style="min-width: 100px;">{{ 'المقاعد' if is_rtl else 'Seats' }}</th>
+                        <th>{{ 'المحاضر' if is_rtl else 'Instructor' }}</th>
+                        <th class="text-center">{{ 'القاعة' if is_rtl else 'Room' }}</th>
+                        <th class="text-center">{{ 'الأيام' if is_rtl else 'Days' }}</th>
+                        <th>{{ 'الوقت' if is_rtl else 'Time' }}</th>
+                        <th>{{ 'ملاحظات / متطلبات' if is_rtl else 'Remark / Prereq' }}</th>
                     </tr>
                 </thead>
                 <tbody id="scheduleTableBody">
                     {% for sec in schedule_data.sections %}
                     {% set seats_left = sec.capacity - sec.enrolled %}
                     {% set pct = (sec.enrolled / sec.capacity * 100) if sec.capacity > 0 else 0 %}
+                    {% set local_title = localize_course_name(sec.course_code, sec.title) %}
+                    {% set local_inst = localize_instructor(sec.instructor) %}
                     <tr class="section-row" 
                         data-code="{{ sec.course_code }}"
-                        data-title="{{ sec.title }}"
+                        data-title="{{ sec.title }} {{ local_title }}"
                         data-dept="{{ sec.course_code.split()[0] }}"
                         data-session="{{ sec.session_type }}"
                         data-status="{{ 'OPEN' if seats_left > 0 else 'FULL' }}"
-                        data-instructor="{{ sec.instructor }}"
+                        data-instructor="{{ sec.instructor }} {{ local_inst }}"
                         data-room="{{ sec.room }}">
                         <td class="fw-bold text-primary font-monospace">{{ sec.course_code }}</td>
-                        <td class="fw-semibold text-dark">{{ sec.title }}</td>
+                        <td class="fw-semibold text-dark">{{ local_title }}</td>
                         <td class="text-center">{{ sec.credits }}</td>
                         <td class="text-center fw-bold">{{ sec.section }}</td>
                         <td class="text-center">
                             <span class="badge {{ 'badge-morning' if sec.session_type == 'Morning' else 'badge-evening' }}">
-                                {{ sec.session_type }}
+                                {{ localize_session_type(sec.session_type) }}
                             </span>
                         </td>
-                        <td class="text-center small">{{ sec.language }}</td>
+                        <td class="text-center small">{{ localize_language(sec.language) }}</td>
                         <td class="text-center text-muted">{{ sec.capacity }}</td>
                         <td class="text-center fw-bold">{{ sec.enrolled }}</td>
                         <td>
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <span class="badge {{ 'badge-open' if seats_left > 0 else 'badge-full' }} px-2 py-0">
-                                    {{ seats_left }} left
+                                    {{ (seats_left ~ ' متاح') if is_rtl else (seats_left ~ ' left') }}
                                 </span>
                                 <small class="text-muted" style="font-size: 0.72rem;">{{ pct|round(0)|int }}%</small>
                             </div>
@@ -292,11 +294,11 @@
                                 <div class="capacity-fill {{ 'bg-success' if pct < 80 else ('bg-warning' if pct < 100 else 'bg-danger') }}" style="width: {{ pct }}%;"></div>
                             </div>
                         </td>
-                        <td class="text-nowrap">{{ sec.instructor }}</td>
-                        <td class="text-center"><span class="badge bg-light text-dark border">{{ sec.room }}</span></td>
-                        <td class="text-center"><span class="days-badge">{{ sec.days }}</span></td>
+                        <td class="text-nowrap">{{ local_inst }}</td>
+                        <td class="text-center"><span class="badge bg-light text-dark border">{{ ('تحدد لاحقاً' if is_rtl else 'TBA') if sec.room == 'TBA' else sec.room }}</span></td>
+                        <td class="text-center"><span class="days-badge">{{ localize_days(sec.days) }}</span></td>
                         <td class="text-nowrap small text-muted"><i class="far fa-clock me-1 text-primary"></i>{{ sec.time }}</td>
-                        <td class="small text-secondary">{{ sec.remark }}</td>
+                        <td class="small text-secondary">{{ localize_remark(sec.remark) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -311,7 +313,7 @@
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title fw-bold" id="syncScheduleModalLabel">
-                    <i class="fas fa-sync-alt me-2 text-primary"></i>Sync Live Section Schedule from DU SIS
+                    <i class="fas fa-sync-alt me-2 text-primary"></i>{{ 'مزامنة جدول الشعب المباشر من نظام جامعة ظفار' if is_rtl else 'Sync Live Section Schedule from DU SIS' }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -319,29 +321,29 @@
                 <div class="modal-body p-4">
                     <div class="alert alert-info py-2 small mb-3">
                         <i class="fas fa-info-circle me-1"></i>
-                        Connects directly to <code>web.du.edu.om</code>, executes Section Schedule query for Fall 2026-2027, exports official landscape PDF, and updates the Advising Second-Brain Wiki.
+                        {{ 'يتصل مباشرة ببوابة web.du.edu.om، وينفذ استعلام جدول الشعب لفصل الخريف 2026-2027، ويصدر ملف PDF الرسمي، ويحدث موسوعة الإرشاد الذكية.' if is_rtl else 'Connects directly to <code>web.du.edu.om</code>, executes Section Schedule query for Fall 2026-2027, exports official landscape PDF, and updates the Advising Second-Brain Wiki.'|safe }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Staff ID / Username</label>
+                        <label class="form-label fw-semibold small">{{ 'الرقم الوظيفي / اسم المستخدم' if is_rtl else 'Staff ID / Username' }}</label>
                         <input type="text" class="form-control" name="username" id="syncUsername" value="001097" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">University Portal Password</label>
-                        <input type="password" class="form-control" name="password" id="syncPassword" placeholder="Enter your SIS password" required>
+                        <label class="form-label fw-semibold small">{{ 'كلمة مرور البوابة الجامعية' if is_rtl else 'University Portal Password' }}</label>
+                        <input type="password" class="form-control" name="password" id="syncPassword" placeholder="{{ 'أدخل كلمة مرور نظام معلومات الطلبة' if is_rtl else 'Enter your SIS password' }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Target Semester</label>
+                        <label class="form-label fw-semibold small">{{ 'الفصل الدراسي المستهدف' if is_rtl else 'Target Semester' }}</label>
                         <input type="text" class="form-control" name="semester" id="syncSemester" value="Fall 2026-2027" required>
                     </div>
                     <div id="syncStatusAlert" class="d-none alert alert-warning small">
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Navigating to SIS Schedule & exporting PDF. This takes 15-25 seconds...
+                        {{ 'جاري الانتقال إلى جدول نظام معلومات الطلبة وتصدير ملف PDF. يستغرق ذلك 15-25 ثانية...' if is_rtl else 'Navigating to SIS Schedule & exporting PDF. This takes 15-25 seconds...' }}
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'إلغاء' if is_rtl else 'Cancel' }}</button>
                     <button type="submit" class="btn btn-primary fw-bold" id="btnStartSync">
-                        <i class="fas fa-cloud-download-alt me-1"></i> Start Automated Sync
+                        <i class="fas fa-cloud-download-alt me-1"></i> {{ 'بدء المزامنة التلقائية' if is_rtl else 'Start Automated Sync' }}
                     </button>
                 </div>
             </form>
@@ -355,7 +357,7 @@
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title fw-bold" id="uploadScheduleModalLabel">
-                    <i class="fas fa-file-upload me-2 text-warning"></i>Upload Section Schedule File
+                    <i class="fas fa-file-upload me-2 text-warning"></i>{{ 'رفع ملف جدول الشعب الدراسية' if is_rtl else 'Upload Section Schedule File' }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -363,21 +365,21 @@
                 <div class="modal-body p-4">
                     <div class="alert alert-secondary py-2 small mb-3">
                         <i class="fas fa-lightbulb me-1 text-warning"></i>
-                        You can upload the <strong>PDF or HTML file</strong> saved directly from the DU Section Schedule page. The application will parse all rows, recalculate advisee matching, and update the Advising Wiki.
+                        {{ 'يمكنك رفع ملف PDF أو HTML المحفوظ مباشرة من صفحة جدول الشعب بجامعة ظفار. سيقوم النظام بتحليل جميع الصفوف وإعادة حساب مطابقة الطلبة وتحديث موسوعة الإرشاد.' if is_rtl else 'You can upload the <strong>PDF or HTML file</strong> saved directly from the DU Section Schedule page. The application will parse all rows, recalculate advisee matching, and update the Advising Wiki.'|safe }}
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Select Schedule File (.pdf or .html)</label>
+                        <label class="form-label fw-semibold small">{{ 'اختر ملف الجدول (.pdf أو .html)' if is_rtl else 'Select Schedule File (.pdf or .html)' }}</label>
                         <input type="file" class="form-control" name="schedule_file" id="scheduleFileInput" accept=".pdf,.html,.htm" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold small">Semester Label</label>
+                        <label class="form-label fw-semibold small">{{ 'تسمية الفصل الدراسي' if is_rtl else 'Semester Label' }}</label>
                         <input type="text" class="form-control" name="semester" id="uploadSemester" value="Fall 2026-2027" required>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'إلغاء' if is_rtl else 'Cancel' }}</button>
                     <button type="submit" class="btn btn-warning fw-bold text-dark" id="btnStartUpload">
-                        <i class="fas fa-upload me-1"></i> Ingest & Parse Schedule
+                        <i class="fas fa-upload me-1"></i> {{ 'استيراد وتحليل الجدول' if is_rtl else 'Ingest & Parse Schedule' }}
                     </button>
                 </div>
             </form>
@@ -389,6 +391,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const isRtl = {{ 'true' if is_rtl else 'false' }};
     const searchInput = document.getElementById('scheduleSearchInput');
     const deptFilterBtns = document.querySelectorAll('#deptFilterGroup button');
     const sessionFilter = document.getElementById('sessionFilter');
@@ -427,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        countBadge.textContent = `Showing ${visibleCount} sections`;
+        countBadge.textContent = isRtl ? `عرض ${visibleCount} شعبة` : `Showing ${visibleCount} sections`;
     }
 
     searchInput.addEventListener('input', filterTable);
@@ -463,13 +466,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.status === 'success') {
                 window.location.reload();
             } else {
-                alert('Portal Sync Error: ' + (data.message || 'Failed'));
+                alert((isRtl ? 'خطأ في مزامنة البوابة: ' : 'Portal Sync Error: ') + (data.message || (isRtl ? 'فشلت العملية' : 'Failed')));
                 btn.disabled = false;
                 alertBox.classList.add('d-none');
             }
         })
         .catch(err => {
-            alert('Sync request failed: ' + err);
+            alert((isRtl ? 'فشل طلب المزامنة: ' : 'Sync request failed: ') + err);
             btn.disabled = false;
             alertBox.classList.add('d-none');
         });
@@ -480,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const btn = document.getElementById('btnStartUpload');
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + (isRtl ? 'جاري المعالجة...' : 'Processing...');
 
         const prefix = window.APP_PREFIX || '';
         const formData = new FormData(uploadForm);
@@ -493,15 +496,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.status === 'success') {
                 window.location.reload();
             } else {
-                alert('Upload Error: ' + (data.message || 'Failed'));
+                alert((isRtl ? 'خطأ في الرفع: ' : 'Upload Error: ') + (data.message || (isRtl ? 'فشلت العملية' : 'Failed')));
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-upload me-1"></i> Ingest & Parse Schedule';
+                btn.innerHTML = '<i class="fas fa-upload me-1"></i> ' + (isRtl ? 'استيراد وتحليل الجدول' : 'Ingest & Parse Schedule');
             }
         })
         .catch(err => {
-            alert('Upload request failed: ' + err);
+            alert((isRtl ? 'فشل طلب الرفع: ' : 'Upload request failed: ') + err);
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-upload me-1"></i> Ingest & Parse Schedule';
+            btn.innerHTML = '<i class="fas fa-upload me-1"></i> ' + (isRtl ? 'استيراد وتحليل الجدول' : 'Ingest & Parse Schedule');
         });
     });
 });

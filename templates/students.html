@@ -215,7 +215,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ student.year or 'N/A' }}</span>
+                            <span class="badge bg-light text-dark border">{{ localize_year(student.year) if student.year else ('غير متوفر' if is_rtl else 'N/A') }}</span>
                         </td>
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
@@ -224,7 +224,7 @@
                                     {{ "%.2f"|format(cgpa_val) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td>

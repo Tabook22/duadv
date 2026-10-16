@@ -121,7 +121,7 @@
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
                             <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
-                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else ('غير متوفر' if is_rtl else 'N/A') }}%
                             </span>
                         </td>
                         <td>
@@ -130,7 +130,7 @@
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
@@ -199,7 +199,7 @@
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
                             <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
-                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else ('غير متوفر' if is_rtl else 'N/A') }}%
                             </span>
                         </td>
                         <td>
@@ -208,7 +208,7 @@
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
@@ -277,7 +277,7 @@
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
                             <span class="badge bg-{{ 'danger' if cgpa_val and cgpa_val < 65.0 else 'success' }} fs-6 font-monospace">
-                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else ('غير متوفر' if is_rtl else 'N/A') }}%
                             </span>
                         </td>
                         <td>
@@ -286,7 +286,7 @@
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>
@@ -349,7 +349,7 @@
                         <td>
                             {% set cgpa_val = student.cgpa if student.cgpa is not none else student.gpa %}
                             <span class="badge bg-warning text-dark fs-6 font-monospace">
-                                {{ "%.2f"|format(cgpa_val) if cgpa_val else 'N/A' }}%
+                                {{ "%.2f"|format(cgpa_val) if cgpa_val else ('غير متوفر' if is_rtl else 'N/A') }}%
                             </span>
                         </td>
                         <td>
@@ -358,7 +358,7 @@
                                     {{ "%.2f"|format(student.semester_gpa) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td><span class="badge bg-light text-dark border">{{ student.credits or 0 }} {{ 'ساعة' if is_rtl else 'hrs' }}</span></td>

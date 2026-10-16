@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Virtual Advising Rooms & Video Meetings - Dhofar University{% endblock %}
+{% block title %}{{ 'غرف الإرشاد الافتراضية والاجتماعات المرئية - جامعة ظفار' if is_rtl else 'Virtual Advising Rooms & Video Meetings - Dhofar University' }}{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom">
     <div>
         <h2 class="fw-bold mb-1" style="color: #1e3a8a;">
-            <i class="fas fa-video text-primary me-2"></i> Virtual Advising Conference Rooms
+            <i class="fas fa-video text-primary me-2"></i> {{ 'غرف مؤتمرات الإرشاد الأكاديمي الافتراضية' if is_rtl else 'Virtual Advising Conference Rooms' }}
         </h2>
         <p class="text-muted mb-0">
-            Professional Google Meet style virtual conference platform with waiting room lobby, session recording, live cam & mic, document exchange, passcode access control & duration timer.
+            {{ 'منصة اجتماعات افتراضية احترافية على غرار Google Meet تضم ردهة انتظار، تسجيل الجلسات، كاميرا وميكروفون مباشر، تبادل المستندات، التحكم برمز المرور ومؤقت الجلسة.' if is_rtl else 'Professional Google Meet style virtual conference platform with waiting room lobby, session recording, live cam & mic, document exchange, passcode access control & duration timer.' }}
         </p>
     </div>
     <div class="mt-3 mt-md-0 d-flex gap-2">
         <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#newMeetingModal">
-            <i class="fas fa-plus-circle me-1"></i> Start New Advising Meeting
+            <i class="fas fa-plus-circle me-1"></i> {{ 'بدء اجتماع إرشادي جديد' if is_rtl else 'Start New Advising Meeting' }}
         </button>
     </div>
 </div>
@@ -29,16 +29,16 @@
                         <i class="fas fa-bolt"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0 text-dark">Instant Advising Call</h5>
-                        <small class="text-muted">Launch room with 1-click</small>
+                        <h5 class="fw-bold mb-0 text-dark">{{ 'مكالمة إرشادية فورية' if is_rtl else 'Instant Advising Call' }}</h5>
+                        <small class="text-muted">{{ 'تشغيل الغرفة بنقرة واحدة' if is_rtl else 'Launch room with 1-click' }}</small>
                     </div>
                 </div>
                 <p class="text-secondary small mb-3">
-                    Generate an instant virtual advising room with host admission controls and share the invite link with any student or guest.
+                    {{ 'أنشئ غرفة إرشاد افتراضية فورية مع ضوابط قبول المضيف وشارك رابط الدعوة مع أي طالب أو ضيف.' if is_rtl else 'Generate an instant virtual advising room with host admission controls and share the invite link with any student or guest.' }}
                 </p>
             </div>
             <button class="btn btn-outline-primary w-100 btn-sm fw-semibold" onclick="startInstantMeeting()">
-                <i class="fas fa-video me-1"></i> Start Instant Meeting Now
+                <i class="fas fa-video me-1"></i> {{ 'بدء اجتماع فوري الآن' if is_rtl else 'Start Instant Meeting Now' }}
             </button>
         </div>
     </div>
@@ -51,16 +51,16 @@
                         <i class="fas fa-user-graduate"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0 text-dark">Advisee Pre-Linked Call</h5>
-                        <small class="text-muted">Degree audit integration</small>
+                        <h5 class="fw-bold mb-0 text-dark">{{ 'اجتماع مرتبط بملف طالب' if is_rtl else 'Advisee Pre-Linked Call' }}</h5>
+                        <small class="text-muted">{{ 'تكامل مع تدقيق الخطة الدراسية' if is_rtl else 'Degree audit integration' }}</small>
                     </div>
                 </div>
                 <p class="text-secondary small mb-3">
-                    Pick an advisee from your student roster. The room automatically pulls the student's CGPA, academic standing, and graduation degree audit.
+                    {{ 'اختر طالباً من قائمة طلبتك، وستقوم الغرفة تلقائياً بجلب المعدل التراكمي والوضع الأكاديمي وتدقيق التخرج.' if is_rtl else "Pick an advisee from your student roster. The room automatically pulls the student's CGPA, academic standing, and graduation degree audit." }}
                 </p>
             </div>
             <button class="btn btn-outline-success w-100 btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#newMeetingModal" onclick="switchToAdviseeTab()">
-                <i class="fas fa-user-plus me-1"></i> Select Advisee Student
+                <i class="fas fa-user-plus me-1"></i> {{ 'اختيار طالب للإرشاد' if is_rtl else 'Select Advisee Student' }}
             </button>
         </div>
     </div>
@@ -73,16 +73,16 @@
                         <i class="fas fa-users-gear"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0 text-dark">External Guest Session</h5>
-                        <small class="text-muted">Non-student participants</small>
+                        <h5 class="fw-bold mb-0 text-dark">{{ 'جلسة ضيوف خارجيين' if is_rtl else 'External Guest Session' }}</h5>
+                        <small class="text-muted">{{ 'مشاركون من غير الطلبة' if is_rtl else 'Non-student participants' }}</small>
                     </div>
                 </div>
                 <p class="text-secondary small mb-3">
-                    Invite co-advisors, department chairs, parents, external evaluators, or industry mentors with secure passcodes &amp; knocking lobby.
+                    {{ 'ادعُ المرشدين المشاركين أو رؤساء الأقسام أو أولياء الأمور أو المقيمين الخارجيين برموز مرور آمنة وردهة انتظار.' if is_rtl else 'Invite co-advisors, department chairs, parents, external evaluators, or industry mentors with secure passcodes & knocking lobby.' }}
                 </p>
             </div>
             <button class="btn btn-outline-info w-100 btn-sm text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#newMeetingModal" onclick="switchToGuestTab()">
-                <i class="fas fa-user-tie me-1"></i> Invite External Guests
+                <i class="fas fa-user-tie me-1"></i> {{ 'دعوة ضيوف خارجيين' if is_rtl else 'Invite External Guests' }}
             </button>
         </div>
     </div>
@@ -92,13 +92,13 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0 text-dark">
-            <i class="fas fa-door-open text-primary me-2"></i> Active Advising Conference Rooms
+            <i class="fas fa-door-open text-primary me-2"></i> {{ 'غرف مؤتمرات الإرشاد النشطة' if is_rtl else 'Active Advising Conference Rooms' }}
         </h5>
         <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary" id="activeRoomsBadge">{{ active_rooms|length }} Active</span>
+            <span class="badge bg-primary" id="activeRoomsBadge">{{ (active_rooms|length ~ ' نشطة') if is_rtl else (active_rooms|length ~ ' Active') }}</span>
             {% if active_rooms and active_rooms|length > 0 %}
-            <button class="btn btn-outline-danger btn-sm py-1 px-2" onclick="clearAllMeetingRooms()" title="Remove all registered virtual meetings">
-                <i class="fas fa-trash-alt me-1"></i> Clear All Rooms
+            <button class="btn btn-outline-danger btn-sm py-1 px-2" onclick="clearAllMeetingRooms()" title="{{ 'إزالة جميع الاجتماعات الافتراضية المسجلة' if is_rtl else 'Remove all registered virtual meetings' }}">
+                <i class="fas fa-trash-alt me-1"></i> {{ 'مسح جميع الغرف' if is_rtl else 'Clear All Rooms' }}
             </button>
             {% endif %}
         </div>
@@ -109,13 +109,13 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-3">Room ID & Topic</th>
-                        <th>Invited Attendees</th>
-                        <th>Host / Advisor</th>
-                        <th>Access Controls</th>
-                        <th>Duration / Time</th>
-                        <th>Online</th>
-                        <th class="text-end pe-3">Actions</th>
+                        <th class="ps-3">{{ 'معرف الغرفة والموضوع' if is_rtl else 'Room ID & Topic' }}</th>
+                        <th>{{ 'المدعوون' if is_rtl else 'Invited Attendees' }}</th>
+                        <th>{{ 'المضيف / المرشد' if is_rtl else 'Host / Advisor' }}</th>
+                        <th>{{ 'ضوابط الدخول' if is_rtl else 'Access Controls' }}</th>
+                        <th>{{ 'المدة / الوقت' if is_rtl else 'Duration / Time' }}</th>
+                        <th>{{ 'المتصلون' if is_rtl else 'Online' }}</th>
+                        <th class="text-end pe-3">{{ 'الإجراءات' if is_rtl else 'Actions' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,7 +125,7 @@
                             <span class="fw-bold text-primary font-monospace">{{ r.room_id }}</span>
                             <div class="text-secondary small fw-semibold">{{ r.title }}</div>
                             {% if r.is_ended %}
-                            <span class="badge bg-danger mt-1">Ended by Host</span>
+                            <span class="badge bg-danger mt-1">{{ 'أنهيت بواسطة المضيف' if is_rtl else 'Ended by Host' }}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -139,7 +139,7 @@
                                 </div>
                                 {% endfor %}
                                 {% if r.target_students|length > 2 %}
-                                <small class="text-muted">+{{ r.target_students|length - 2 }} more students</small>
+                                <small class="text-muted">{{ ('+' ~ (r.target_students|length - 2) ~ ' طلاب آخرين') if is_rtl else ('+' ~ (r.target_students|length - 2) ~ ' more students') }}</small>
                                 {% endif %}
                             {% elif r.external_invitees and r.external_invitees|length > 0 %}
                                 {% for g in r.external_invitees %}
@@ -154,29 +154,29 @@
                                 </a>
                                 <span class="badge bg-light text-secondary border font-monospace ms-1">{{ r.student_id }}</span>
                             {% else %}
-                                <span class="text-muted small">Open Session</span>
+                                <span class="text-muted small">{{ 'جلسة مفتوحة' if is_rtl else 'Open Session' }}</span>
                             {% endif %}
                         </td>
-                        <td><span class="small fw-semibold">{{ r.advisor_name }}</span></td>
+                        <td><span class="small fw-semibold">{{ 'د. ناصر طمطيم تبوك' if (is_rtl and 'Nasser' in (r.advisor_name or '')) else r.advisor_name }}</span></td>
                         <td>
                             <div class="d-flex flex-column gap-1">
                                 {% if r.require_passcode %}
-                                <span class="badge bg-warning text-dark border small" title="Passcode: {{ r.passcode }}">
-                                    <i class="fas fa-lock me-1"></i> PIN: {{ r.passcode }}
+                                <span class="badge bg-warning text-dark border small" title="{{ ('رمز المرور: ' if is_rtl else 'Passcode: ') ~ r.passcode }}">
+                                    <i class="fas fa-lock me-1"></i> {{ 'رمز:' if is_rtl else 'PIN:' }} {{ r.passcode }}
                                 </span>
                                 {% else %}
                                 <span class="badge bg-light text-secondary border small">
-                                    <i class="fas fa-lock-open me-1"></i> Open PIN
+                                    <i class="fas fa-lock-open me-1"></i> {{ 'بدون رمز' if is_rtl else 'Open PIN' }}
                                 </span>
                                 {% endif %}
 
                                 {% if r.require_admission %}
                                 <span class="badge bg-primary-subtle text-primary border small">
-                                    <i class="fas fa-shield-alt me-1"></i> Waiting Room
+                                    <i class="fas fa-shield-alt me-1"></i> {{ 'غرفة انتظار' if is_rtl else 'Waiting Room' }}
                                 </span>
                                 {% else %}
                                 <span class="badge bg-light text-secondary border small">
-                                    <i class="fas fa-bolt me-1"></i> Direct Entry
+                                    <i class="fas fa-bolt me-1"></i> {{ 'دخول مباشر' if is_rtl else 'Direct Entry' }}
                                 </span>
                                 {% endif %}
                             </div>
@@ -185,20 +185,20 @@
                             <div class="small text-muted">{{ r.created_at }}</div>
                             {% if r.duration_minutes %}
                             <span class="badge bg-light text-dark border">
-                                <i class="fas fa-clock me-1 text-primary"></i> {{ r.duration_minutes }}m limit
+                                <i class="fas fa-clock me-1 text-primary"></i> {{ (r.duration_minutes ~ ' دقيقة') if is_rtl else (r.duration_minutes ~ 'm limit') }}
                             </span>
                             {% else %}
-                            <span class="badge bg-light text-muted border">Unlimited</span>
+                            <span class="badge bg-light text-muted border">{{ 'غير محدود' if is_rtl else 'Unlimited' }}</span>
                             {% endif %}
                         </td>
                         <td>
                             <span class="badge bg-{{ 'success' if r.participants_count > 0 else 'secondary' }}">
-                                <i class="fas fa-user me-1"></i> {{ r.participants_count }} in call
+                                <i class="fas fa-user me-1"></i> {{ (r.participants_count ~ ' في المكالمة') if is_rtl else (r.participants_count ~ ' in call') }}
                             </span>
                             {% if r.recordings_count > 0 %}
                             <div class="mt-1">
                                 <span class="badge bg-danger" style="font-size: 0.68rem;">
-                                    <i class="fas fa-film me-1"></i> {{ r.recordings_count }} REC
+                                    <i class="fas fa-film me-1"></i> {{ r.recordings_count }} {{ 'تسجيل' if is_rtl else 'REC' }}
                                 </span>
                             </div>
                             {% endif %}
@@ -208,22 +208,22 @@
                                 {% if not r.is_ended %}
                                 <a href="{{ url_for('main.meeting_room_view', room_id=r.room_id, role='advisor') }}" 
                                    class="btn btn-sm btn-primary">
-                                    <i class="fas fa-sign-in-alt me-1"></i> Enter as Host
+                                    <i class="fas fa-sign-in-alt me-1"></i> {{ 'دخول كمضيف' if is_rtl else 'Enter as Host' }}
                                 </a>
                                 {% endif %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" 
                                         onclick="copyInviteLink('{{ url_for('main.meeting_room_view', room_id=r.room_id, _external=True) }}', '{{ r.student_name }}', '{{ r.passcode or '' }}', {{ 'true' if r.require_admission else 'false' }})"
-                                        title="Copy Student/Guest Invitation">
+                                        title="{{ 'نسخ دعوة الطالب/الضيف' if is_rtl else 'Copy Student/Guest Invitation' }}">
                                     <i class="fas fa-copy"></i>
                                 </button>
                                 {% if not r.is_ended %}
                                 <button type="button" class="btn btn-sm btn-outline-warning text-dark" 
-                                        onclick="endMeetingRoom('{{ r.room_id }}')" title="End call for everyone">
+                                        onclick="endMeetingRoom('{{ r.room_id }}')" title="{{ 'إنهاء المكالمة للجميع' if is_rtl else 'End call for everyone' }}">
                                     <i class="fas fa-power-off"></i>
                                 </button>
                                 {% endif %}
                                 <button type="button" class="btn btn-sm btn-outline-danger" 
-                                        onclick="deleteMeetingRoom('{{ r.room_id }}')" title="Delete and permanently remove this meeting">
+                                        onclick="deleteMeetingRoom('{{ r.room_id }}')" title="{{ 'حذف وإزالة هذا الاجتماع نهائياً' if is_rtl else 'Delete and permanently remove this meeting' }}">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -238,10 +238,10 @@
             <div class="mb-3">
                 <i class="fas fa-video fa-3x text-muted opacity-50"></i>
             </div>
-            <h5 class="text-secondary fw-semibold">No active meeting rooms right now</h5>
-            <p class="text-muted small mb-3">Click below to start an advising room and invite a student or external guest.</p>
+            <h5 class="text-secondary fw-semibold">{{ 'لا توجد غرف اجتماعات نشطة حالياً' if is_rtl else 'No active meeting rooms right now' }}</h5>
+            <p class="text-muted small mb-3">{{ 'انقر أدناه لبدء غرفة إرشاد ودعوة طالب أو ضيف خارجي.' if is_rtl else 'Click below to start an advising room and invite a student or external guest.' }}</p>
             <button class="btn btn-primary btn-sm" onclick="startInstantMeeting()">
-                <i class="fas fa-plus me-1"></i> Create Meeting Room
+                <i class="fas fa-plus me-1"></i> {{ 'إنشاء غرفة اجتماع' if is_rtl else 'Create Meeting Room' }}
             </button>
         </div>
         {% endif %}
@@ -254,7 +254,7 @@
         <div class="modal-content shadow border-0">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title fw-bold">
-                    <i class="fas fa-video me-2"></i> Launch Virtual Advising Room (Google Meet Style)
+                    <i class="fas fa-video me-2"></i> {{ 'تشغيل غرفة إرشاد افتراضية (بنمط Google Meet)' if is_rtl else 'Launch Virtual Advising Room (Google Meet Style)' }}
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -264,12 +264,12 @@
                     <ul class="nav nav-pills nav-fill mb-3" id="attendeeTypeTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active fw-bold py-2" id="tab-advisees-btn" data-bs-toggle="pill" data-bs-target="#tab-advisees" type="button" role="tab">
-                                <i class="fas fa-user-graduate me-1"></i> Advisee Student(s)
+                                <i class="fas fa-user-graduate me-1"></i> {{ 'طلبة الإرشاد الأكاديمي' if is_rtl else 'Advisee Student(s)' }}
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link fw-bold py-2" id="tab-guests-btn" data-bs-toggle="pill" data-bs-target="#tab-guests" type="button" role="tab">
-                                <i class="fas fa-users-cog me-1"></i> External Guests / Non-Students
+                                <i class="fas fa-users-cog me-1"></i> {{ 'ضيوف خارجيون / غير الطلبة' if is_rtl else 'External Guests / Non-Students' }}
                             </button>
                         </li>
                     </ul>
@@ -278,27 +278,27 @@
                         <!-- Tab 1: Advisee Students -->
                         <div class="tab-pane fade show active" id="tab-advisees" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-bold mb-0">Select Advisee Student(s)</label>
-                                <span class="badge bg-primary" id="selectedStudentsCount">0 Selected</span>
+                                <label class="form-label fw-bold mb-0">{{ 'اختر طالب أو أكثر' if is_rtl else 'Select Advisee Student(s)' }}</label>
+                                <span class="badge bg-primary" id="selectedStudentsCount">{{ '0 محدد' if is_rtl else '0 Selected' }}</span>
                             </div>
-                            <p class="text-muted small mb-2">Check one student for 1-on-1 counseling, or multiple for a group cohort.</p>
+                            <p class="text-muted small mb-2">{{ 'حدد طالباً واحداً لجلسة فردية، أو عدة طلاب لجلسة جماعية.' if is_rtl else 'Check one student for 1-on-1 counseling, or multiple for a group cohort.' }}</p>
                             
                             <!-- Quick Filter Buttons -->
                             <div class="d-flex flex-wrap gap-1 mb-2">
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(true)">Select All</button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(false)">Clear</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(true)">{{ 'تحديد الكل' if is_rtl else 'Select All' }}</button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="selectAllStudents(false)">{{ 'مسح' if is_rtl else 'Clear' }}</button>
                                 <button type="button" class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('strict')">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>All Strict Probation
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ 'جميع طلبة الإنذار المشدد' if is_rtl else 'All Strict Probation' }}
                                 </button>
                                 <button type="button" class="btn btn-xs btn-outline-warning text-dark py-0 px-2" style="font-size: 0.75rem;" onclick="filterGroupSelect('probation')">
-                                    <i class="fas fa-exclamation-circle me-1"></i>All Probation
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ 'جميع طلبة الإنذار الأكاديمي' if is_rtl else 'All Probation' }}
                                 </button>
                             </div>
 
                             <!-- Search Advisees -->
                             <div class="input-group input-group-sm mb-2">
                                 <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                <input type="text" id="adviseeSearchFilter" class="form-control" placeholder="Search by student name or ID..." oninput="onAdviseeSearch(this.value)">
+                                <input type="text" id="adviseeSearchFilter" class="form-control" placeholder="{{ 'ابحث باسم الطالب أو رقمه الجامعي...' if is_rtl else 'Search by student name or ID...' }}" oninput="onAdviseeSearch(this.value)">
                             </div>
 
                             <!-- Scrollable Student Checkbox List -->
@@ -321,7 +321,7 @@
                                             <span class="ms-1 fw-semibold text-dark">{{ s.name }}</span>
                                         </div>
                                         <span class="badge bg-{{ 'danger' if is_strict else 'warning text-dark' if is_prob else 'success' }} fs-8">
-                                            {{ st }}
+                                            {{ localize_standing(st) }}
                                         </span>
                                     </label>
                                 </div>
@@ -331,59 +331,59 @@
 
                         <!-- Tab 2: External Guests -->
                         <div class="tab-pane fade" id="tab-guests" role="tabpanel">
-                            <label class="form-label fw-bold mb-1">Invite External Non-Student Participants</label>
-                            <p class="text-muted small mb-2">Add external collaborators such as Co-Advisors, Department Chair, Parents, or Industry Reviewers.</p>
+                            <label class="form-label fw-bold mb-1">{{ 'دعوة مشاركين خارجيين من غير الطلبة' if is_rtl else 'Invite External Non-Student Participants' }}</label>
+                            <p class="text-muted small mb-2">{{ 'أضف مشاركين خارجيين مثل المرشد المشارك أو رئيس القسم أو ولي الأمر أو المقيم الخارجي.' if is_rtl else 'Add external collaborators such as Co-Advisors, Department Chair, Parents, or Industry Reviewers.' }}</p>
                             
                             <div id="guestListContainer" class="mb-2">
                                 <div class="row g-2 mb-2 guest-entry-row">
                                     <div class="col-md-5">
-                                        <input type="text" class="form-control form-control-sm guest-name" placeholder="Guest Full Name (e.g. Dr. Ahmed Al-Busaidi)">
+                                        <input type="text" class="form-control form-control-sm guest-name" placeholder="{{ 'الاسم الكامل للضيف (مثال: د. أحمد البوسعيدي)' if is_rtl else 'Guest Full Name (e.g. Dr. Ahmed Al-Busaidi)' }}">
                                     </div>
                                     <div class="col-md-4">
                                         <select class="form-select form-select-sm guest-role">
-                                            <option value="Co-Advisor">Co-Advisor</option>
-                                            <option value="Department Chair">Department Chair</option>
-                                            <option value="Parent / Guardian">Parent / Guardian</option>
-                                            <option value="External Evaluator">External Evaluator</option>
-                                            <option value="Industry Mentor">Industry Mentor</option>
-                                            <option value="Guest Observer">Guest Observer</option>
+                                            <option value="Co-Advisor">{{ 'مرشد أكاديمي مشارك' if is_rtl else 'Co-Advisor' }}</option>
+                                            <option value="Department Chair">{{ 'رئيس القسم' if is_rtl else 'Department Chair' }}</option>
+                                            <option value="Parent / Guardian">{{ 'ولي أمر الطالب' if is_rtl else 'Parent / Guardian' }}</option>
+                                            <option value="External Evaluator">{{ 'مقيم خارجي' if is_rtl else 'External Evaluator' }}</option>
+                                            <option value="Industry Mentor">{{ 'موجه مهني / صناعي' if is_rtl else 'Industry Mentor' }}</option>
+                                            <option value="Guest Observer">{{ 'ضيف مراقب' if is_rtl else 'Guest Observer' }}</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
                                         <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeGuestRow(this)">
-                                            <i class="fas fa-trash"></i> Remove
+                                            <i class="fas fa-trash"></i> {{ 'إزالة' if is_rtl else 'Remove' }}
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="addGuestRow()">
-                                <i class="fas fa-user-plus me-1"></i> Add Another Guest
+                                <i class="fas fa-user-plus me-1"></i> {{ 'إضافة ضيف آخر' if is_rtl else 'Add Another Guest' }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Meeting Details -->
                     <div class="mb-3">
-                        <label for="meetingTitle" class="form-label fw-bold">Meeting Topic / Title</label>
+                        <label for="meetingTitle" class="form-label fw-bold">{{ 'موضوع / عنوان الاجتماع' if is_rtl else 'Meeting Topic / Title' }}</label>
                         <input type="text" class="form-control" id="meetingTitle" 
-                               placeholder="e.g. Academic Advising & Graduation Plan Review" 
-                               value="Academic Advising Consultation">
+                               placeholder="{{ 'مثال: مراجعة الإرشاد الأكاديمي وخطة التخرج' if is_rtl else 'e.g. Academic Advising & Graduation Plan Review' }}" 
+                               value="{{ 'جلسة استشارة إرشادية أكاديمية' if is_rtl else 'Academic Advising Consultation' }}">
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label for="advisorName" class="form-label fw-bold">Meeting Host / Advisor</label>
-                            <input type="text" class="form-control" id="advisorName" value="Dr. Nasser Tabook">
+                            <label for="advisorName" class="form-label fw-bold">{{ 'مضيف الاجتماع / المرشد الأكاديمي' if is_rtl else 'Meeting Host / Advisor' }}</label>
+                            <input type="text" class="form-control" id="advisorName" value="{{ 'د. ناصر طمطيم تبوك' if is_rtl else 'Dr. Nasser Tabook' }}">
                         </div>
                         <div class="col-md-6">
-                            <label for="meetingDuration" class="form-label fw-bold">Duration Control</label>
+                            <label for="meetingDuration" class="form-label fw-bold">{{ 'التحكم في مدة الجلسة' if is_rtl else 'Duration Control' }}</label>
                             <select class="form-select" id="meetingDuration">
-                                <option value="15">15 Minutes (Quick Status Check)</option>
-                                <option value="30" selected>30 Minutes (Standard Advising)</option>
-                                <option value="45">45 Minutes (In-Depth Degree Recovery)</option>
-                                <option value="60">60 Minutes (Comprehensive Probation Review)</option>
-                                <option value="90">90 Minutes (Department Panel)</option>
-                                <option value="0">Unlimited (No Time Limit)</option>
+                                <option value="15">{{ '15 دقيقة (متابعة سريعة)' if is_rtl else '15 Minutes (Quick Status Check)' }}</option>
+                                <option value="30" selected>{{ '30 دقيقة (جلسة إرشاد قياسية)' if is_rtl else '30 Minutes (Standard Advising)' }}</option>
+                                <option value="45">{{ '45 دقيقة (مراجعة تفصيلية لخطة التعافي)' if is_rtl else '45 Minutes (In-Depth Degree Recovery)' }}</option>
+                                <option value="60">{{ '60 دقيقة (مراجعة شاملة للإنذار الأكاديمي)' if is_rtl else '60 Minutes (Comprehensive Probation Review)' }}</option>
+                                <option value="90">{{ '90 دقيقة (لجنة القسم الأكاديمي)' if is_rtl else '90 Minutes (Department Panel)' }}</option>
+                                <option value="0">{{ 'غير محدود (بدون حد زمني)' if is_rtl else 'Unlimited (No Time Limit)' }}</option>
                             </select>
                         </div>
                     </div>
@@ -391,17 +391,17 @@
                     <!-- Security, Admission & Capacity Control Box -->
                     <div class="card bg-light border-0 p-3 mb-3">
                         <h6 class="fw-bold mb-2 text-dark">
-                            <i class="fas fa-shield-alt text-primary me-2"></i> Security & Admission Settings
+                            <i class="fas fa-shield-alt text-primary me-2"></i> {{ 'إعدادات الأمان والدخول' if is_rtl else 'Security & Admission Settings' }}
                         </h6>
                         
                         <!-- Waiting Room Toggle -->
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="requireAdmissionToggle" checked>
                             <label class="form-check-label fw-semibold" for="requireAdmissionToggle">
-                                Require Host Admission (Waiting Room / Knocking Lobby)
+                                {{ 'اشتراط موافقة المضيف للدخول (غرفة الانتظار / الاستئذان)' if is_rtl else 'Require Host Admission (Waiting Room / Knocking Lobby)' }}
                             </label>
                             <small class="text-muted d-block" style="font-size: 0.8rem;">
-                                Participants cannot enter directly. They wait in a pre-meeting lobby until you admit them.
+                                {{ 'لا يمكن للمشاركين الدخول مباشرة، بل ينتظرون في ردهة ما قبل الاجتماع حتى تسمح لهم بالدخول.' if is_rtl else 'Participants cannot enter directly. They wait in a pre-meeting lobby until you admit them.' }}
                             </small>
                         </div>
 
@@ -409,10 +409,10 @@
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="requirePasscodeToggle" onchange="togglePasscodeInput(this.checked)">
                             <label class="form-check-label fw-semibold" for="requirePasscodeToggle">
-                                Protect with Meeting Passcode / Password
+                                {{ 'حماية الاجتماع برمز مرور سري (PIN)' if is_rtl else 'Protect with Meeting Passcode / Password' }}
                             </label>
                             <small class="text-muted d-block" style="font-size: 0.8rem;">
-                                Restrict entry so only attendees with the meeting passcode can enter or knock.
+                                {{ 'تقييد الدخول بحيث يقتصر على المدعوين الحاصلين على رمز المرور.' if is_rtl else 'Restrict entry so only attendees with the meeting passcode can enter or knock.' }}
                             </small>
                         </div>
 
@@ -420,9 +420,9 @@
                         <div id="passcodeContainer" class="mt-2" style="display: none;">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text"><i class="fas fa-key text-warning"></i></span>
-                                <input type="text" id="meetingPasscode" class="form-control font-monospace" placeholder="Enter custom passcode or auto-generate">
+                                <input type="text" id="meetingPasscode" class="form-control font-monospace" placeholder="{{ 'أدخل رمز مرور مخصص أو قم بالتوليد التلقائي' if is_rtl else 'Enter custom passcode or auto-generate' }}">
                                 <button type="button" class="btn btn-outline-secondary" onclick="generateRandomPasscode()">
-                                    <i class="fas fa-random me-1"></i> Auto PIN
+                                    <i class="fas fa-random me-1"></i> {{ 'توليد تلقائي' if is_rtl else 'Auto PIN' }}
                                 </button>
                             </div>
                         </div>
@@ -430,15 +430,15 @@
                         <!-- Capacity Limit -->
                         <div class="row align-items-center mt-2">
                             <div class="col-auto">
-                                <label for="maxParticipants" class="small fw-semibold mb-0">Max Allowed Attendees:</label>
+                                <label for="maxParticipants" class="small fw-semibold mb-0">{{ 'الحد الأقصى للمشاركين:' if is_rtl else 'Max Allowed Attendees:' }}</label>
                             </div>
                             <div class="col-auto">
                                 <select class="form-select form-select-sm" id="maxParticipants">
-                                    <option value="">Unlimited</option>
-                                    <option value="2">2 (1-on-1 Private Session)</option>
-                                    <option value="5">Up to 5 Participants</option>
-                                    <option value="10">Up to 10 Participants</option>
-                                    <option value="25">Up to 25 Participants</option>
+                                    <option value="">{{ 'غير محدود' if is_rtl else 'Unlimited' }}</option>
+                                    <option value="2">{{ '2 (جلسة فردية خاصة)' if is_rtl else '2 (1-on-1 Private Session)' }}</option>
+                                    <option value="5">{{ 'حتى 5 مشاركين' if is_rtl else 'Up to 5 Participants' }}</option>
+                                    <option value="10">{{ 'حتى 10 مشاركين' if is_rtl else 'Up to 10 Participants' }}</option>
+                                    <option value="25">{{ 'حتى 25 مشاركاً' if is_rtl else 'Up to 25 Participants' }}</option>
                                 </select>
                             </div>
                         </div>
@@ -449,24 +449,24 @@
                 <div id="inviteArea" class="mt-3 p-3 bg-light border rounded" style="display: none;">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <h6 class="fw-bold text-success mb-0">
-                            <i class="fas fa-check-circle me-1"></i> Meeting Room Created Successfully!
+                            <i class="fas fa-check-circle me-1"></i> {{ 'تم إنشاء غرفة الاجتماع بنجاح!' if is_rtl else 'Meeting Room Created Successfully!' }}
                         </h6>
                         <span class="badge bg-primary font-monospace" id="generatedRoomBadge"></span>
                     </div>
 
                     <div class="card mb-3 border-0 bg-white shadow-sm p-3">
-                        <div class="small mb-1"><strong>Topic:</strong> <span id="inviteTopic"></span></div>
-                        <div class="small mb-1"><strong>Duration:</strong> <span id="inviteDuration"></span></div>
+                        <div class="small mb-1"><strong>{{ 'الموضوع:' if is_rtl else 'Topic:' }}</strong> <span id="inviteTopic"></span></div>
+                        <div class="small mb-1"><strong>{{ 'المدة:' if is_rtl else 'Duration:' }}</strong> <span id="inviteDuration"></span></div>
                         <div class="small mb-1" id="invitePasscodeRow" style="display: none;">
-                            <strong>Passcode:</strong> <span class="badge bg-warning text-dark font-monospace" id="invitePasscode"></span>
+                            <strong>{{ 'رمز المرور:' if is_rtl else 'Passcode:' }}</strong> <span class="badge bg-warning text-dark font-monospace" id="invitePasscode"></span>
                         </div>
-                        <div class="small mb-2"><strong>Admission:</strong> <span id="inviteAdmission"></span></div>
+                        <div class="small mb-2"><strong>{{ 'نظام الدخول:' if is_rtl else 'Admission:' }}</strong> <span id="inviteAdmission"></span></div>
 
-                        <label class="small text-muted fw-semibold">Student / Guest Meeting Link:</label>
+                        <label class="small text-muted fw-semibold">{{ 'رابط اجتماع الطالب / الضيف:' if is_rtl else 'Student / Guest Meeting Link:' }}</label>
                         <div class="input-group input-group-sm mb-2">
                             <input type="text" id="shareableLinkInput" class="form-control font-monospace" readonly>
                             <button class="btn btn-outline-primary" type="button" onclick="copyFromInput('shareableLinkInput')">
-                                <i class="fas fa-copy me-1"></i> Copy
+                                <i class="fas fa-copy me-1"></i> {{ 'نسخ' if is_rtl else 'Copy' }}
                             </button>
                         </div>
                     </div>
@@ -474,9 +474,9 @@
                     <!-- Full formatted text block -->
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="small text-muted fw-bold mb-0">Full Invitation Message:</label>
+                            <label class="small text-muted fw-bold mb-0">{{ 'رسالة الدعوة الكاملة:' if is_rtl else 'Full Invitation Message:' }}</label>
                             <button class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" onclick="copyFullInvite()">
-                                <i class="fas fa-clipboard me-1"></i> Copy Message
+                                <i class="fas fa-clipboard me-1"></i> {{ 'نسخ الرسالة' if is_rtl else 'Copy Message' }}
                             </button>
                         </div>
                         <textarea id="fullInviteTextArea" class="form-control form-control-sm font-monospace text-muted" rows="4" readonly></textarea>
@@ -484,18 +484,18 @@
 
                     <div class="d-flex gap-2">
                         <a id="enterRoomBtn" href="#" class="btn btn-primary btn-sm flex-grow-1">
-                            <i class="fas fa-sign-in-alt me-1"></i> Enter Meeting Room as Host
+                            <i class="fas fa-sign-in-alt me-1"></i> {{ 'دخول غرفة الاجتماع كمضيف' if is_rtl else 'Enter Meeting Room as Host' }}
                         </a>
                         <button class="btn btn-outline-success btn-sm" onclick="shareWhatsApp()">
-                            <i class="fab fa-whatsapp me-1"></i> Share via WhatsApp
+                            <i class="fab fa-whatsapp me-1"></i> {{ 'مشاركة عبر واتساب' if is_rtl else 'Share via WhatsApp' }}
                         </button>
                     </div>
                 </div>
             </div>
             <div class="modal-footer bg-light" id="createModalFooter">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'إلغاء' if is_rtl else 'Cancel' }}</button>
                 <button type="button" class="btn btn-primary" onclick="submitCreateMeeting()">
-                    <i class="fas fa-check-circle me-1"></i> Launch Meeting &amp; Generate Link
+                    <i class="fas fa-check-circle me-1"></i> {{ 'بدء الاجتماع وتوليد الرابط' if is_rtl else 'Launch Meeting & Generate Link' }}
                 </button>
             </div>
         </div>
@@ -505,6 +505,7 @@
 
 {% block scripts %}
 <script>
+const IS_RTL_MEETINGS = {{ 'true' if is_rtl else 'false' }};
 let createdMeetingUrl = '';
 let studentTargetName = '';
 let fullInvitationText = '';
@@ -544,21 +545,21 @@ function addGuestRow() {
     div.className = 'row g-2 mb-2 guest-entry-row';
     div.innerHTML = `
         <div class="col-md-5">
-            <input type="text" class="form-control form-control-sm guest-name" placeholder="Guest Full Name">
+            <input type="text" class="form-control form-control-sm guest-name" placeholder="${IS_RTL_MEETINGS ? 'الاسم الكامل للضيف' : 'Guest Full Name'}">
         </div>
         <div class="col-md-4">
             <select class="form-select form-select-sm guest-role">
-                <option value="Co-Advisor">Co-Advisor</option>
-                <option value="Department Chair">Department Chair</option>
-                <option value="Parent / Guardian">Parent / Guardian</option>
-                <option value="External Evaluator">External Evaluator</option>
-                <option value="Industry Mentor">Industry Mentor</option>
-                <option value="Guest Observer">Guest Observer</option>
+                <option value="Co-Advisor">${IS_RTL_MEETINGS ? 'مرشد أكاديمي مشارك' : 'Co-Advisor'}</option>
+                <option value="Department Chair">${IS_RTL_MEETINGS ? 'رئيس القسم' : 'Department Chair'}</option>
+                <option value="Parent / Guardian">${IS_RTL_MEETINGS ? 'ولي أمر الطالب' : 'Parent / Guardian'}</option>
+                <option value="External Evaluator">${IS_RTL_MEETINGS ? 'مقيم خارجي' : 'External Evaluator'}</option>
+                <option value="Industry Mentor">${IS_RTL_MEETINGS ? 'موجه مهني / صناعي' : 'Industry Mentor'}</option>
+                <option value="Guest Observer">${IS_RTL_MEETINGS ? 'ضيف مراقب' : 'Guest Observer'}</option>
             </select>
         </div>
         <div class="col-md-3">
             <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeGuestRow(this)">
-                <i class="fas fa-trash"></i> Remove
+                <i class="fas fa-trash"></i> ${IS_RTL_MEETINGS ? 'إزالة' : 'Remove'}
             </button>
         </div>
     `;
@@ -577,8 +578,8 @@ async function startInstantMeeting() {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                title: 'Instant Advising Meeting',
-                advisor_name: 'Dr. Nasser Tabook',
+                title: IS_RTL_MEETINGS ? 'اجتماع إرشاد أكاديمي فوري' : 'Instant Advising Meeting',
+                advisor_name: IS_RTL_MEETINGS ? 'د. ناصر طمطيم تبوك' : 'Dr. Nasser Tabook',
                 require_admission: true,
                 duration_minutes: 30
             })
@@ -587,10 +588,10 @@ async function startInstantMeeting() {
         if (data.status === 'success') {
             window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
         } else {
-            alert('Error: ' + data.message);
+            alert((IS_RTL_MEETINGS ? 'خطأ: ' : 'Error: ') + data.message);
         }
     } catch (e) {
-        alert('Network error: ' + e.message);
+        alert((IS_RTL_MEETINGS ? 'خطأ في الشبكة: ' : 'Network error: ') + e.message);
     }
 }
 
@@ -598,7 +599,7 @@ function updateSelectedCount() {
     const checked = document.querySelectorAll('.student-checkbox:checked');
     const badge = document.getElementById('selectedStudentsCount');
     if (badge) {
-        badge.innerText = `${checked.length} Selected`;
+        badge.innerText = IS_RTL_MEETINGS ? `${checked.length} محدد` : `${checked.length} Selected`;
     }
 }
 
@@ -654,11 +655,11 @@ async function submitCreateMeeting() {
     });
 
     if (checkedBoxes.length > 0) {
-        studentTargetName = checkedBoxes.length === 1 ? checkedBoxes[0].getAttribute('data-name') : `${checkedBoxes.length} Advisees`;
+        studentTargetName = checkedBoxes.length === 1 ? checkedBoxes[0].getAttribute('data-name') : (IS_RTL_MEETINGS ? `${checkedBoxes.length} طلاب` : `${checkedBoxes.length} Advisees`);
     } else if (externalInvitees.length > 0) {
         studentTargetName = externalInvitees[0].name;
     } else {
-        studentTargetName = 'Advisees Group';
+        studentTargetName = IS_RTL_MEETINGS ? 'مجموعة طلبة الإرشاد' : 'Advisees Group';
     }
 
     try {
@@ -685,8 +686,12 @@ async function submitCreateMeeting() {
 
             document.getElementById('generatedRoomBadge').innerText = data.room_id;
             document.getElementById('inviteTopic').innerText = data.title;
-            document.getElementById('inviteDuration').innerText = data.duration_minutes ? `${data.duration_minutes} Minutes` : 'Unlimited';
-            document.getElementById('inviteAdmission').innerText = data.require_admission ? 'Waiting Room Lobby (Host approval required)' : 'Direct Entry';
+            document.getElementById('inviteDuration').innerText = data.duration_minutes
+                ? (IS_RTL_MEETINGS ? `${data.duration_minutes} دقيقة` : `${data.duration_minutes} Minutes`)
+                : (IS_RTL_MEETINGS ? 'غير محدود' : 'Unlimited');
+            document.getElementById('inviteAdmission').innerText = data.require_admission
+                ? (IS_RTL_MEETINGS ? 'ردهة الانتظار (تتطلب موافقة المضيف)' : 'Waiting Room Lobby (Host approval required)')
+                : (IS_RTL_MEETINGS ? 'دخول مباشر' : 'Direct Entry');
             
             if (data.passcode) {
                 document.getElementById('invitePasscodeRow').style.display = 'block';
@@ -702,10 +707,10 @@ async function submitCreateMeeting() {
             document.getElementById('inviteArea').style.display = 'block';
             document.getElementById('createModalFooter').style.display = 'none';
         } else {
-            alert('Failed to create meeting: ' + data.message);
+            alert((IS_RTL_MEETINGS ? 'فشل إنشاء الاجتماع: ' : 'Failed to create meeting: ') + data.message);
         }
     } catch (e) {
-        alert('Error: ' + e.message);
+        alert((IS_RTL_MEETINGS ? 'خطأ: ' : 'Error: ') + e.message);
     }
 }
 
@@ -713,31 +718,47 @@ function copyFromInput(inputId = 'shareableLinkInput') {
     const input = document.getElementById(inputId);
     input.select();
     navigator.clipboard.writeText(input.value);
-    alert('Meeting link copied to clipboard:\n' + input.value);
+    alert((IS_RTL_MEETINGS ? 'تم نسخ رابط الاجتماع إلى الحافظة:\n' : 'Meeting link copied to clipboard:\n') + input.value);
 }
 
 function copyFullInvite() {
     const txt = document.getElementById('fullInviteTextArea').value;
     navigator.clipboard.writeText(txt);
-    alert('Full invitation copied to clipboard:\n\n' + txt);
+    alert((IS_RTL_MEETINGS ? 'تم نسخ الدعوة الكاملة إلى الحافظة:\n\n' : 'Full invitation copied to clipboard:\n\n') + txt);
 }
 
 function copyInviteLink(url, studentName, passcode, requireAdmission) {
-    const greeting = studentName ? `Dear ${studentName},\n` : '';
-    let invite = `${greeting}Please join our Dhofar University Academic Advising video meeting:\n${url}\n`;
-    if (passcode) {
-        invite += `Passcode: ${passcode}\n`;
+    let invite = '';
+    if (IS_RTL_MEETINGS) {
+        const greeting = studentName ? `عزيزي ${studentName}،\n` : '';
+        invite = `${greeting}يرجى الانضمام إلى اجتماع الإرشاد الأكاديمي المرئي بجامعة ظفار عبر الرابط:\n${url}\n`;
+        if (passcode) {
+            invite += `رمز المرور: ${passcode}\n`;
+        }
+        if (requireAdmission) {
+            invite += `ملاحظة: يتطلب الدخول موافقة المضيف عند الوصول.\n`;
+        }
+        invite += `\nد. ناصر طمطيم تبوك - جامعة ظفار`;
+    } else {
+        const greeting = studentName ? `Dear ${studentName},\n` : '';
+        invite = `${greeting}Please join our Dhofar University Academic Advising video meeting:\n${url}\n`;
+        if (passcode) {
+            invite += `Passcode: ${passcode}\n`;
+        }
+        if (requireAdmission) {
+            invite += `Note: Host approval required upon arrival.\n`;
+        }
+        invite += `\nDr. Nasser Tabook - Dhofar University`;
     }
-    if (requireAdmission) {
-        invite += `Note: Host approval required upon arrival.\n`;
-    }
-    invite += `\nDr. Nasser Tabook - Dhofar University`;
     navigator.clipboard.writeText(invite);
-    alert('Invitation copied to clipboard:\n\n' + invite);
+    alert((IS_RTL_MEETINGS ? 'تم نسخ الدعوة إلى الحافظة:\n\n' : 'Invitation copied to clipboard:\n\n') + invite);
 }
 
 async function endMeetingRoom(roomId) {
-    if (confirm(`Are you sure you want to end meeting room ${roomId} for all participants?`)) {
+    const msg = IS_RTL_MEETINGS
+        ? `هل أنت متأكد من إنهاء غرفة الاجتماع ${roomId} لجميع المشاركين؟`
+        : `Are you sure you want to end meeting room ${roomId} for all participants?`;
+    if (confirm(msg)) {
         try {
             const prefix = window.APP_PREFIX || '';
             const res = await fetch(`${prefix}/api/meeting/${roomId}/end`, { method: 'POST' });
@@ -745,16 +766,19 @@ async function endMeetingRoom(roomId) {
             if (data.status === 'success') {
                 window.location.reload();
             } else {
-                alert('Error ending meeting: ' + data.message);
+                alert((IS_RTL_MEETINGS ? 'خطأ أثناء إنهاء الاجتماع: ' : 'Error ending meeting: ') + data.message);
             }
         } catch (e) {
-            alert('Error: ' + e.message);
+            alert((IS_RTL_MEETINGS ? 'خطأ: ' : 'Error: ') + e.message);
         }
     }
 }
 
 async function deleteMeetingRoom(roomId) {
-    if (!confirm(`Are you sure you want to permanently delete virtual meeting room ${roomId}?`)) {
+    const msg = IS_RTL_MEETINGS
+        ? `هل أنت متأكد من الحذف النهائي لغرفة الاجتماع الافتراضية ${roomId}؟`
+        : `Are you sure you want to permanently delete virtual meeting room ${roomId}?`;
+    if (!confirm(msg)) {
         return;
     }
     try {
@@ -769,21 +793,24 @@ async function deleteMeetingRoom(roomId) {
                 row.remove();
                 const remaining = document.querySelectorAll('tr[id^="room-row-"]').length;
                 const badge = document.getElementById('activeRoomsBadge');
-                if (badge) badge.innerText = `${remaining} Active`;
+                if (badge) badge.innerText = IS_RTL_MEETINGS ? `${remaining} نشطة` : `${remaining} Active`;
                 if (remaining === 0) window.location.reload();
             } else {
                 window.location.reload();
             }
         } else {
-            alert('Error deleting meeting: ' + data.message);
+            alert((IS_RTL_MEETINGS ? 'خطأ في حذف الاجتماع: ' : 'Error deleting meeting: ') + data.message);
         }
     } catch (e) {
-        alert('Network error: ' + e.message);
+        alert((IS_RTL_MEETINGS ? 'خطأ في الشبكة: ' : 'Network error: ') + e.message);
     }
 }
 
 async function clearAllMeetingRooms() {
-    if (!confirm("Are you sure you want to permanently remove ALL registered virtual meetings?")) {
+    const msg = IS_RTL_MEETINGS
+        ? "هل أنت متأكد من إزالة جميع الاجتماعات الافتراضية المسجلة نهائياً؟"
+        : "Are you sure you want to permanently remove ALL registered virtual meetings?";
+    if (!confirm(msg)) {
         return;
     }
     try {
@@ -795,15 +822,18 @@ async function clearAllMeetingRooms() {
         if (data.status === 'success') {
             window.location.reload();
         } else {
-            alert('Error clearing meetings: ' + data.message);
+            alert((IS_RTL_MEETINGS ? 'خطأ في مسح الاجتماعات: ' : 'Error clearing meetings: ') + data.message);
         }
     } catch (e) {
-        alert('Network error: ' + e.message);
+        alert((IS_RTL_MEETINGS ? 'خطأ في الشبكة: ' : 'Network error: ') + e.message);
     }
 }
 
 function shareWhatsApp() {
-    const text = encodeURIComponent(fullInvitationText || `Please join our academic advising video meeting: ${createdMeetingUrl}`);
+    const fallback = IS_RTL_MEETINGS
+        ? `يرجى الانضمام إلى اجتماع الإرشاد الأكاديمي المرئي: ${createdMeetingUrl}`
+        : `Please join our academic advising video meeting: ${createdMeetingUrl}`;
+    const text = encodeURIComponent(fullInvitationText || fallback);
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 </script>

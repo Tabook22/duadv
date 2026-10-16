@@ -4,7 +4,8 @@
 function showLoading(element) {
     const spinner = '<i class="fas fa-spinner fa-spin"></i>';
     const originalContent = element.innerHTML;
-    element.innerHTML = spinner + ' Loading...';
+    const isAr = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
+    element.innerHTML = spinner + (isAr ? ' جاري التحميل...' : ' Loading...');
     element.disabled = true;
     return originalContent;
 }
@@ -73,17 +74,18 @@ function initThemeToggle() {
     const toggleBtn = document.getElementById('duThemeToggleBtn');
     const themeIcon = document.getElementById('duThemeIcon');
     const themeLabel = document.getElementById('duThemeLabel');
+    const isAr = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
 
     function updateToggleUI(theme) {
         if (!themeIcon) return;
         if (theme === 'dark') {
             themeIcon.className = 'fas fa-sun text-warning';
-            if (themeLabel) themeLabel.textContent = 'Light';
-            if (toggleBtn) toggleBtn.setAttribute('title', 'Switch to Light Mode');
+            if (themeLabel) themeLabel.textContent = isAr ? 'فاتح' : 'Light';
+            if (toggleBtn) toggleBtn.setAttribute('title', isAr ? 'التبديل إلى الوضع الفاتح' : 'Switch to Light Mode');
         } else {
             themeIcon.className = 'fas fa-moon text-light';
-            if (themeLabel) themeLabel.textContent = 'Dark';
-            if (toggleBtn) toggleBtn.setAttribute('title', 'Switch to Dark Mode');
+            if (themeLabel) themeLabel.textContent = isAr ? 'داكن' : 'Dark';
+            if (toggleBtn) toggleBtn.setAttribute('title', isAr ? 'التبديل إلى الوضع الداكن' : 'Switch to Dark Mode');
         }
     }
 

@@ -348,7 +348,7 @@
                         <td class="fw-bold">{{ student.name }}</td>
                         <td>{{ localize_program(student.program) }}</td>
                         <td class="text-center fw-bold text-danger font-monospace">
-                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else ('غير متوفر' if is_rtl else 'N/A') }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
@@ -397,7 +397,7 @@
                         <td class="fw-bold">{{ student.name }}</td>
                         <td>{{ localize_program(student.program) }}</td>
                         <td class="text-center fw-bold text-warning-emphasis font-monospace">
-                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else ('غير متوفر' if is_rtl else 'N/A') }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
@@ -446,7 +446,7 @@
                         <td class="fw-bold">{{ student.name }}</td>
                         <td>{{ localize_program(student.program) }}</td>
                         <td class="text-center fw-bold font-monospace" style="color: #b45309;">
-                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else ('غير متوفر' if is_rtl else 'N/A') }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>
@@ -495,7 +495,7 @@
                         <td class="fw-bold">{{ student.name }}</td>
                         <td>{{ localize_program(student.program) }}</td>
                         <td class="text-center fw-bold text-danger font-monospace">
-                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else 'N/A' }}%
+                            {{ '%.2f'|format(student.gpa) if student.gpa is not none else ('غير متوفر' if is_rtl else 'N/A') }}%
                         </td>
                         <td class="text-center">{{ student.credits if student.credits is not none else '-' }}</td>
                         <td>

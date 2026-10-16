@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Control Panel & Settings - {{ app_settings.branding.app_title }}{% endblock %}
+{% block title %}{{ 'لوحة تحكم المسؤول والإعدادات' if is_rtl else 'Admin Control Panel & Settings' }} - {{ app_settings.branding.app_title }}{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
@@ -9,24 +9,24 @@
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 px-2 py-1">
-                    <i class="fas fa-shield-halved me-1"></i> Admin Panel
+                    <i class="fas fa-shield-halved me-1"></i> {{ 'لوحة المسؤول' if is_rtl else 'Admin Panel' }}
                 </span>
                 <span class="badge bg-secondary bg-opacity-25 text-white-50 px-2 py-1">
                     {{ app_settings.about.version }} &bull; {{ app_settings.about.release_name }}
                 </span>
             </div>
-            <h2 class="h3 fw-bold text-white mb-1">System Settings & Governance</h2>
-            <p class="text-muted small mb-0">Control application identity, disclaimers, release info, participant permissions, and security credentials.</p>
+            <h2 class="h3 fw-bold text-white mb-1">{% if is_rtl %}إعدادات النظام والحوكمة{% else %}System Settings & Governance{% endif %}</h2>
+            <p class="text-muted small mb-0">{{ 'التحكم في هوية التطبيق، إخلاء المسؤولية، معلومات الإصدار، صلاحيات المشاركين، وبيانات الأمان.' if is_rtl else 'Control application identity, disclaimers, release info, participant permissions, and security credentials.' }}</p>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ url_for('main.about_page') }}" class="btn btn-outline-info btn-sm">
-                <i class="fas fa-circle-info me-1"></i> View About Page
+                <i class="fas fa-circle-info me-1"></i> {{ 'عرض صفحة حول النظام' if is_rtl else 'View About Page' }}
             </a>
             <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-chart-pie me-1"></i> Advisor Dashboard
+                <i class="fas fa-chart-pie me-1"></i> {{ 'لوحة المرشد الأكاديمي' if is_rtl else 'Advisor Dashboard' }}
             </a>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">
-                <i class="fas fa-sign-out-alt me-1"></i> Sign Out
+                <i class="fas fa-sign-out-alt me-1"></i> {{ 'تسجيل الخروج' if is_rtl else 'Sign Out' }}
             </a>
         </div>
     </div>
@@ -35,32 +35,32 @@
     <ul class="nav nav-pills mb-4 gap-2" id="settingsTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active px-3 py-2 rounded-3" id="tab-branding-btn" data-bs-toggle="pill" data-bs-target="#tab-branding" type="button" role="tab">
-                <i class="fas fa-palette me-2 text-primary"></i> Branding & Logo
+                <i class="fas fa-palette me-2 text-primary"></i> {% if is_rtl %}الهوية البصرية والشعار{% else %}Branding & Logo{% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-footer-btn" data-bs-toggle="pill" data-bs-target="#tab-footer" type="button" role="tab">
-                <i class="fas fa-shoe-prints me-2 text-warning"></i> Footer & Disclaimers
+                <i class="fas fa-shoe-prints me-2 text-warning"></i> {% if is_rtl %}التذييل وإخلاء المسؤولية{% else %}Footer & Disclaimers{% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-about-btn" data-bs-toggle="pill" data-bs-target="#tab-about" type="button" role="tab">
-                <i class="fas fa-circle-question me-2 text-info"></i> About & Release Info
+                <i class="fas fa-circle-question me-2 text-info"></i> {% if is_rtl %}حول النظام ومعلومات الإصدار{% else %}About & Release Info{% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-permissions-btn" data-bs-toggle="pill" data-bs-target="#tab-permissions" type="button" role="tab">
-                <i class="fas fa-users-gear me-2 text-success"></i> Access & Interaction
+                <i class="fas fa-users-gear me-2 text-success"></i> {% if is_rtl %}صلاحيات الدخول والتفاعل{% else %}Access & Interaction{% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-profile-btn" data-bs-toggle="pill" data-bs-target="#tab-profile" type="button" role="tab">
-                <i class="fas fa-user-tie me-2 text-info"></i> Advisor Bio & Contacts
+                <i class="fas fa-user-tie me-2 text-info"></i> {% if is_rtl %}السيرة الذاتية وبيانات التواصل{% else %}Advisor Bio & Contacts{% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-security-btn" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
-                <i class="fas fa-lock me-2 text-danger"></i> Admin Credentials
+                <i class="fas fa-lock me-2 text-danger"></i> {% if is_rtl %}بيانات اعتماد المسؤول{% else %}Admin Credentials{% endif %}
             </button>
         </li>
     </ul>
@@ -75,68 +75,68 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-brush text-primary me-2"></i> Application Branding & Visual Identity
+                                <i class="fas fa-brush text-primary me-2"></i> {{ 'العلامة التجارية والهوية البصرية للتطبيق' if is_rtl else 'Application Branding & Visual Identity' }}
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_branding') }}">
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Application Brand Name</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'اسم العلامة التجارية للتطبيق' if is_rtl else 'Application Brand Name' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="app_title" value="{{ app_settings.branding.app_title }}" required id="inputAppTitle">
-                                    <div class="form-text text-muted">Displayed prominently in the top navbar and headings.</div>
+                                    <div class="form-text text-muted">{{ 'يُعرض بشكل بارز في شريط التنقل العلوي والعناوين.' if is_rtl else 'Displayed prominently in the top navbar and headings.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Brand Badge Tag</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'وسم شارة العلامة التجارية' if is_rtl else 'Brand Badge Tag' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="app_badge" value="{{ app_settings.branding.app_badge }}" required id="inputAppBadge">
-                                    <div class="form-text text-muted">The small capsule tag beside the brand name (e.g. ADVISING, ACADEMIC HUB).</div>
+                                    <div class="form-text text-muted">{{ 'الشارة الصغيرة بجانب اسم التطبيق (مثل: الإرشاد الأكاديمي، ADVISING).' if is_rtl else 'The small capsule tag beside the brand name (e.g. ADVISING, ACADEMIC HUB).' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Browser Window / Tab Title</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'عنوان نافذة / علامة تبويب المتصفح' if is_rtl else 'Browser Window / Tab Title' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="browser_tab_title" value="{{ app_settings.branding.browser_tab_title }}" required>
-                                    <div class="form-text text-muted">Title shown in browser tabs and search bookmarks.</div>
+                                    <div class="form-text text-muted">{{ 'العنوان الذي يظهر في علامات تبويب المتصفح والإشارات المرجعية.' if is_rtl else 'Title shown in browser tabs and search bookmarks.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Brand Icon Selection</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'اختيار أيقونة الشعار' if is_rtl else 'Brand Icon Selection' }}</label>
                                     <div class="d-flex flex-wrap gap-2 mb-2">
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-graduation-cap' %}active{% endif %}" data-icon="fa-graduation-cap">
-                                            <i class="fas fa-graduation-cap me-1"></i> Cap
+                                            <i class="fas fa-graduation-cap me-1"></i> {{ 'قبعة تخرج' if is_rtl else 'Cap' }}
                                         </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-university' %}active{% endif %}" data-icon="fa-university">
-                                            <i class="fas fa-university me-1"></i> University
+                                            <i class="fas fa-university me-1"></i> {{ 'جامعة' if is_rtl else 'University' }}
                                         </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-book-open' %}active{% endif %}" data-icon="fa-book-open">
-                                            <i class="fas fa-book-open me-1"></i> Book
+                                            <i class="fas fa-book-open me-1"></i> {{ 'كتاب' if is_rtl else 'Book' }}
                                         </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-chalkboard-user' %}active{% endif %}" data-icon="fa-chalkboard-user">
-                                            <i class="fas fa-chalkboard-user me-1"></i> Chalkboard
+                                            <i class="fas fa-chalkboard-user me-1"></i> {{ 'سبورة' if is_rtl else 'Chalkboard' }}
                                         </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-laptop-code' %}active{% endif %}" data-icon="fa-laptop-code">
-                                            <i class="fas fa-laptop-code me-1"></i> Tech
+                                            <i class="fas fa-laptop-code me-1"></i> {{ 'تقنية' if is_rtl else 'Tech' }}
                                         </button>
                                         <button type="button" class="btn btn-outline-secondary btn-sm icon-preset-btn {% if app_settings.branding.logo_icon == 'fa-award' %}active{% endif %}" data-icon="fa-award">
-                                            <i class="fas fa-award me-1"></i> Award
+                                            <i class="fas fa-award me-1"></i> {{ 'وسام' if is_rtl else 'Award' }}
                                         </button>
                                     </div>
                                     <div class="input-group">
                                         <span class="input-group-text bg-dark border-secondary text-info" id="iconPreviewSpan">
                                             <i class="fas {{ app_settings.branding.logo_icon }}"></i>
                                         </span>
-                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="logo_icon" value="{{ app_settings.branding.logo_icon }}" id="inputLogoIcon" placeholder="e.g. fa-graduation-cap">
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="logo_icon" value="{{ app_settings.branding.logo_icon }}" id="inputLogoIcon" placeholder="{{ 'مثال: fa-graduation-cap' if is_rtl else 'e.g. fa-graduation-cap' }}">
                                     </div>
-                                    <div class="form-text text-muted">FontAwesome icon name (e.g., fa-graduation-cap, fa-university, fa-book-bookmark).</div>
+                                    <div class="form-text text-muted">{{ 'اسم أيقونة FontAwesome (مثال: fa-graduation-cap، fa-university).' if is_rtl else 'FontAwesome icon name (e.g., fa-graduation-cap, fa-university, fa-book-bookmark).' }}</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label text-light small fw-bold">Custom Logo Image URL (Optional)</label>
-                                    <input type="url" class="form-control bg-dark text-white border-secondary" name="logo_image_url" value="{{ app_settings.branding.logo_image_url }}" placeholder="https://.../logo.png (leave blank to use icon)">
-                                    <div class="form-text text-muted">If provided, this image will replace the vector icon in the navbar.</div>
+                                    <label class="form-label text-light small fw-bold">{{ 'رابط صورة شعار مخصص (اختياري)' if is_rtl else 'Custom Logo Image URL (Optional)' }}</label>
+                                    <input type="url" class="form-control bg-dark text-white border-secondary" name="logo_image_url" value="{{ app_settings.branding.logo_image_url }}" placeholder="{{ 'https://.../logo.png (اتركه فارغاً لاستخدام الأيقونة)' if is_rtl else 'https://.../logo.png (leave blank to use icon)' }}">
+                                    <div class="form-text text-muted">{{ 'في حال إدخاله، ستحل هذه الصورة محل الأيقونة في شريط التنقل.' if is_rtl else 'If provided, this image will replace the vector icon in the navbar.' }}</div>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary px-4">
-                                    <i class="fas fa-check me-1"></i> Save Branding Settings
+                                    <i class="fas fa-check me-1"></i> {{ 'حفظ إعدادات الهوية البصرية' if is_rtl else 'Save Branding Settings' }}
                                 </button>
                             </form>
                         </div>
@@ -148,11 +148,11 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-eye text-info me-2"></i> Real-Time Header Preview
+                                <i class="fas fa-eye text-info me-2"></i> {{ 'معاينة فورية للترويسة' if is_rtl else 'Real-Time Header Preview' }}
                             </h6>
                         </div>
                         <div class="card-body p-4 text-center">
-                            <p class="text-muted small mb-3">This is how your application header brand will appear to advisees and visitors:</p>
+                            <p class="text-muted small mb-3">{{ 'هكذا ستظهر ترويسة التطبيق للطلبة والزوار:' if is_rtl else 'This is how your application header brand will appear to advisees and visitors:' }}</p>
                             
                             <div class="p-3 rounded-3 border border-secondary border-opacity-50 d-inline-flex align-items-center gap-2" style="background: rgba(10, 15, 30, 0.95);">
                                 <div class="du-brand-badge" id="previewBadgeBox">
@@ -168,7 +168,7 @@
 
                             <div class="alert alert-info bg-opacity-10 border-info border-opacity-25 text-start mt-4 mb-0">
                                 <small>
-                                    <i class="fas fa-lightbulb me-1"></i> <strong>Tip:</strong> Changes take effect immediately across all application pages without restarting the server.
+                                    <i class="fas fa-lightbulb me-1"></i> <strong>{{ 'نصيحة:' if is_rtl else 'Tip:' }}</strong> {{ 'تسري التغييرات فوراً عبر جميع صفحات التطبيق دون الحاجة لإعادة تشغيل الخادم.' if is_rtl else 'Changes take effect immediately across all application pages without restarting the server.' }}
                                 </small>
                             </div>
                         </div>
@@ -184,39 +184,39 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-shoe-prints text-warning me-2"></i> Application Footer & Institutional Disclaimers
+                                <i class="fas fa-shoe-prints text-warning me-2"></i> {{ 'تذييل التطبيق وإخلاء المسؤولية المؤسسية' if is_rtl else 'Application Footer & Institutional Disclaimers' }}
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_footer') }}">
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Organization & College Line</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'سطر المؤسسة والكلية' if is_rtl else 'Organization & College Line' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="organization_line" value="{{ app_settings.footer.organization_line }}" required id="inputFooterOrg">
-                                    <div class="form-text text-muted">Main organization line shown in the left column of the footer.</div>
+                                    <div class="form-text text-muted">{{ 'سطر المؤسسة الرئيسي المعروض في التذييل.' if is_rtl else 'Main organization line shown in the left column of the footer.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Subtitle & Tagline</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'العنوان الفرعي والشعار الوصفي' if is_rtl else 'Subtitle & Tagline' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="tagline" value="{{ app_settings.footer.tagline }}" required id="inputFooterTagline">
-                                    <div class="form-text text-muted">Subtitle highlighting module purpose and scope.</div>
+                                    <div class="form-text text-muted">{{ 'عنوان فرعي يوضح غرض النظام ونطاقه.' if is_rtl else 'Subtitle highlighting module purpose and scope.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label text-light small fw-bold d-flex justify-content-between align-items-center">
-                                        <span><i class="fas fa-balance-scale text-warning me-1"></i> Independent Advisory & Educational Disclaimer</span>
-                                        <span class="badge bg-warning bg-opacity-20 text-warning">Crucial Notice</span>
+                                        <span><i class="fas fa-balance-scale text-warning me-1"></i> {{ 'إخلاء المسؤولية الإرشادية والتعليمية المستقلة' if is_rtl else 'Independent Advisory & Educational Disclaimer' }}</span>
+                                        <span class="badge bg-warning bg-opacity-20 text-warning">{{ 'إشعار هام' if is_rtl else 'Crucial Notice' }}</span>
                                     </label>
                                     <textarea class="form-control bg-dark text-white border-secondary font-monospace small" name="disclaimer" rows="4" required id="inputFooterDisclaimer">{{ app_settings.footer.disclaimer }}</textarea>
-                                    <div class="form-text text-muted">This statement establishes that the app is an independent mentoring portfolio maintained by the advisor for direct student supervision, and does not belong to or represent any official educational institution.</div>
+                                    <div class="form-text text-muted">{{ 'يوضح هذا البيان أن التطبيق عبارة عن محفظة إرشاد مستقلة يديرها المرشد الأكاديمي للإشراف المباشر على الطلبة، ولا يتبع أو يمثل رسمياً أي مؤسسة تعليمية.' if is_rtl else 'This statement establishes that the app is an independent mentoring portfolio maintained by the advisor for direct student supervision, and does not belong to or represent any official educational institution.' }}</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label text-light small fw-bold">Copyright & Rights Notice</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'إشعار حقوق النشر والملكية' if is_rtl else 'Copyright & Rights Notice' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="copyright" value="{{ app_settings.footer.copyright }}" required>
                                 </div>
 
                                 <button type="submit" class="btn btn-warning px-4 text-dark fw-bold">
-                                    <i class="fas fa-check me-1"></i> Save Footer Settings
+                                    <i class="fas fa-check me-1"></i> {{ 'حفظ إعدادات التذييل' if is_rtl else 'Save Footer Settings' }}
                                 </button>
                             </form>
                         </div>
@@ -228,7 +228,7 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-eye text-warning me-2"></i> Live Footer Preview
+                                <i class="fas fa-eye text-warning me-2"></i> {{ 'معاينة فورية للتذييل' if is_rtl else 'Live Footer Preview' }}
                             </h6>
                         </div>
                         <div class="card-body p-3">
@@ -256,66 +256,66 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-circle-question text-info me-2"></i> About Application, Versioning & Release Description
+                                <i class="fas fa-circle-question text-info me-2"></i> {{ 'حول التطبيق، رقم الإصدار، ووصف النسخة' if is_rtl else 'About Application, Versioning & Release Description' }}
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_about') }}">
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Application Full Name</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الاسم الكامل للتطبيق' if is_rtl else 'Application Full Name' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="app_name" value="{{ app_settings.about.app_name }}" required>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label text-light small fw-bold">Version</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'رقم الإصدار' if is_rtl else 'Version' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="version" value="{{ app_settings.about.version }}" required>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label text-light small fw-bold">Release Date</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'تاريخ الإصدار' if is_rtl else 'Release Date' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="release_date" value="{{ app_settings.about.release_date }}" required>
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Release Name / Edition</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'اسم الإصدار / النسخة' if is_rtl else 'Release Name / Edition' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="release_name" value="{{ app_settings.about.release_name }}" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Purpose Statement & Educational Scope</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'بيان الغرض والنطاق التعليمي' if is_rtl else 'Purpose Statement & Educational Scope' }}</label>
                                     <textarea class="form-control bg-dark text-white border-secondary small" name="purpose_statement" rows="3" required>{{ app_settings.about.purpose_statement }}</textarea>
-                                    <div class="form-text text-muted">Comprehensive description of the application's goals in supporting the academic advisor and advisees.</div>
+                                    <div class="form-text text-muted">{{ 'وصف شامل لأهداف التطبيق في دعم المرشد الأكاديمي والطلبة.' if is_rtl else 'Comprehensive description of the application\'s goals in supporting the academic advisor and advisees.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Institutional Independence Notice</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'إشعار الاستقلالية المؤسسية' if is_rtl else 'Institutional Independence Notice' }}</label>
                                     <textarea class="form-control bg-dark text-white border-secondary small" name="institutional_disclaimer" rows="3" required>{{ app_settings.about.institutional_disclaimer }}</textarea>
                                 </div>
 
                                 <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mt-4 mb-3">
-                                    <i class="fas fa-user-tie me-1"></i> Supervising Advisor Information
+                                    <i class="fas fa-user-tie me-1"></i> {{ 'معلومات المرشد الأكاديمي المشرف' if is_rtl else 'Supervising Advisor Information' }}
                                 </h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Advisor Name</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'اسم المرشد الأكاديمي' if is_rtl else 'Advisor Name' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="advisor_name" value="{{ app_settings.about.advisor_name }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Academic Role</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الدور الأكاديمي' if is_rtl else 'Academic Role' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="advisor_role" value="{{ app_settings.about.advisor_role }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">College</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الكلية' if is_rtl else 'College' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="college" value="{{ app_settings.about.college }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Department</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'القسم' if is_rtl else 'Department' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="department" value="{{ app_settings.about.department }}" required>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="btn btn-info px-4 text-white fw-bold">
-                                    <i class="fas fa-check me-1"></i> Save About & Release Settings
+                                    <i class="fas fa-check me-1"></i> {{ 'حفظ إعدادات حول النظام والإصدار' if is_rtl else 'Save About & Release Settings' }}
                                 </button>
                             </form>
                         </div>
@@ -326,7 +326,7 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-info-circle text-info me-2"></i> About Card Preview
+                                <i class="fas fa-info-circle text-info me-2"></i> {{ 'معاينة بطاقة حول النظام' if is_rtl else 'About Card Preview' }}
                             </h6>
                         </div>
                         <div class="card-body p-4 text-center">
@@ -357,60 +357,60 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-users-gear text-success me-2"></i> Entry, Messaging & Collaboration Governance
+                                <i class="fas fa-users-gear text-success me-2"></i> {{ 'حوكمة الدخول والمراسلة والتعاون' if is_rtl else 'Entry, Messaging & Collaboration Governance' }}
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_permissions') }}">
                                 <h6 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
-                                    <i class="fas fa-door-closed text-primary"></i> Who Can Enter (Admissions & Access)
+                                    <i class="fas fa-door-closed text-primary"></i> {{ 'من يمكنه الدخول (القبول والوصول)' if is_rtl else 'Who Can Enter (Admissions & Access)' }}
                                 </h6>
                                 
                                 <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 mb-3">
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" role="switch" id="switchAdmission" name="require_advisor_admission" value="true" {% if app_settings.permissions.require_advisor_admission %}checked{% endif %}>
                                         <label class="form-check-label text-white fw-semibold" for="switchAdmission">
-                                            Require Advisor Admission for Virtual Office (Waiting Room)
+                                            {{ 'إلزامية موافقة المرشد الأكاديمي لدخول المكتب الافتراضي (غرفة الانتظار)' if is_rtl else 'Require Advisor Admission for Virtual Office (Waiting Room)' }}
                                         </label>
                                     </div>
-                                    <p class="text-muted small mb-0 ms-4">When enabled, students who click the meeting link knock and wait until you admit them.</p>
+                                    <p class="text-muted small mb-0 ms-4">{{ 'عند التفعيل، ينتظر الطلبة الذين ينقرون على رابط الاجتماع في غرفة الانتظار حتى تسمح لهم بالدخول.' if is_rtl else 'When enabled, students who click the meeting link knock and wait until you admit them.' }}</p>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label text-light small fw-bold">Meeting Room Passcode / PIN (Optional)</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'رمز مرور غرفة الاجتماع / PIN (اختياري)' if is_rtl else 'Meeting Room Passcode / PIN (Optional)' }}</label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-key"></i></span>
-                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="meeting_passcode" value="{{ app_settings.permissions.meeting_passcode }}" placeholder="Leave blank for no passcode">
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="meeting_passcode" value="{{ app_settings.permissions.meeting_passcode }}" placeholder="{{ 'اتركه فارغاً لعدم طلب رمز مرور' if is_rtl else 'Leave blank for no passcode' }}">
                                     </div>
-                                    <div class="form-text text-muted">If set, any student entering the room must enter this passcode before requesting admission.</div>
+                                    <div class="form-text text-muted">{{ 'في حال تعيينه، يجب على أي طالب إدخال رمز المرور هذا قبل طلب الانضمام للغرفة.' if is_rtl else 'If set, any student entering the room must enter this passcode before requesting admission.' }}</div>
                                 </div>
 
                                 <h6 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
-                                    <i class="fas fa-comment-dots text-info"></i> Who Can Write & Send Messages
+                                    <i class="fas fa-comment-dots text-info"></i> {{ 'من يمكنه الكتابة وإرسال الرسائل' if is_rtl else 'Who Can Write & Send Messages' }}
                                 </h6>
 
                                 <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 mb-3">
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" role="switch" id="switchChat" name="allow_guest_chat" value="true" {% if app_settings.permissions.allow_guest_chat %}checked{% endif %}>
                                         <label class="form-check-label text-white fw-semibold" for="switchChat">
-                                            Allow Students/Guests to Send In-Call Chat Messages
+                                            {{ 'السماح للطلبة والضيوف بإرسال رسائل محادثة أثناء الاجتماع' if is_rtl else 'Allow Students/Guests to Send In-Call Chat Messages' }}
                                         </label>
                                     </div>
-                                    <p class="text-muted small mb-0 ms-4">If unchecked, advisees can read in-call messages from the advisor but cannot send text messages.</p>
+                                    <p class="text-muted small mb-0 ms-4">{{ 'عند إلغاء التحديد، يمكن للطلبة قراءة رسائل المرشد ولكن لا يمكنهم إرسال رسائل نصية.' if is_rtl else 'If unchecked, advisees can read in-call messages from the advisor but cannot send text messages.' }}</p>
                                 </div>
 
                                 <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 mb-3">
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" role="switch" id="switchNotesEdit" name="allow_guest_notes_edit" value="true" {% if app_settings.permissions.allow_guest_notes_edit %}checked{% endif %}>
                                         <label class="form-check-label text-white fw-semibold" for="switchNotesEdit">
-                                            Allow Advisees to Draw / Write on the Whiteboard & Notebook
+                                            {{ 'السماح للطلبة بالرسم والكتابة على السبورة ودفتر الملاحظات' if is_rtl else 'Allow Advisees to Draw / Write on the Whiteboard & Notebook' }}
                                         </label>
                                     </div>
-                                    <p class="text-muted small mb-0 ms-4">Recommended: <strong>Off</strong> (Advisor-only writing ensures academic note integrity).</p>
+                                    <p class="text-muted small mb-0 ms-4">{{ 'الموصى به: إيقاف (حصر الكتابة بالمرشد الأكاديمي يضمن سلامة الملاحظات الأكاديمية).' if is_rtl else 'Recommended: Off (Advisor-only writing ensures academic note integrity).' }}</p>
                                 </div>
 
                                 <h6 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
-                                    <i class="fas fa-video text-warning"></i> Participant Media Controls
+                                    <i class="fas fa-video text-warning"></i> {{ 'ضوابط الكاميرا والميكروفون للمشاركين' if is_rtl else 'Participant Media Controls' }}
                                 </h6>
 
                                 <div class="row g-3 mb-4">
@@ -419,10 +419,10 @@
                                             <div class="form-check form-switch mb-1">
                                                 <input class="form-check-input" type="checkbox" role="switch" id="switchVideo" name="allow_guest_video" value="true" {% if app_settings.permissions.allow_guest_video %}checked{% endif %}>
                                                 <label class="form-check-label text-white fw-semibold" for="switchVideo">
-                                                    Allow Student Camera
+                                                    {{ 'السماح بكاميرا الطالب' if is_rtl else 'Allow Student Camera' }}
                                                 </label>
                                             </div>
-                                            <small class="text-muted">Advisees can stream video from phone or laptop.</small>
+                                            <small class="text-muted">{{ 'يمكن للطلبة بث الفيديو من الهاتف أو الحاسوب.' if is_rtl else 'Advisees can stream video from phone or laptop.' }}</small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -430,16 +430,16 @@
                                             <div class="form-check form-switch mb-1">
                                                 <input class="form-check-input" type="checkbox" role="switch" id="switchAudio" name="allow_guest_audio" value="true" {% if app_settings.permissions.allow_guest_audio %}checked{% endif %}>
                                                 <label class="form-check-label text-white fw-semibold" for="switchAudio">
-                                                    Allow Student Microphone
+                                                    {{ 'السماح بميكروفون الطالب' if is_rtl else 'Allow Student Microphone' }}
                                                 </label>
                                             </div>
-                                            <small class="text-muted">Advisees can speak directly with the advisor.</small>
+                                            <small class="text-muted">{{ 'يمكن للطلبة التحدث مباشرة مع المرشد الأكاديمي.' if is_rtl else 'Advisees can speak directly with the advisor.' }}</small>
                                         </div>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="btn btn-success px-4 fw-bold">
-                                    <i class="fas fa-check me-1"></i> Save Access & Permission Rules
+                                    <i class="fas fa-check me-1"></i> {{ 'حفظ قواعد الدخول والصلاحيات' if is_rtl else 'Save Access & Permission Rules' }}
                                 </button>
                             </form>
                         </div>
@@ -450,33 +450,33 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-shield-halved text-success me-2"></i> Security Policy Summary
+                                <i class="fas fa-shield-halved text-success me-2"></i> {{ 'ملخص سياسة الأمان' if is_rtl else 'Security Policy Summary' }}
                             </h6>
                         </div>
                         <div class="card-body p-4">
                             <ul class="list-unstyled mb-0 d-flex flex-column gap-3 small">
                                 <li class="d-flex align-items-center justify-content-between">
-                                    <span class="text-white-50"><i class="fas fa-user-lock me-2 text-primary"></i> Advisor Admission:</span>
+                                    <span class="text-white-50"><i class="fas fa-user-lock me-2 text-primary"></i> {{ 'موافقة المرشد للدخول:' if is_rtl else 'Advisor Admission:' }}</span>
                                     <span class="badge {% if app_settings.permissions.require_advisor_admission %}bg-success{% else %}bg-secondary{% endif %}">
-                                        {% if app_settings.permissions.require_advisor_admission %}Enforced{% else %}Disabled{% endif %}
+                                        {% if app_settings.permissions.require_advisor_admission %}{{ 'مُفعّل' if is_rtl else 'Enforced' }}{% else %}{{ 'مُعطّل' if is_rtl else 'Disabled' }}{% endif %}
                                     </span>
                                 </li>
                                 <li class="d-flex align-items-center justify-content-between">
-                                    <span class="text-white-50"><i class="fas fa-comments me-2 text-info"></i> Advisee Chat:</span>
+                                    <span class="text-white-50"><i class="fas fa-comments me-2 text-info"></i> {{ 'محادثة الطالب:' if is_rtl else 'Advisee Chat:' }}</span>
                                     <span class="badge {% if app_settings.permissions.allow_guest_chat %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if app_settings.permissions.allow_guest_chat %}Permitted{% else %}Restricted{% endif %}
+                                        {% if app_settings.permissions.allow_guest_chat %}{{ 'مسموح' if is_rtl else 'Permitted' }}{% else %}{{ 'مقيّد' if is_rtl else 'Restricted' }}{% endif %}
                                     </span>
                                 </li>
                                 <li class="d-flex align-items-center justify-content-between">
-                                    <span class="text-white-50"><i class="fas fa-pen-fancy me-2 text-warning"></i> Advisee Whiteboard:</span>
+                                    <span class="text-white-50"><i class="fas fa-pen-fancy me-2 text-warning"></i> {{ 'السبورة التفاعلية:' if is_rtl else 'Advisee Whiteboard:' }}</span>
                                     <span class="badge {% if app_settings.permissions.allow_guest_notes_edit %}bg-warning text-dark{% else %}bg-primary{% endif %}">
-                                        {% if app_settings.permissions.allow_guest_notes_edit %}Collaborative{% else %}Advisor Only{% endif %}
+                                        {% if app_settings.permissions.allow_guest_notes_edit %}{{ 'تشاركي' if is_rtl else 'Collaborative' }}{% else %}{{ 'للمرشد فقط' if is_rtl else 'Advisor Only' }}{% endif %}
                                     </span>
                                 </li>
                                 <li class="d-flex align-items-center justify-content-between">
-                                    <span class="text-white-50"><i class="fas fa-key me-2 text-danger"></i> Room Passcode:</span>
+                                    <span class="text-white-50"><i class="fas fa-key me-2 text-danger"></i> {{ 'رمز مرور الغرفة:' if is_rtl else 'Room Passcode:' }}</span>
                                     <span class="badge bg-secondary">
-                                        {% if app_settings.permissions.meeting_passcode %}Active ({{ app_settings.permissions.meeting_passcode }}){% else %}None{% endif %}
+                                        {% if app_settings.permissions.meeting_passcode %}{{ 'نشط' if is_rtl else 'Active' }} ({{ app_settings.permissions.meeting_passcode }}){% else %}{{ 'لا يوجد' if is_rtl else 'None' }}{% endif %}
                                     </span>
                                 </li>
                             </ul>
@@ -493,106 +493,106 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3 d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-user-tie text-info me-2"></i> Faculty Advisor Biography & Public Profile
+                                <i class="fas fa-user-tie text-info me-2"></i> {{ 'السيرة الذاتية للمرشد الأكاديمي والملف العام' if is_rtl else 'Faculty Advisor Biography & Public Profile' }}
                             </h5>
                             <a href="{{ url_for('main.advisor_profile_view') }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                <i class="fas fa-external-link-alt me-1"></i> Preview Public Profile
+                                <i class="fas fa-external-link-alt me-1"></i> {{ 'معاينة الملف العام' if is_rtl else 'Preview Public Profile' }}
                             </a>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_profile') }}">
                                 <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
-                                    <i class="fas fa-id-card text-primary me-2"></i> 1. Academic Identity & Staff ID
+                                    <i class="fas fa-id-card text-primary me-2"></i> {{ '1. الهوية الأكاديمية والرقم الوظيفي' if is_rtl else '1. Academic Identity & Staff ID' }}
                                 </h6>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Full Name (with Academic Title)</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الاسم الكامل (مع اللقب الأكاديمي)' if is_rtl else 'Full Name (with Academic Title)' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="full_name" value="{{ app_settings.profile.full_name or app_settings.admin.display_name }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Academic Role / Designation</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'المسمى الأكاديمي / الوظيفي' if is_rtl else 'Academic Role / Designation' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="title" value="{{ app_settings.profile.title or app_settings.admin.role_title }}" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Staff / Faculty ID</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الرقم الوظيفي' if is_rtl else 'Staff / Faculty ID' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="staff_id" value="{{ app_settings.profile.staff_id or app_settings.admin.staff_id }}" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Avatar Initials</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الأحرف الأولى للصورة الرمزية' if is_rtl else 'Avatar Initials' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="avatar_initials" value="{{ app_settings.profile.avatar_initials or app_settings.admin.avatar_initials }}" maxlength="3" required>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Profile Photo URL (Optional)</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'رابط الصورة الشخصية (اختياري)' if is_rtl else 'Profile Photo URL (Optional)' }}</label>
                                         <input type="url" class="form-control bg-dark text-white border-secondary" name="avatar_url" value="{{ app_settings.profile.avatar_url }}" placeholder="https://.../photo.jpg">
                                     </div>
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">College / Faculty</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الكلية' if is_rtl else 'College / Faculty' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="college" value="{{ app_settings.profile.college or app_settings.about.college }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Department</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'القسم الأكاديمي' if is_rtl else 'Department' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="department" value="{{ app_settings.profile.department or app_settings.about.department }}" required>
                                     </div>
                                 </div>
 
                                 <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
-                                    <i class="fas fa-bullhorn text-warning me-2"></i> 2. Biography & Introduction ("Tell the World About Yourself")
+                                    <i class="fas fa-bullhorn text-warning me-2"></i> {{ '2. السيرة الذاتية والمقدمة التعريفية' if is_rtl else '2. Biography & Introduction ("Tell the World About Yourself")' }}
                                 </h6>
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Personal Biography & Academic Introduction</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'السيرة الذاتية والمقدمة الأكاديمية' if is_rtl else 'Personal Biography & Academic Introduction' }}</label>
                                     <textarea class="form-control bg-dark text-white border-secondary" name="bio" rows="4" required>{{ app_settings.profile.bio }}</textarea>
-                                    <div class="form-text text-muted">Write about your background, career experience, advising achievements, and personal message to students.</div>
+                                    <div class="form-text text-muted">{{ 'اكتب نبذة عن خلفيتك الأكاديمية، خبراتك المهنية، إنجازاتك الإرشادية، ورسالتك للطلبة.' if is_rtl else 'Write about your background, career experience, advising achievements, and personal message to students.' }}</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label text-light small fw-bold">Advising Philosophy & Mentorship Mission</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'فلسفة الإرشاد الأكاديمي ورسالة التوجيه' if is_rtl else 'Advising Philosophy & Mentorship Mission' }}</label>
                                     <textarea class="form-control bg-dark text-white border-secondary" name="advising_mission" rows="2">{{ app_settings.profile.advising_mission }}</textarea>
-                                    <div class="form-text text-muted">A guiding statement on how you support and guide advisees through their degree progress.</div>
+                                    <div class="form-text text-muted">{{ 'بيان توجيهي يوضح كيف تدعم الطلبة وترشدهم خلال مسيرتهم الجامعية.' if is_rtl else 'A guiding statement on how you support and guide advisees through their degree progress.' }}</div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <label class="form-label text-light small fw-bold">Research Interests & Expertise (Comma-separated)</label>
+                                    <label class="form-label text-light small fw-bold">{{ 'الاهتمامات البحثية ومجالات الخبرة (مفصولة بفواصل)' if is_rtl else 'Research Interests & Expertise (Comma-separated)' }}</label>
                                     <input type="text" class="form-control bg-dark text-white border-secondary" name="research_interests" value="{{ app_settings.profile.research_interests }}">
-                                    <div class="form-text text-muted">e.g. Artificial Intelligence, Data Science, Educational Technology, Software Engineering</div>
+                                    <div class="form-text text-muted">{{ 'مثال: الذكاء الاصطناعي، علم البيانات، التقنيات التعليمية، هندسة البرمجيات' if is_rtl else 'e.g. Artificial Intelligence, Data Science, Educational Technology, Software Engineering' }}</div>
                                 </div>
 
                                 <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
-                                    <i class="fas fa-address-book text-success me-2"></i> 3. Communication, Phone Numbers & Office Schedule
+                                    <i class="fas fa-address-book text-success me-2"></i> {{ '3. قنوات التواصل وأرقام الهواتف والساعات المكتبية' if is_rtl else '3. Communication, Phone Numbers & Office Schedule' }}
                                 </h6>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Official University Email</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'البريد الإلكتروني الجامعي الرسمي' if is_rtl else 'Official University Email' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-primary"><i class="fas fa-envelope"></i></span>
                                             <input type="email" class="form-control bg-dark text-white border-secondary" name="email_primary" value="{{ app_settings.profile.email_primary }}" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Personal / Secondary Email</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'البريد الإلكتروني الشخصي / الإضافي' if is_rtl else 'Personal / Secondary Email' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-info"><i class="fas fa-at"></i></span>
                                             <input type="email" class="form-control bg-dark text-white border-secondary" name="email_secondary" value="{{ app_settings.profile.email_secondary }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Office Telephone</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'هاتف المكتب' if is_rtl else 'Office Telephone' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-phone"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="phone_office" value="{{ app_settings.profile.phone_office }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Personal Mobile Phone</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الهاتف المحمول الشخصي' if is_rtl else 'Personal Mobile Phone' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-success"><i class="fas fa-mobile-screen"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="phone_mobile" value="{{ app_settings.profile.phone_mobile }}">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">WhatsApp Direct Number</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'رقم واتساب المباشر' if is_rtl else 'WhatsApp Direct Number' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-success"><i class="fab fa-whatsapp"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="whatsapp" value="{{ app_settings.profile.whatsapp }}" placeholder="+968 ...">
@@ -602,14 +602,14 @@
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Physical Office Location & Room Number</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'موقع المكتب ورقم الغرفة' if is_rtl else 'Physical Office Location & Room Number' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-location-dot"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="office_location" value="{{ app_settings.profile.office_location }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Office Consultation Hours</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الساعات المكتبية والاستشارية' if is_rtl else 'Office Consultation Hours' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-clock"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="office_hours" value="{{ app_settings.profile.office_hours }}">
@@ -618,25 +618,25 @@
                                 </div>
 
                                 <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
-                                    <i class="fas fa-globe text-info me-2"></i> 4. Professional & Social Online Profiles
+                                    <i class="fas fa-globe text-info me-2"></i> {{ '4. الروابط المهنية والأكاديمية عبر الإنترنت' if is_rtl else '4. Professional & Social Online Profiles' }}
                                 </h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Personal Website / Blog</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الموقع الشخصي / المدونة' if is_rtl else 'Personal Website / Blog' }}</label>
                                         <input type="url" class="form-control bg-dark text-white border-secondary" name="personal_website" value="{{ app_settings.profile.personal_website }}" placeholder="https://nasserdiary.com">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">LinkedIn Profile URL</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'رابط حساب LinkedIn' if is_rtl else 'LinkedIn Profile URL' }}</label>
                                         <input type="url" class="form-control bg-dark text-white border-secondary" name="linkedin_url" value="{{ app_settings.profile.linkedin_url }}" placeholder="https://linkedin.com/in/...">
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Google Scholar / ORCID</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'حساب Google Scholar / ORCID' if is_rtl else 'Google Scholar / ORCID' }}</label>
                                         <input type="url" class="form-control bg-dark text-white border-secondary" name="google_scholar_url" value="{{ app_settings.profile.google_scholar_url }}" placeholder="https://scholar.google.com/...">
                                     </div>
                                 </div>
 
                                 <button type="submit" class="btn btn-info px-4 fw-bold text-white">
-                                    <i class="fas fa-check me-1"></i> Save Advisor Profile & Biography
+                                    <i class="fas fa-check me-1"></i> {{ 'حفظ ملف المرشد والسيرة الذاتية' if is_rtl else 'Save Advisor Profile & Biography' }}
                                 </button>
                             </form>
                         </div>
@@ -648,7 +648,7 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 sticky-top" style="top: 20px;">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-eye text-info me-2"></i> Live Advisor Card Preview
+                                <i class="fas fa-eye text-info me-2"></i> {{ 'معاينة فورية لبطاقة المرشد' if is_rtl else 'Live Advisor Card Preview' }}
                             </h6>
                         </div>
                         <div class="card-body p-4 text-center">
@@ -658,7 +658,7 @@
                             <h5 class="text-white fw-bold mb-1">{{ app_settings.profile.full_name or app_settings.admin.display_name }}</h5>
                             <div class="badge bg-primary bg-opacity-25 text-primary mb-2">{{ app_settings.profile.title or app_settings.admin.role_title }}</div>
                             <div class="badge bg-secondary bg-opacity-25 text-white-50 mb-3 d-block mx-auto" style="width: fit-content;">
-                                Staff ID: {{ app_settings.profile.staff_id or app_settings.admin.staff_id }}
+                                {{ 'الرقم الوظيفي:' if is_rtl else 'Staff ID:' }} {{ app_settings.profile.staff_id or app_settings.admin.staff_id }}
                             </div>
 
                             <p class="text-white-50 small mb-3 text-start" style="font-size: 0.78rem; line-height: 1.5; max-height: 120px; overflow-y: auto;">
@@ -667,21 +667,21 @@
 
                             <div class="list-group list-group-flush text-start small border-top border-secondary border-opacity-25 pt-2 mb-3">
                                 <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
-                                    <span><i class="fas fa-envelope text-primary me-2"></i> Email:</span>
+                                    <span><i class="fas fa-envelope text-primary me-2"></i> {{ 'البريد:' if is_rtl else 'Email:' }}</span>
                                     <span class="text-white small">{{ app_settings.profile.email_primary }}</span>
                                 </div>
                                 <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
-                                    <span><i class="fab fa-whatsapp text-success me-2"></i> WhatsApp:</span>
+                                    <span><i class="fab fa-whatsapp text-success me-2"></i> {{ 'واتساب:' if is_rtl else 'WhatsApp:' }}</span>
                                     <span class="text-white small">{{ app_settings.profile.whatsapp }}</span>
                                 </div>
                                 <div class="list-group-item bg-transparent text-white-50 px-0 py-1 d-flex justify-content-between">
-                                    <span><i class="fas fa-location-dot text-warning me-2"></i> Office:</span>
+                                    <span><i class="fas fa-location-dot text-warning me-2"></i> {{ 'المكتب:' if is_rtl else 'Office:' }}</span>
                                     <span class="text-white small">{{ app_settings.profile.office_location }}</span>
                                 </div>
                             </div>
 
                             <a href="{{ url_for('main.advisor_profile_view') }}" target="_blank" class="btn btn-outline-info btn-sm w-100">
-                                <i class="fas fa-arrow-up-right-from-square me-1"></i> Open Public Profile Page
+                                <i class="fas fa-arrow-up-right-from-square me-1"></i> {{ 'فتح صفحة الملف العام' if is_rtl else 'Open Public Profile Page' }}
                             </a>
                         </div>
                     </div>
@@ -696,37 +696,37 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h5 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-lock text-danger me-2"></i> Administrator Credentials & Profile
+                                <i class="fas fa-lock text-danger me-2"></i> {{ 'بيانات اعتماد المسؤول والملف الأمني' if is_rtl else 'Administrator Credentials & Profile' }}
                             </h5>
                         </div>
                         <div class="card-body p-4">
                             <form method="POST" action="{{ url_for('main.admin_save_security') }}">
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Administrator Username (Login ID)</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'اسم مستخدم المسؤول (معرّف الدخول)' if is_rtl else 'Administrator Username (Login ID)' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-user-shield"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="username" value="{{ app_settings.admin.username }}" required>
                                         </div>
-                                        <div class="form-text text-muted">Used to sign in to this admin control panel.</div>
+                                        <div class="form-text text-muted">{{ 'يُستخدم لتسجيل الدخول إلى لوحة تحكم المسؤول.' if is_rtl else 'Used to sign in to this admin control panel.' }}</div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Faculty / Staff ID</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الرقم الوظيفي لعضو هيئة التدريس' if is_rtl else 'Faculty / Staff ID' }}</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-id-card"></i></span>
                                             <input type="text" class="form-control bg-dark text-white border-secondary" name="staff_id" value="{{ app_settings.profile.staff_id or app_settings.admin.staff_id }}" required>
                                         </div>
-                                        <div class="form-text text-muted">Official academic or faculty staff identifier.</div>
+                                        <div class="form-text text-muted">{{ 'المعرّف الوظيفي الأكاديمي الرسمي.' if is_rtl else 'Official academic or faculty staff identifier.' }}</div>
                                     </div>
                                 </div>
 
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">New Password (leave blank to keep)</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'كلمة المرور الجديدة (اتركها فارغة للإبقاء على الحالية)' if is_rtl else 'New Password (leave blank to keep)' }}</label>
                                         <input type="password" class="form-control bg-dark text-white border-secondary" name="new_password" placeholder="••••••••">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Confirm New Password</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'تأكيد كلمة المرور الجديدة' if is_rtl else 'Confirm New Password' }}</label>
                                         <input type="password" class="form-control bg-dark text-white border-secondary" name="confirm_password" placeholder="••••••••">
                                     </div>
                                 </div>
@@ -735,33 +735,33 @@
 
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Advisor Display Name</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الاسم المعروض للمرشد' if is_rtl else 'Advisor Display Name' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="display_name" value="{{ app_settings.admin.display_name }}" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label text-light small fw-bold">Role Title</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'المسمى الوظيفي' if is_rtl else 'Role Title' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="role_title" value="{{ app_settings.admin.role_title }}" required>
                                     </div>
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label text-light small fw-bold">Avatar Initials</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'الأحرف الأولى للصورة الرمزية' if is_rtl else 'Avatar Initials' }}</label>
                                         <input type="text" class="form-control bg-dark text-white border-secondary" name="avatar_initials" value="{{ app_settings.admin.avatar_initials }}" maxlength="3" required>
                                     </div>
                                     <div class="col-md-8">
-                                        <label class="form-label text-light small fw-bold">Entire Portal Protection</label>
+                                        <label class="form-label text-light small fw-bold">{{ 'حماية البوابة بالكامل' if is_rtl else 'Entire Portal Protection' }}</label>
                                         <div class="form-check form-switch mt-1">
                                             <input class="form-check-input" type="checkbox" role="switch" id="switchRequireLogin" name="require_login_for_portal" value="true" {% if app_settings.admin.require_login_for_portal %}checked{% endif %}>
                                             <label class="form-check-label text-white small" for="switchRequireLogin">
-                                                Require login for entire advising portal
+                                                {{ 'طلب تسجيل الدخول للوصول إلى بوابة الإرشاد بأكملها' if is_rtl else 'Require login for entire advising portal' }}
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="btn btn-danger px-4 fw-bold">
-                                    <i class="fas fa-shield me-1"></i> Update Admin Credentials
+                                    <i class="fas fa-shield me-1"></i> {{ 'تحديث بيانات اعتماد المسؤول' if is_rtl else 'Update Admin Credentials' }}
                                 </button>
                             </form>
                         </div>
@@ -772,7 +772,7 @@
                     <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4">
                         <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
                             <h6 class="card-title mb-0 text-white fw-bold">
-                                <i class="fas fa-id-badge text-danger me-2"></i> Current Session Details
+                                <i class="fas fa-id-badge text-danger me-2"></i> {{ 'تفاصيل الجلسة الحالية' if is_rtl else 'Current Session Details' }}
                             </h6>
                         </div>
                         <div class="card-body p-4">
@@ -783,12 +783,12 @@
                                 <div>
                                     <h6 class="text-white fw-bold mb-0">{{ app_settings.admin.display_name }}</h6>
                                     <span class="text-white-50 small">{{ app_settings.admin.role_title }}</span>
-                                    <div class="badge bg-success bg-opacity-20 text-success mt-1">Authenticated as {{ app_settings.admin.username }}</div>
+                                    <div class="badge bg-success bg-opacity-20 text-success mt-1">{{ 'تم تسجيل الدخول باسم' if is_rtl else 'Authenticated as' }} {{ app_settings.admin.username }}</div>
                                 </div>
                             </div>
                             <div class="alert alert-secondary bg-opacity-10 border-secondary border-opacity-25 small mb-0">
                                 <i class="fas fa-info-circle me-1 text-info"></i>
-                                If you change your password, remember to keep your new password in a safe place. Default username is <code>admin</code>.
+                                {{ 'إذا قمت بتغيير كلمة المرور الخاصة بك، تذكر الاحتفاظ بها في مكان آمن. اسم المستخدم الافتراضي هو' if is_rtl else 'If you change your password, remember to keep your new password in a safe place. Default username is' }} <code>admin</code>.
                             </div>
                         </div>
                     </div>
@@ -834,13 +834,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (titleInput && previewTitleText) {
         titleInput.addEventListener('input', () => {
-            previewTitleText.textContent = titleInput.value || 'Dhofar University';
+            previewTitleText.textContent = titleInput.value || '{{ "جامعة ظفار" if is_rtl else "Dhofar University" }}';
         });
     }
 
     if (badgeInput && previewBadgeText) {
         badgeInput.addEventListener('input', () => {
-            previewBadgeText.textContent = badgeInput.value || 'ADVISING';
+            previewBadgeText.textContent = badgeInput.value || '{{ "الإرشاد الأكاديمي" if is_rtl else "ADVISING" }}';
         });
     }
 
@@ -858,3 +858,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

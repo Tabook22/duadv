@@ -245,14 +245,14 @@
                     <!-- Educational Independence Notice -->
                     <div class="alert alert-warning bg-opacity-10 border-warning border-opacity-50 rounded-3 p-3 mb-3">
                         <h6 class="text-warning fw-bold mb-1">
-                            <i class="fas fa-scale-balanced me-1"></i> Independent Academic Advisory Tool
+                            <i class="fas fa-scale-balanced me-1"></i> {{ 'أداة إرشاد أكاديمي مستقلة' if is_rtl else 'Independent Academic Advisory Tool' }}
                         </h6>
                         <p class="small text-light mb-0" style="line-height: 1.5;">
                             {{ app_settings.about.institutional_disclaimer }}
                         </p>
                     </div>
 
-                    <h6 class="text-white fw-bold mb-2"><i class="fas fa-bullseye text-primary me-2"></i> Purpose & Objectives</h6>
+                    <h6 class="text-white fw-bold mb-2"><i class="fas fa-bullseye text-primary me-2"></i> {{ 'الغرض والأهداف' if is_rtl else 'Purpose & Objectives' }}</h6>
                     <p class="text-white-50 small mb-3" style="line-height: 1.6;">
                         {{ app_settings.about.purpose_statement }}
                     </p>
@@ -260,33 +260,33 @@
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <div class="p-2 rounded bg-black bg-opacity-30 border border-secondary border-opacity-25 small">
-                                <span class="text-muted d-block">Supervising Advisor:</span>
+                                <span class="text-muted d-block">{{ 'المرشد الأكاديمي المشرف:' if is_rtl else 'Supervising Advisor:' }}</span>
                                 <strong class="text-white">{{ app_settings.about.advisor_name }}</strong>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="p-2 rounded bg-black bg-opacity-30 border border-secondary border-opacity-25 small">
-                                <span class="text-muted d-block">Academic Affiliation:</span>
+                                <span class="text-muted d-block">{{ 'الانتماء الأكاديمي:' if is_rtl else 'Academic Affiliation:' }}</span>
                                 <strong class="text-white">{{ app_settings.about.college }}</strong>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-white-50 small" style="font-size: 0.74rem;">
-                        <strong>Release Date:</strong> {{ app_settings.about.release_date }} &bull; 
-                        <strong>Built For:</strong> Direct student supervision, degree velocity calculation & WebRTC academic conferences.
+                        <strong>{{ 'تاريخ الإصدار:' if is_rtl else 'Release Date:' }}</strong> {{ app_settings.about.release_date }} &bull; 
+                        <strong>{{ 'صُمم من أجل:' if is_rtl else 'Built For:' }}</strong> {{ 'الإشراف المباشر على الطلبة، وحساب سرعة التخرج، ومؤتمرات الإرشاد الأكاديمي المرئية (WebRTC).' if is_rtl else 'Direct student supervision, degree velocity calculation & WebRTC academic conferences.' }}
                     </div>
                 </div>
                 <div class="modal-footer border-secondary border-opacity-25 pt-3">
                     <a href="{{ url_for('main.about_page') }}" class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-external-link-alt me-1"></i> Full About & Specifications Page
+                        <i class="fas fa-external-link-alt me-1"></i> {{ 'صفحة حول التطبيق والمواصفات الكاملة' if is_rtl else 'Full About & Specifications Page' }}
                     </a>
                     {% if is_admin_logged_in %}
                         <a href="{{ url_for('main.admin_settings') }}" class="btn btn-warning btn-sm text-dark fw-bold">
-                            <i class="fas fa-sliders me-1"></i> Manage Settings
+                            <i class="fas fa-sliders me-1"></i> {{ 'إدارة الإعدادات' if is_rtl else 'Manage Settings' }}
                         </a>
                     {% endif %}
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">{{ t('close') }}</button>
                 </div>
             </div>
         </div>

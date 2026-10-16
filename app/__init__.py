@@ -41,13 +41,21 @@ def create_app(config_name=None):
             get_current_language, is_rtl, t,
             localize_standing, localize_program, localize_season,
             localize_term, localize_priority, localize_risk_level,
-            localize_outreach_status
+            localize_outreach_status, localize_course_name,
+            localize_category, localize_degree_type, localize_year,
+            localize_days, localize_session_type, localize_language,
+            localize_instructor, localize_remark, localize_seat_status,
+            localize_notice_category, localize_notice, localize_policy_doc,
+            localize_settings
         )
+        lang = get_current_language()
+        raw_settings = get_settings()
         return {
-            'app_settings': get_settings(),
+            'app_settings': localize_settings(raw_settings, lang=lang),
+            'raw_app_settings': raw_settings,
             'is_admin_logged_in': session.get('is_admin', False),
             'admin_username': session.get('admin_username', ''),
-            'current_lang': get_current_language(),
+            'current_lang': lang,
             'is_rtl': is_rtl(),
             't': t,
             'localize_standing': localize_standing,
@@ -56,7 +64,20 @@ def create_app(config_name=None):
             'localize_term': localize_term,
             'localize_priority': localize_priority,
             'localize_risk_level': localize_risk_level,
-            'localize_outreach_status': localize_outreach_status
+            'localize_outreach_status': localize_outreach_status,
+            'localize_course_name': localize_course_name,
+            'localize_category': localize_category,
+            'localize_degree_type': localize_degree_type,
+            'localize_year': localize_year,
+            'localize_days': localize_days,
+            'localize_session_type': localize_session_type,
+            'localize_language': localize_language,
+            'localize_instructor': localize_instructor,
+            'localize_remark': localize_remark,
+            'localize_seat_status': localize_seat_status,
+            'localize_notice_category': localize_notice_category,
+            'localize_notice': localize_notice,
+            'localize_policy_doc': localize_policy_doc
         }
     
     # Optional global login enforcement if admin configured require_login_for_portal

@@ -16,7 +16,7 @@
                 </a>
                 <span class="badge bg-primary fs-7 font-monospace">{{ t('student_id') }}: {{ student.id }}</span>
                 <span class="badge bg-secondary fs-7">{{ localize_program(audit.program_title) }}</span>
-                <span class="badge bg-light text-dark border fs-7">{{ audit.degree_type }} ({{ audit.total_plan_credits }} {{ t('credits') }})</span>
+                <span class="badge bg-light text-dark border fs-7">{{ localize_degree_type(audit.degree_type) }} ({{ audit.total_plan_credits }} {{ t('credits') }})</span>
                 {% if outreach %}
                 <span class="badge bg-{{ outreach.status_color }} fs-7 shadow-xs">
                     <i class="fas {{ outreach.status_icon }} me-1"></i> {{ localize_outreach_status(outreach.status) }}
@@ -133,7 +133,7 @@
                 {% for cr in audit.critical_repeats %}
                 <tr>
                     <td class="fw-bold text-danger font-monospace">{{ cr.code }}</td>
-                    <td class="fw-semibold">{{ cr.name }}</td>
+                    <td class="fw-semibold">{{ localize_course_name(cr.code, cr.name) }}</td>
                     <td>{{ cr.credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</td>
                     <td>{{ localize_term(cr.last_term) }}</td>
                     <td><span class="badge bg-danger px-2">{{ cr.last_grade }}</span></td>
@@ -441,7 +441,7 @@
                         </tr>
                         <tr>
                             <th scope="row" class="text-muted">{{ 'السنة الدراسية:' if is_rtl else 'Academic Year:' }}</th>
-                            <td>{{ student.year or ('غير محدد' if is_rtl else 'N/A') }}</td>
+                            <td>{{ localize_year(student.year) if student.year else ('غير محدد' if is_rtl else 'N/A') }}</td>
                         </tr>
                         <tr>
                             <th scope="row" class="text-muted">{{ t('cgpa') }}:</th>
@@ -914,7 +914,7 @@
                     <tr>
                         <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
                         <td class="fw-semibold text-dark">
-                            {{ c.name }}
+                            {{ localize_course_name(c.code, c.name) }}
                         </td>
                         <td class="text-center fw-bold">{{ c.credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</td>
                         <td>
@@ -922,16 +922,16 @@
                                 <div class="d-flex flex-column gap-1">
                                     <div class="d-flex align-items-center gap-1">
                                         <span class="badge bg-primary text-white">{{ 'شعبة' if is_rtl else 'Sec' }} {{ c.primary_section.section }}</span>
-                                        <span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt text-danger me-1 ms-1"></i>{{ c.primary_section.room }}</span>
+                                        <span class="badge bg-light text-dark border"><i class="fas fa-map-marker-alt text-danger me-1 ms-1"></i>{{ ('تحدد لاحقاً' if is_rtl else 'TBA') if c.primary_section.room == 'TBA' else c.primary_section.room }}</span>
                                         <span class="badge {{ 'bg-success' if c.seat_status == 'Open' else 'bg-danger' }}">
-                                            {{ 'متاح' if (c.seat_status == 'Open' and is_rtl) else c.seat_status }} ({{ c.seats_available }} {{ 'مقاعد' if is_rtl else 'seats' }})
+                                            {{ localize_seat_status(c.seat_status) }} ({{ c.seats_available }} {{ 'مقاعد' if is_rtl else 'seats' }})
                                         </span>
                                     </div>
                                     <small class="text-dark fw-semibold" style="font-size: 0.78rem;">
-                                        <i class="far fa-calendar-alt text-primary me-1 ms-1"></i>{{ c.primary_section.days }} &bull; <i class="far fa-clock text-secondary me-1 ms-1"></i>{{ c.primary_section.time }}
+                                        <i class="far fa-calendar-alt text-primary me-1 ms-1"></i>{{ localize_days(c.primary_section.days) }} &bull; <i class="far fa-clock text-secondary me-1 ms-1"></i>{{ c.primary_section.time }}
                                     </small>
                                     <small class="text-muted" style="font-size: 0.75rem;">
-                                        <i class="fas fa-user-tie text-secondary me-1 ms-1"></i>{{ c.primary_section.instructor }}
+                                        <i class="fas fa-user-tie text-secondary me-1 ms-1"></i>{{ localize_instructor(c.primary_section.instructor) }}
                                     </small>
                                 </div>
                             {% else %}
@@ -942,7 +942,7 @@
                         </td>
                         <td>
                             <div class="mb-1">
-                                <span class="badge bg-{{ 'danger' if 'Mandatory' in c.priority else 'success' if 'Core' in c.priority else 'warning text-dark' }}">
+                                <span class="badge bg-{{ 'danger' if 'Mandatory' in c.priority or 'إلزامية' in c.priority else 'success' if 'Core' in c.priority or 'أساسي' in c.priority else 'warning text-dark' }}">
                                     {{ localize_priority(c.priority) }}
                                 </span>
                             </div>
@@ -970,7 +970,7 @@
                     <div class="list-group list-group-flush small" style="max-height: 180px; overflow-y: auto;">
                         {% for rc in audit.ready_courses[:5] %}
                         <div class="list-group-item px-0 py-1 bg-transparent d-flex justify-content-between">
-                            <span class="fw-bold text-primary font-monospace">{{ rc.code }} - {{ rc.name }}</span>
+                            <span class="fw-bold text-primary font-monospace">{{ rc.code }} - {{ localize_course_name(rc.code, rc.name) }}</span>
                             <span class="text-muted">{{ rc.credits }} {{ 'ساعات' if is_rtl else 'hrs' }}</span>
                         </div>
                         {% endfor %}
@@ -986,7 +986,7 @@
                     <div class="list-group list-group-flush small" style="max-height: 180px; overflow-y: auto;">
                         {% for bc in audit.blocked_courses[:5] %}
                         <div class="list-group-item px-0 py-1 bg-transparent">
-                            <div class="fw-bold text-dark font-monospace">{{ bc.code }} - {{ bc.name }}</div>
+                            <div class="fw-bold text-dark font-monospace">{{ bc.code }} - {{ localize_course_name(bc.code, bc.name) }}</div>
                             <small class="text-danger">{{ 'المتطلب الناقص:' if is_rtl else 'Missing:' }} {{ bc.unmet_prerequisites|join(', ') }}</small>
                         </div>
                         {% endfor %}
@@ -1018,7 +1018,7 @@
         </h5>
         <div>
             <span class="badge bg-light text-dark fs-6">
-                {{ audit.degree_type }} ({{ audit.total_plan_credits }} {{ 'ساعة إجمالية' if is_rtl else 'Total Credits' }})
+                {{ localize_degree_type(audit.degree_type) }} ({{ audit.total_plan_credits }} {{ 'ساعة إجمالية' if is_rtl else 'Total Credits' }})
             </span>
         </div>
     </div>
@@ -1093,8 +1093,8 @@
                     {% for c in audit.completed_courses %}
                     <tr class="plan-course-row" data-status="Completed">
                         <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
-                        <td>{{ c.name }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ c.category }}</span></td>
+                        <td>{{ localize_course_name(c.code, c.name) }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ localize_category(c.category) }}</span></td>
                         <td class="text-center fw-semibold">{{ c.credits }}</td>
                         <td>
                             <span class="badge bg-success me-1 ms-1"><i class="fas fa-check-circle me-1"></i>{{ 'منجز' if is_rtl else 'Completed' }}</span>
@@ -1111,8 +1111,8 @@
                     {% for c in audit.missing_courses %}
                     <tr class="plan-course-row" data-status="Remaining">
                         <td class="fw-bold text-secondary font-monospace">{{ c.code }}</td>
-                        <td class="text-muted">{{ c.name }}</td>
-                        <td><span class="badge bg-light text-secondary border">{{ c.category }}</span></td>
+                        <td class="text-muted">{{ localize_course_name(c.code, c.name) }}</td>
+                        <td><span class="badge bg-light text-secondary border">{{ localize_category(c.category) }}</span></td>
                         <td class="text-center">{{ c.credits }}</td>
                         <td>
                             {% if c.is_ready_to_register %}
@@ -1194,7 +1194,7 @@
                                             {% for c in sem.courses %}
                                             <tr>
                                                 <td class="fw-bold text-primary font-monospace">{{ c.code }}</td>
-                                                <td>{{ c.name }}</td>
+                                                <td>{{ localize_course_name(c.code, c.name) }}</td>
                                                 <td class="text-center">{{ c.credits }}</td>
                                                 <td class="text-center">
                                                     {% set g = c.grade|string %}
@@ -1231,6 +1231,7 @@
 
 {% block scripts %}
 <script>
+const IS_RTL_DETAIL = {{ 'true' if is_rtl else 'false' }};
 // Render Chart.js for Semester Progression Trajectory
 document.addEventListener("DOMContentLoaded", function() {
     const ctx = document.getElementById('semesterProgressionChart');
@@ -1247,7 +1248,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Semester Term GPA (%)',
+                        label: IS_RTL_DETAIL ? 'المعدل الفصلي (%)' : 'Semester Term GPA (%)',
                         data: termGpas,
                         borderColor: '#2563eb',
                         backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -1259,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         fill: false
                     },
                     {
-                        label: 'Cumulative GPA (%)',
+                        label: IS_RTL_DETAIL ? 'المعدل التراكمي (%)' : 'Cumulative GPA (%)',
                         data: cumGpas,
                         borderColor: '#7c3aed',
                         backgroundColor: 'rgba(124, 58, 237, 0.15)',
@@ -1271,7 +1272,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         fill: true
                     },
                     {
-                        label: 'Good Standing Threshold (65.0%)',
+                        label: IS_RTL_DETAIL ? 'حد الوضع الأكاديمي المنتظم (65.0%)' : 'Good Standing Threshold (65.0%)',
                         data: labels.map(() => benchmark),
                         borderColor: '#dc2626',
                         borderWidth: 2,
@@ -1372,23 +1373,28 @@ function startStudentMeeting(studentId, studentName) {
         body: JSON.stringify({
             student_id: studentId,
             student_name: studentName,
-            title: `Advising Session - ${studentName} (${studentId})`,
-            advisor_name: 'Dr. Nasser Tabook'
+            title: IS_RTL_DETAIL ? `جلسة إرشاد أكاديمي - ${studentName} (${studentId})` : `Advising Session - ${studentName} (${studentId})`,
+            advisor_name: IS_RTL_DETAIL ? 'د. ناصر طمطيم تبوك' : 'Dr. Nasser Tabook'
         })
     })
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
-            const inviteMsg = `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url}\n\nDr. Nasser Tabook - Dhofar University`;
+            const inviteMsg = IS_RTL_DETAIL
+                ? `عزيزي الطالب ${studentName}،\nيرجى الانضمام إلى اجتماع الإرشاد الأكاديمي المرئي عبر الرابط التالي:\n${data.meeting_url}\n\nد. ناصر طمطيم تبوك - جامعة ظفار`
+                : `Dear ${studentName},\nPlease join our academic advising video meeting using this link:\n${data.meeting_url}\n\nDr. Nasser Tabook - Dhofar University`;
             navigator.clipboard.writeText(inviteMsg);
-            if (confirm(`Virtual Meeting Created!\n\nInvitation copied to your clipboard.\n\nWould you like to enter the room now?`)) {
+            const confirmMsg = IS_RTL_DETAIL
+                ? `تم إنشاء غرفة الاجتماع الافتراضي!\n\nتم نسخ رسالة الدعوة إلى الحافظة.\n\nهل ترغب في دخول الغرفة الآن؟`
+                : `Virtual Meeting Created!\n\nInvitation copied to your clipboard.\n\nWould you like to enter the room now?`;
+            if (confirm(confirmMsg)) {
                 window.location.href = `${prefix}/meeting/${data.room_id}?role=advisor`;
             }
         } else {
-            alert('Error creating meeting: ' + data.message);
+            alert((IS_RTL_DETAIL ? 'خطأ في إنشاء الاجتماع: ' : 'Error creating meeting: ') + data.message);
         }
     })
-    .catch(err => alert('Network error: ' + err.message));
+    .catch(err => alert((IS_RTL_DETAIL ? 'خطأ في الشبكة: ' : 'Network error: ') + err.message));
 }
 </script>
 {% endblock %}

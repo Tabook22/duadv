@@ -257,7 +257,7 @@
                                     {{ "%.2f"|format(s.semester_gpa) }}%
                                 </span>
                             {% else %}
-                                <span class="text-muted small">N/A</span>
+                                <span class="text-muted small">{{ 'غير متوفر' if is_rtl else 'N/A' }}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -334,21 +334,21 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">{{ 'حالة التواصل والإرشاد' if is_rtl else 'Outreach & Advising Status' }}</label>
                         <select class="form-select form-select-sm" id="modalStatusSelect" required>
-                            <option value="Pending Outreach">Pending Outreach ({{ 'لم يتم التواصل بعد' if is_rtl else 'Not yet contacted' }})</option>
-                            <option value="Notice Sent via Email">Notice Sent via Email ({{ 'تم إرسال الخطاب الرسمي' if is_rtl else 'Official letter emailed' }})</option>
-                            <option value="Student Responded">Student Responded ({{ 'تجاوب الطالب أو حجز موعداً' if is_rtl else 'Replied or booked consultation' }})</option>
-                            <option value="Meeting Completed">Meeting Completed ({{ 'تمت جلسة الإرشاد حضورياً أو افتراضياً' if is_rtl else 'In-person or virtual advising session completed' }})</option>
-                            <option value="Plan Signed &amp; Approved">Plan Signed &amp; Approved ({{ 'تم الاتفاق وتوقيع الخطة' if is_rtl else 'Registration agreed and signed' }})</option>
+                            <option value="Pending Outreach">{{ 'بانتظار التواصل (لم يتم التواصل بعد)' if is_rtl else 'Pending Outreach (Not yet contacted)' }}</option>
+                            <option value="Notice Sent via Email">{{ 'تم إرسال الإخطار بالبريد (تم إرسال الخطاب الرسمي)' if is_rtl else 'Notice Sent via Email (Official letter emailed)' }}</option>
+                            <option value="Student Responded">{{ 'استجاب الطالب (تجاوب الطالب أو حجز موعداً)' if is_rtl else 'Student Responded (Replied or booked consultation)' }}</option>
+                            <option value="Meeting Completed">{{ 'تمت المقابلة الإرشادية (حضورياً أو افتراضياً)' if is_rtl else 'Meeting Completed (In-person or virtual advising session completed)' }}</option>
+                            <option value="Plan Signed &amp; Approved">{{ 'تم توقيع واعتماد الخطة (تم الاتفاق والتوقيع)' if is_rtl else 'Plan Signed & Approved (Registration agreed and signed)' }}</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold small">{{ 'قناة / وسيلة التواصل' if is_rtl else 'Contact Method / Channel' }}</label>
                         <select class="form-select form-select-sm" id="modalMethodSelect">
-                            <option value="Email">Email ({{ 'البريد الرسمي لجامعة ظفار' if is_rtl else 'DU Official Mail' }})</option>
-                            <option value="Office Visit (Office 214)">Office Visit ({{ 'زيارة مكتبية - مكتب 214' if is_rtl else 'Office 214' }})</option>
-                            <option value="Virtual Meeting (WebRTC)">Virtual Meeting ({{ 'غرفة الإرشاد الافتراضية' if is_rtl else 'WebRTC' }})</option>
-                            <option value="Phone / WhatsApp">Phone / WhatsApp ({{ 'اتصال هاتفي / واتساب' if is_rtl else 'Phone Call / WhatsApp' }})</option>
-                            <option value="LMS Announcement">LMS Announcement ({{ 'إشعار البوابة / المودل' if is_rtl else 'DU Portal / LMS Notification' }})</option>
+                            <option value="Email">{{ 'البريد الإلكتروني الرسمي لجامعة ظفار' if is_rtl else 'Email (DU Official Mail)' }}</option>
+                            <option value="Office Visit (Office 214)">{{ 'زيارة مكتبية (مكتب 214)' if is_rtl else 'Office Visit (Office 214)' }}</option>
+                            <option value="Virtual Meeting (WebRTC)">{{ 'اجتماع مرئي افتراضي (WebRTC)' if is_rtl else 'Virtual Meeting (WebRTC)' }}</option>
+                            <option value="Phone / WhatsApp">{{ 'اتصال هاتفي / واتساب' if is_rtl else 'Phone / WhatsApp' }}</option>
+                            <option value="LMS Announcement">{{ 'إشعار البوابة / نظام إدارة التعلم' if is_rtl else 'LMS Announcement (DU Portal / LMS Notification)' }}</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -385,19 +385,19 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">{{ 'الحالة الإرشادية الجديدة' if is_rtl else 'New Advising Status' }}</label>
                     <select class="form-select form-select-sm" id="batchStatusSelect">
-                        <option value="Notice Sent via Email">Notice Sent via Email ({{ 'تم إرسال الخطاب الرسمي' if is_rtl else 'Official warning emailed' }})</option>
-                        <option value="Student Responded">Student Responded</option>
-                        <option value="Meeting Completed">Meeting Completed</option>
-                        <option value="Plan Signed &amp; Approved">Plan Signed &amp; Approved</option>
-                        <option value="Pending Outreach">Reset to Pending Outreach</option>
+                        <option value="Notice Sent via Email">{{ 'تم إرسال الإخطار بالبريد (تم إرسال الخطاب الرسمي)' if is_rtl else 'Notice Sent via Email (Official warning emailed)' }}</option>
+                        <option value="Student Responded">{{ 'استجاب الطالب' if is_rtl else 'Student Responded' }}</option>
+                        <option value="Meeting Completed">{{ 'تمت المقابلة الإرشادية' if is_rtl else 'Meeting Completed' }}</option>
+                        <option value="Plan Signed &amp; Approved">{{ 'تم توقيع واعتماد الخطة' if is_rtl else 'Plan Signed & Approved' }}</option>
+                        <option value="Pending Outreach">{{ 'إعادة تعيين إلى بانتظار التواصل' if is_rtl else 'Reset to Pending Outreach' }}</option>
                     </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold small">{{ 'طريقة التواصل' if is_rtl else 'Contact Method' }}</label>
                     <select class="form-select form-select-sm" id="batchMethodSelect">
-                        <option value="Email">Email</option>
-                        <option value="Office Visit (Office 214)">Office Visit</option>
-                        <option value="Virtual Meeting (WebRTC)">Virtual Meeting</option>
+                        <option value="Email">{{ 'البريد الإلكتروني' if is_rtl else 'Email' }}</option>
+                        <option value="Office Visit (Office 214)">{{ 'زيارة مكتبية' if is_rtl else 'Office Visit' }}</option>
+                        <option value="Virtual Meeting (WebRTC)">{{ 'اجتماع مرئي افتراضي' if is_rtl else 'Virtual Meeting' }}</option>
                     </select>
                 </div>
                 <div class="mb-3">

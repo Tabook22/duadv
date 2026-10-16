@@ -165,3 +165,123 @@ def test_arabic_views_integration(client):
     assert 'جامعة ظفار'.encode('utf-8') in resp_memo.data
     assert 'المادة 18'.encode('utf-8') in resp_memo.data
     assert 'dir="rtl"'.encode('utf-8') in resp_memo.data
+
+    # 8. Students Directory view
+    resp_students = client.get('/students')
+    assert resp_students.status_code == 200
+    assert 'قائمة الطلبة المُرشَدين'.encode('utf-8') in resp_students.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_students.data
+
+    # 9. Section Schedule view
+    resp_sched = client.get('/section-schedule')
+    assert resp_sched.status_code == 200
+    assert 'المقررات المطروحة وجدول الشعب'.encode('utf-8') in resp_sched.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_sched.data
+
+    # 10. Policies & Notice Board view
+    resp_pol = client.get('/policies')
+    assert resp_pol.status_code == 200
+    assert 'اللوائح الأكاديمية ومكتبة الإرشاد'.encode('utf-8') in resp_pol.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_pol.data
+
+    # 11. Advising Wiki view
+    resp_wiki = client.get('/advising-wiki')
+    assert resp_wiki.status_code == 200
+    assert 'موسوعة الإرشاد الأكاديمي'.encode('utf-8') in resp_wiki.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_wiki.data
+
+    # 12. Karpathy LLM Wiki view
+    resp_kwiki = client.get('/wiki')
+    assert resp_kwiki.status_code == 200
+    assert 'موسوعة الإرشاد الأكاديمي'.encode('utf-8') in resp_kwiki.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_kwiki.data
+
+    # 13. Virtual Office & Meetings Hub view
+    resp_meet = client.get('/meetings')
+    assert resp_meet.status_code == 200
+    assert 'غرف الإرشاد الافتراضية والاجتماعات المرئية'.encode('utf-8') in resp_meet.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_meet.data
+
+    # 14. About page view
+    resp_about = client.get('/about')
+    assert resp_about.status_code == 200
+    assert 'حول التطبيق'.encode('utf-8') in resp_about.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_about.data
+
+    # 15. Advisor Profile view
+    resp_prof = client.get('/advisor')
+    assert resp_prof.status_code == 200
+    assert 'ملف المرشد الأكاديمي وعضو هيئة التدريس'.encode('utf-8') in resp_prof.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_prof.data
+
+    # 16. Login page view
+    resp_login = client.get('/auth/login')
+    assert resp_login.status_code == 200
+    assert 'تسجيل دخول المشرف'.encode('utf-8') in resp_login.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_login.data
+
+    # 17. 404 Error page view
+    resp_404 = client.get('/non-existent-route-xyz')
+    assert resp_404.status_code == 404
+    assert 'الصفحة غير موجودة'.encode('utf-8') in resp_404.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_404.data
+
+    # 18. Switch back to English and verify clean English restoration across views
+    client.get('/set-language/en')
+    resp_sched_en = client.get('/section-schedule')
+    assert resp_sched_en.status_code == 200
+    assert 'Course Offerings'.encode('utf-8') in resp_sched_en.data
+    assert 'dir="ltr"'.encode('utf-8') in resp_sched_en.data
+
+    resp_pol_en = client.get('/policies')
+    assert resp_pol_en.status_code == 200
+    assert 'Academic Policies'.encode('utf-8') in resp_pol_en.data
+
+    resp_about_en = client.get('/about')
+    assert resp_about_en.status_code == 200
+    assert 'About This Application'.encode('utf-8') in resp_about_en.data
+
+
+def test_dynamic_localizers_bilingual():
+    """Verify dynamic localizer functions translate to Arabic when lang='ar' and preserve English when lang='en'"""
+    from app.i18n import (
+        localize_course_name, localize_category, localize_degree_type,
+        localize_year, localize_days, localize_session_type, localize_language,
+        localize_instructor, localize_remark, localize_seat_status,
+        localize_notice_category, localize_settings
+    )
+    from app.settings_manager import get_settings
+
+    assert localize_course_name('Introduction to Programming', 'ar') == 'مقدمة في البرمجة'
+    assert localize_course_name('Introduction to Programming', 'en') == 'Introduction to Programming'
+
+    assert localize_category('University Requirement', 'ar') == 'متطلب جامعة إجباري'
+    assert localize_category('University Requirement', 'en') == 'University Requirement'
+
+    assert localize_degree_type('Bachelor of Science', 'ar') == 'بكالوريوس علوم'
+    assert localize_degree_type('Bachelor of Science', 'en') == 'Bachelor of Science'
+
+    assert localize_year('First Year', 'ar') == 'السنة الأولى'
+    assert localize_year('First Year', 'en') == 'First Year'
+
+    assert localize_days('SunTueThu', 'ar') == 'أحد - ثلاثاء - خميس'
+    assert localize_days('SunTueThu', 'en') == 'SunTueThu'
+
+    assert localize_session_type('Morning', 'ar') == 'صباحي'
+    assert localize_session_type('Morning', 'en') == 'Morning'
+
+    assert localize_language('English', 'ar') == 'الإنجليزية'
+    assert localize_language('English', 'en') == 'English'
+
+    assert localize_seat_status('Open', 'ar') == 'متاح'
+    assert localize_seat_status('Open', 'en') == 'Open'
+
+    assert localize_notice_category('Urgent Risk', 'ar') == 'خطر أكاديمي عاجل'
+    assert localize_notice_category('Urgent Risk', 'en') == 'Urgent Risk'
+
+    raw = get_settings()
+    ar_settings = localize_settings(raw, 'ar')
+    en_settings = localize_settings(raw, 'en')
+    assert ar_settings['branding']['app_title'] == 'جامعة ظفار'
+    assert en_settings['branding']['app_title'] == raw['branding']['app_title']
+

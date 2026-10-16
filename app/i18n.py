@@ -33,7 +33,7 @@ TRANSLATIONS = {
         'search_placeholder': 'Search by name, ID, or program...',
         
         # Dashboard Strings
-        'supervisor_dashboard': 'Supervisor Advising Dashboard',
+        'supervisor_dashboard': 'Supervisor Dashboard',
         'academic_year': 'Academic Year 2026-2027',
         'sync_roster': 'Sync Roster',
         'office_hours_hub': 'Office Hours Hub',
@@ -344,7 +344,18 @@ TRANSLATIONS = {
         'success': 'Success',
         'warning': 'Warning',
         'error': 'Error',
-        'notice': 'Notice'
+        'notice': 'Notice',
+
+        # Alias & Missing Template Keys
+        'student_name': 'Student Name',
+        'standing': 'Academic Standing',
+        'program': 'Program / Major',
+        'semester_gpa': 'Semester GPA',
+        'dhofar_university': 'Dhofar University',
+        'degree_plan': 'Degree Plan',
+        'brand_title': 'Dhofar University',
+        'year': 'Academic Year',
+        'advisor': 'Academic Advisor'
     },
     'ar': {
         # Global Navigation & Header
@@ -683,13 +694,23 @@ TRANSLATIONS = {
         'success': 'تم بنجاح',
         'warning': 'تنبيه',
         'error': 'خطأ',
-        'notice': 'ملاحظة'
+        'notice': 'ملاحظة',
+
+        # Alias & Missing Template Keys
+        'student_name': 'اسم الطالب',
+        'standing': 'الوضع الأكاديمي',
+        'program': 'التخصص الأكاديمي',
+        'semester_gpa': 'المعدل الفصلي',
+        'dhofar_university': 'جامعة ظفار',
+        'degree_plan': 'الخطة الدراسية',
+        'brand_title': 'جامعة ظفار',
+        'year': 'السنة الدراسية',
+        'advisor': 'المرشد الأكاديمي'
     }
 }
 
 def get_current_language():
     """Retrieve active language from session, query param, or fallback to 'en'."""
-    # Allow query parameter override like ?lang=ar
     try:
         if request and request.args and 'lang' in request.args:
             lang = request.args.get('lang', '').lower().strip()
@@ -699,7 +720,6 @@ def get_current_language():
     except Exception:
         pass
             
-    # Check session
     try:
         lang = session.get('lang')
         if lang in TRANSLATIONS:
@@ -718,7 +738,6 @@ def translate(key, default=None, **kwargs):
     lang = get_current_language()
     val = TRANSLATIONS.get(lang, {}).get(key)
     if val is None:
-        # Fallback to English
         val = TRANSLATIONS.get('en', {}).get(key)
     if val is None:
         val = default if default is not None else key
@@ -736,9 +755,9 @@ t = translate
 # Specialized Localizers for Dynamic Data
 def localize_standing(status_str, lang=None):
     """Localize academic standing status string."""
+    lang = lang or get_current_language()
     if not status_str:
         return 'Normal / Good Standing' if lang != 'ar' else 'وضع أكاديمي سليم / اعتيادي'
-    lang = lang or get_current_language()
     if lang != 'ar':
         return status_str
         
@@ -753,8 +772,12 @@ def localize_standing(status_str, lang=None):
         return 'تحت الملاحظة الأكاديمية'
     elif 'Removal' in st:
         return 'رفع الملاحظة الأكاديمية'
+    elif 'Very Good' in st:
+        return 'وضع أكاديمي جيد جداً'
     elif 'Good' in st or 'Normal' in st:
         return 'وضع أكاديمي سليم / اعتيادي'
+    elif 'At Risk' in st:
+        return 'تحت الملاحظة الأكاديمية'
     return st
 
 def localize_program(prog_str, lang=None):
@@ -766,22 +789,81 @@ def localize_program(prog_str, lang=None):
         return prog_str
         
     p = str(prog_str).strip()
-    translations = {
+    exact_map = {
         'Diploma in Computer Science': 'دبلوم في علوم الحاسوب',
-        'Bachelor of Science in Computer Science': 'بكالوريوس في علوم الحاسوب',
+        'Bachelor of Science in Computer Science': 'بكالوريوس العلوم في علوم الحاسوب',
         'Diploma in Information Technology': 'دبلوم في تقنية المعلومات',
-        'Bachelor of Science in Cybersecurity': 'بكالوريوس في الأمن السيبراني',
-        'Bachelor of Science in Data Science': 'بكالوريوس في علم البيانات',
+        'Bachelor of Science in Cybersecurity': 'بكالوريوس العلوم في الأمن السيبراني',
+        'Bachelor of Science in Data Science': 'بكالوريوس العلوم في علم البيانات',
         'Computer Science': 'علوم الحاسوب',
         'Cybersecurity': 'الأمن السيبراني',
         'Data Science': 'علم البيانات',
         'Diploma': 'دبلوم',
         'Bachelor of Science': 'بكالوريوس علوم'
     }
-    for en_key, ar_val in translations.items():
+    if p in exact_map:
+        return exact_map[p]
+    for en_key, ar_val in exact_map.items():
         if en_key.lower() in p.lower():
             p = re.sub(re.escape(en_key), ar_val, p, flags=re.IGNORECASE)
     return p
+
+def localize_degree_type(deg_str, lang=None):
+    """Localize degree type (Diploma, Bachelor of Science)."""
+    if not deg_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return deg_str
+    mapping = {
+        'Diploma': 'دبلوم',
+        'Bachelor of Science': 'بكالوريوس علوم',
+        'Bachelor': 'بكالوريوس',
+        'B.Sc.': 'بكالوريوس علوم'
+    }
+    return mapping.get(str(deg_str).strip(), deg_str)
+
+def localize_year(year_str, lang=None):
+    """Localize student academic year or recommended term."""
+    if not year_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return year_str
+    y = str(year_str).strip()
+    exact = {
+        'Freshman (Year 1)': 'السنة الأولى (مستجد)',
+        'Sophomore (Year 2)': 'السنة الثانية',
+        'Junior (Year 3)': 'السنة الثالثة',
+        'Senior (Year 4)': 'السنة الرابعة (خريج)',
+        'Year 1': 'السنة الأولى',
+        'Year 2': 'السنة الثانية',
+        'Year 3': 'السنة الثالثة',
+        'Year 4': 'السنة الرابعة',
+        'First Year': 'السنة الأولى',
+        'Second Year': 'السنة الثانية',
+        'Third Year': 'السنة الثالثة',
+        'Fourth Year': 'السنة الرابعة',
+        'Year 1 Fall': 'السنة الأولى - خريف',
+        'Year 1 Spring': 'السنة الأولى - ربيع',
+        'Year 2 Fall': 'السنة الثانية - خريف',
+        'Year 2 Spring': 'السنة الثانية - ربيع',
+        'Year 3 Fall': 'السنة الثالثة - خريف',
+        'Year 3 Spring': 'السنة الثالثة - ربيع',
+        'Year 4 Fall': 'السنة الرابعة - خريف',
+        'Year 4 Spring': 'السنة الرابعة - ربيع',
+        'N/A': 'غير محدد'
+    }
+    if y in exact:
+        return exact[y]
+    y = re.sub(r'\bYear 1\b', 'السنة الأولى', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bYear 2\b', 'السنة الثانية', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bYear 3\b', 'السنة الثالثة', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bYear 4\b', 'السنة الرابعة', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bFall\b', 'خريف', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bSpring\b', 'ربيع', y, flags=re.IGNORECASE)
+    y = re.sub(r'\bSummer\b', 'صيف', y, flags=re.IGNORECASE)
+    return y
 
 def localize_season(season_str, lang=None):
     """Localize semester season name (Fall, Spring, Summer, Foundation)."""
@@ -812,10 +894,12 @@ def localize_term(term_str, lang=None):
     t_str = re.sub(r'\bSpring\b', 'ربيع', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\bSummer\b', 'صيف', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\bFoundation\b', 'البرنامج التأسيسي', t_str, flags=re.IGNORECASE)
+    t_str = re.sub(r'\bTerm(\d+)\b', r'الفصل \1', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\(Year 1\)', '(السنة الأولى)', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\(Year 2\)', '(السنة الثانية)', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\(Year 3\)', '(السنة الثالثة)', t_str, flags=re.IGNORECASE)
     t_str = re.sub(r'\(Year 4\)', '(السنة الرابعة)', t_str, flags=re.IGNORECASE)
+    t_str = re.sub(r'\(Regular\)', '(انتظام)', t_str, flags=re.IGNORECASE)
     return t_str
 
 def localize_priority(priority_str, lang=None):
@@ -880,3 +964,550 @@ def localize_outreach_status(status_str, lang=None):
         'Plan Signed & Approved': 'تم توقيع واعتماد الخطة'
     }
     return mapping.get(str(status_str).strip(), status_str)
+
+COURSE_NAMES_AR = {
+    'basic academic english': 'اللغة الإنجليزية الأكاديمية الأساسية',
+    'english for academic purposes i': 'اللغة الإنجليزية للأغراض الأكاديمية (١)',
+    'english for academic purposes ii': 'اللغة الإنجليزية للأغراض الأكاديمية (٢)',
+    'english for academic purposes iii': 'اللغة الإنجليزية للأغراض الأكاديمية (٣)',
+    'academic writing in arabic': 'الكتابة الأكاديمية باللغة العربية',
+    'arabic language': 'اللغة العربية',
+    'islamic culture': 'الثقافة الإسلامية',
+    'omani society': 'المجتمع العماني',
+    'oman and islamic civilization': 'عمان والحضارة الإسلامية',
+    'entrepreneurship: innovation and creativity': 'ريادة الأعمال: الابتكار والإبداع',
+    'entrepreneurship: innovation & creativity': 'ريادة الأعمال: الابتكار والإبداع',
+    'community service': 'خدمة المجتمع',
+    'life and study skills': 'مهارات الحياة والدراسة',
+    'calculus i': 'التفاضل والتكامل (١)',
+    'calculus ii': 'التفاضل والتكامل (٢)',
+    'linear algebra i': 'الجبر الخطي (١)',
+    'linear algebra': 'الجبر الخطي',
+    'discrete mathematics': 'الرياضيات المتقطعة',
+    'probability and statistics': 'الاحتمالات والإحصاء',
+    'general physics i': 'الفيزياء العامة (١)',
+    'general physics ii': 'الفيزياء العامة (٢)',
+    'general chemistry i': 'الكيمياء العامة (١)',
+    'general biology i': 'الأحياء العامة (١)',
+    'science elective i (physics/chemistry/biology)': 'متطلب علوم اختياري (١) (فيزياء/كيمياء/أحياء)',
+    'science elective ii (physics/chemistry/biology)': 'متطلب علوم اختياري (٢) (فيزياء/كيمياء/أحياء)',
+    'introduction to technical computing for the sciences': 'مقدمة في الحوسبة التقنية للعلوم',
+    'introduction to programming': 'مقدمة في البرمجة',
+    'computer programming': 'برمجة الحاسوب',
+    'digital system design': 'تصميم الأنظمة الرقمية',
+    'computer organization with assembly language': 'تنظيم الحاسوب ولغة التجميع',
+    'data structures': 'هياكل البيانات',
+    'analysis of algorithms': 'تحليل الخوارزميات',
+    'computer networks': 'شبكات الحاسوب',
+    'graphical user interface': 'واجهات المستخدم الرسومية',
+    'operating systems': 'نظم التشغيل',
+    'database systems': 'نظم قواعد البيانات',
+    'web development': 'تطوير تطبيقات الويب',
+    'internet software development': 'تطوير برمجيات الإنترنت',
+    'mobile application development': 'تطوير تطبيقات الهواتف الذكية',
+    'system analysis and design': 'تحليل وتصميم النظم',
+    'human computer interaction': 'التفاعل بين الإنسان والحاسوب',
+    'programming languages': 'لغات البرمجة',
+    'advanced programming in java': 'البرمجة المتقدمة بلغة جافا',
+    'artificial intelligence': 'الذكاء الاصطناعي',
+    'software engineering': 'هندسة البرمجيات',
+    'compiler design': 'تصميم المترجمات',
+    'computer graphics': 'رسوميات الحاسوب',
+    'parallel and distributed computing': 'الحوسبة المتوازية والموزعة',
+    'computer and network security': 'أمن الحاسوب والشبكات',
+    'computer security and privacy': 'أمن الحاسوب والخصوصية',
+    'ethics and professional practice in computing': 'أخلاقيات المهنة والممارسة الاحترافية في الحوسبة',
+    'diploma project': 'مشروع التخرج للدبلوم',
+    'senior project / capstone': 'مشروع التخرج',
+    'final year project i': 'مشروع التخرج (١)',
+    'final year project ii': 'مشروع التخرج (٢)',
+    'internship': 'التدريب الميداني',
+    'practical training / internship': 'التدريب العملي / الميداني',
+    'major elective i': 'مقرر تخصص اختياري (١)',
+    'major elective ii': 'مقرر تخصص اختياري (٢)',
+    'major elective iii': 'مقرر تخصص اختياري (٣)',
+    'university elective': 'متطلب جامعة اختياري',
+    'social science elective': 'متطلب علوم اجتماعية اختياري',
+    'humanities elective': 'متطلب علوم إنسانية اختياري',
+    'principles of cybersecurity': 'مبادئ الأمن السيبراني',
+    'cryptography and network security': 'التشفير وأمن الشبكات',
+    'ethical hacking and penetration testing': 'الاختراق الأخلاقي واختبار الاختراق',
+    'digital forensics and incident response': 'التحقيق الجنائي الرقمي والاستجابة للحوادث',
+    'secure software development': 'تطوير البرمجيات الآمنة',
+    'cloud computing and security': 'الحوسبة السحابية وأمنها',
+    'cybersecurity governance, risk and compliance': 'حوكمة الأمن السيبراني والمخاطر والامتثال',
+    'cybersecurity capstone project i': 'مشروع تخرج الأمن السيبراني (١)',
+    'cybersecurity capstone project ii': 'مشروع تخرج الأمن السيبراني (٢)',
+    'cybersecurity elective i': 'مقرر أمن سيبراني اختياري (١)',
+    'cybersecurity elective ii': 'مقرر أمن سيبراني اختياري (٢)',
+    'introduction to data science': 'مقدمة في علم البيانات',
+    'statistical methods for data science': 'الأساليب الإحصائية لعلم البيانات',
+    'machine learning': 'تعلم الآلة',
+    'data mining and warehousing': 'التنقيب في البيانات ومستودعاتها',
+    'big data analytics': 'تحليلات البيانات الضخمة',
+    'data visualization and storytelling': 'تصور البيانات وعرضها التفاعلي',
+    'deep learning and neural networks': 'التعلم العميق والشبكات العصبية',
+    'natural language processing': 'معالجة اللغات الطبيعية',
+    'data science capstone project i': 'مشروع تخرج علم البيانات (١)',
+    'data science capstone project ii': 'مشروع تخرج علم البيانات (٢)',
+    'data science elective i': 'مقرر علم بيانات اختياري (١)',
+    'data science elective ii': 'مقرر علم بيانات اختياري (٢)',
+    'foundation english level 1': 'اللغة الإنجليزية التأسيسية - المستوى الأول',
+    'foundation english level 2': 'اللغة الإنجليزية التأسيسية - المستوى الثاني',
+    'foundation english level 3': 'اللغة الإنجليزية التأسيسية - المستوى الثالث',
+    'foundation math': 'الرياضيات التأسيسية',
+    'foundation it': 'تقنية المعلومات التأسيسية'
+}
+
+def localize_course_name(name_str, lang=None):
+    """Localize course title to Arabic when lang == 'ar'."""
+    if not name_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return name_str
+    clean = ' '.join(str(name_str).strip().split())
+    lower = clean.lower()
+    if lower in COURSE_NAMES_AR:
+        return COURSE_NAMES_AR[lower]
+    for en_k, ar_v in COURSE_NAMES_AR.items():
+        if en_k == lower or (len(en_k) > 10 and en_k in lower):
+            return ar_v
+    # Word-level fallback for dynamic transcript course names
+    fallback_terms = [
+        (r'\bIntroduction to Technical Computing for the Sciences\b', 'مقدمة في الحوسبة التقنية للعلوم'),
+        (r'\bIntroduction to\b', 'مقدمة في'),
+        (r'\bBasic Academic English\b', 'اللغة الإنجليزية الأكاديمية الأساسية'),
+        (r'\bAcademic Writing in Arabic\b', 'الكتابة الأكاديمية باللغة العربية'),
+        (r'\bEnglish for Academic Purposes\b', 'اللغة الإنجليزية للأغراض الأكاديمية'),
+        (r'\bComputer Organization with Assembly Language\b', 'تنظيم الحاسوب ولغة التجميع'),
+        (r'\bComputer Programming\b', 'برمجة الحاسوب'),
+        (r'\bProgramming Languages\b', 'لغات البرمجة'),
+        (r'\bAdvanced Programming in Java\b', 'البرمجة المتقدمة بلغة جافا'),
+        (r'\bProgramming\b', 'البرمجة'),
+        (r'\bDigital System Design\b', 'تصميم الأنظمة الرقمية'),
+        (r'\bData Structures\b', 'هياكل البيانات'),
+        (r'\bAnalysis of Algorithms\b', 'تحليل الخوارزميات'),
+        (r'\bComputer Networks\b', 'شبكات الحاسوب'),
+        (r'\bGraphical User Interface\b', 'واجهات المستخدم الرسومية'),
+        (r'\bOperating Systems\b', 'نظم التشغيل'),
+        (r'\bDatabase Systems\b', 'نظم قواعد البيانات'),
+        (r'\bSoftware Engineering\b', 'هندسة البرمجيات'),
+        (r'\bArtificial Intelligence\b', 'الذكاء الاصطناعي'),
+        (r'\bHuman Computer Interaction\b', 'التفاعل بين الإنسان والحاسوب'),
+        (r'\bOmani Society\b', 'المجتمع العماني'),
+        (r'\bIslamic Culture\b', 'الثقافة الإسلامية'),
+        (r'\bEntrepreneurship\b', 'ريادة الأعمال'),
+        (r'\bInnovation and Creativity\b', 'الابتكار والإبداع'),
+        (r'\bCalculus\b', 'التفاضل والتكامل'),
+        (r'\bLinear Algebra\b', 'الجبر الخطي'),
+        (r'\bDiscrete Mathematics\b', 'الرياضيات المتقطعة'),
+        (r'\bProbability and Statistics\b', 'الاحتمالات والإحصاء'),
+        (r'\bGeneral Physics\b', 'الفيزياء العامة'),
+        (r'\bGeneral Chemistry\b', 'الكيمياء العامة'),
+        (r'\bGeneral Biology\b', 'الأحياء العامة'),
+        (r'\bInternet Software Development\b', 'تطوير برمجيات الإنترنت'),
+        (r'\bWeb Development\b', 'تطوير الويب'),
+        (r'\bSystem Analysis and Design\b', 'تحليل وتصميم النظم'),
+        (r'\bFinal Year Project\b', 'مشروع التخرج'),
+        (r'\bDiploma Project\b', 'مشروع الدبلوم'),
+        (r'\bInternship\b', 'التدريب الميداني'),
+        (r'\bFoundation\b', 'تأسيسي'),
+        (r'\bElective\b', 'مقرر اختياري')
+    ]
+    res = clean
+    for pat, rep in fallback_terms:
+        res = re.sub(pat, rep, res, flags=re.IGNORECASE)
+    return res
+
+def localize_category(cat_str, lang=None):
+    """Localize curriculum requirement category."""
+    if not cat_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return cat_str
+    mapping = {
+        'University Requirement': 'متطلب جامعة إجباري',
+        'University Elective': 'متطلب جامعة اختياري',
+        'College Requirement': 'متطلب كلية إجباري',
+        'College Elective': 'متطلب كلية اختياري',
+        'Major Core': 'متطلب تخصص إجباري',
+        'Major Requirement': 'متطلب تخصص إجباري',
+        'Major Elective': 'متطلب تخصص اختياري',
+        'Cybersecurity Core': 'متطلب تخصص أمن سيبراني',
+        'Data Science Core': 'متطلب تخصص علم البيانات',
+        'Department Requirement': 'متطلب قسم أكاديمي',
+        'Foundation': 'البرنامج التأسيسي',
+        'Elective / General': 'مقرر اختياري / عام',
+        'General Guidance': 'إرشادات أكاديمية عامة',
+        'Academic Regulations': 'اللوائح والأنظمة الأكاديمية',
+        'Academic Probation & Standing': 'لوائح الملاحظة والوضع الأكاديمي',
+        'Degree Requirements': 'متطلبات الدرجة العلمية',
+        'Plan of Study': 'الخطة الدراسية المعتمدة',
+        'Study Guides & Guidelines': 'أدلة الدراسة والإرشاد',
+        'Registration & Add/Drop Bylaws': 'لوائح التسجيل والحذف والإضافة',
+        'Grading & Examination Policy': 'سياسة التقييم والامتحانات'
+    }
+    return mapping.get(str(cat_str).strip(), cat_str)
+
+def localize_days(days_str, lang=None):
+    """Localize schedule days (SunTueThu, MonWed, etc.)."""
+    if not days_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return days_str
+    mapping = {
+        'SunTueThu': 'أحد - ثلاثاء - خميس',
+        'MonWed': 'إثنين - أربعاء',
+        'Sun': 'الأحد',
+        'Mon': 'الإثنين',
+        'Tue': 'الثلاثاء',
+        'Wed': 'الأربعاء',
+        'Thu': 'الخميس',
+        'Daily (Field)': 'يومياً (تدريب ميداني)'
+    }
+    return mapping.get(str(days_str).strip(), days_str)
+
+def localize_session_type(session_str, lang=None):
+    """Localize Morning / Evening session."""
+    if not session_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return session_str
+    mapping = {
+        'Morning': 'صباحي',
+        'Evening': 'مسائي'
+    }
+    return mapping.get(str(session_str).strip(), session_str)
+
+def localize_language(lang_str, lang=None):
+    """Localize language of instruction (English / Arabic)."""
+    if not lang_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return lang_str
+    mapping = {
+        'English': 'الإنجليزية',
+        'Arabic': 'العربية'
+    }
+    return mapping.get(str(lang_str).strip(), lang_str)
+
+def localize_instructor(inst_str, lang=None):
+    """Localize instructor or faculty label."""
+    if not inst_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return inst_str
+    mapping = {
+        'Dr. Nasser Tabook': 'د. ناصر تبوك',
+        'Nasser Tabook': 'د. ناصر تبوك',
+        'CS Faculty': 'هيئة تدريس علوم الحاسوب',
+        'Math Faculty': 'هيئة تدريس الرياضيات',
+        'Physics Faculty': 'هيئة تدريس الفيزياء',
+        'FP English Dept': 'قسم اللغة الإنجليزية',
+        'General Studies Dept': 'قسم الدراسات العامة',
+        'Management Dept': 'قسم الإدارة والأعمال'
+    }
+    return mapping.get(str(inst_str).strip(), inst_str)
+
+def localize_remark(rem_str, lang=None):
+    """Localize schedule remark or prerequisite string."""
+    if not rem_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return rem_str
+    r = str(rem_str).strip()
+    r = re.sub(r'\bLecture \+ Lab\b', 'محاضرة + مختبر عملي', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bUniversity Requirement\b', 'متطلب جامعة', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bDepartment Requirement\b', 'متطلب قسم', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bSenior Standing / Internship\b', 'مستوى التخرج / تدريب ميداني', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bPrereq:\s*', 'المتطلب السابق: ', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bCoreq:\s*', 'المتطلب المتزامن: ', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bDiploma Final Year\b', 'السنة النهائية للدبلوم', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bB\.Sc\. Final Year\b', 'السنة النهائية للبكالوريوس', r, flags=re.IGNORECASE)
+    r = re.sub(r'\bCompleted (\d+) CH\b', r'إنجاز \1 ساعة معتمدة', r, flags=re.IGNORECASE)
+    r = re.sub(r'\band\b', 'و', r, flags=re.IGNORECASE)
+    return r
+
+def localize_seat_status(status_str, lang=None):
+    """Localize section seat status."""
+    if not status_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return status_str
+    mapping = {
+        'Open': 'متاح',
+        'Full': 'مكتمل',
+        'Closed': 'مغلق',
+        'Not Offered': 'غير مطروح',
+        'Not Offered in Current Term': 'غير مطروح في الفصل الحالي'
+    }
+    return mapping.get(str(status_str).strip(), status_str)
+
+def localize_notice_category(cat_str, lang=None):
+    """Localize sticky notice category."""
+    if not cat_str:
+        return ''
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return cat_str
+    mapping = {
+        'Urgent Risk': 'خطر أكاديمي عاجل',
+        'Follow-Up': 'متابعة إرشادية',
+        'Registration': 'تسجيل المقررات',
+        'Meeting': 'اجتماع إرشادي',
+        'General': 'عام'
+    }
+    return mapping.get(str(cat_str).strip(), cat_str)
+
+def localize_notice(note: dict, lang=None) -> dict:
+    """Return a localized copy of a notice board note dictionary."""
+    if not note:
+        return note
+    lang = lang or get_current_language()
+    out = dict(note)
+    prog_raw = out.get('program') or out.get('student_program') or ''
+    if lang != 'ar':
+        out['category_display'] = out.get('category', 'general')
+        out['student_program_display'] = prog_raw
+        return out
+
+    cat_map = {
+        'at_risk': 'حالات الملاحظة الحرجة',
+        'meeting': 'اجتماع إرشادي',
+        'registration': 'تسجيل المقررات',
+        'follow_up': 'متابعة إرشادية',
+        'general': 'عام',
+        'Urgent Risk': 'خطر أكاديمي عاجل',
+        'Follow-Up': 'متابعة إرشادية',
+        'Registration': 'تسجيل المقررات',
+        'Meeting': 'اجتماع إرشادي',
+        'General': 'عام'
+    }
+    out['category_display'] = cat_map.get(str(out.get('category', 'general')).strip(), out.get('category', 'عام'))
+    if prog_raw == 'All Programs':
+        out['program'] = 'جميع التخصصات'
+        out['student_program_display'] = 'جميع التخصصات'
+    elif prog_raw == 'BSc Computer Science':
+        out['program'] = 'بكالوريوس علوم الحاسوب'
+        out['student_program_display'] = 'بكالوريوس علوم الحاسوب'
+    else:
+        loc_p = localize_program(prog_raw, lang='ar')
+        out['program'] = loc_p
+        out['student_program_display'] = loc_p
+
+    title = str(out.get('title', ''))
+    content = str(out.get('content', ''))
+
+    seed_titles = {
+        'Strict Probation Urgent Check-in': 'متابعة عاجلة لطلبة الملاحظة الأكاديمية الصارمة',
+        'Spring 2026/2027 Advising Memo Prep': 'إعداد مذكرات الإرشاد الأكاديمي لفصل ربيع ٢٠٢٦/٢٠٢٧',
+        'Book Office Hours Hub Sessions': 'حجز جلسات الساعات المكتبية والمقابلات الإرشادية',
+        'Untitled Notice': 'ملاحظة بدون عنوان'
+    }
+    seed_contents = {
+        'Follow up with advisees on Strict & 2nd Probation before Drop/Add deadline. Ensure Article 14 credit limits (max 12 credits) are enforced.':
+            'متابعة الطلبة المدرجين تحت الملاحظة الأكاديمية الصارمة والثانية قبل انتهاء فترة الحذف والإضافة، والتأكد من تطبيق سقف الـ ١٢ ساعة معتمدة (المادة ١٤).',
+        'Review students completing 60+ credit hours for major milestone requirements and elective prerequisites.':
+            'مراجعة سجلات الطلبة الذين أتموا ٦٠ ساعة معتمدة فأكثر للتحقق من متطلبات التخصص المرحلية والمقررات الاختيارية.',
+        'Schedule 15-minute 1-on-1 virtual check-ins with at-risk cohort in the Virtual Office Hours Hub.':
+            'جدولة جلسات إرشادية افتراضية فردية (١٥ دقيقة) مع الطلبة تحت الملاحظة عبر مركز الساعات المكتبية الافتراضي.',
+        'Review 12-credit hour cap and mandatory course repeats (Article 18) before add/drop closes.':
+            'مراجعة الحد الأقصى الإلزامي للساعات (١٢ ساعة معتمدة) وإعادة المقررات المتعثرة (المادة ١٨) قبل إغلاق فترة الحذف والإضافة.',
+        'Verify study plan progression and prerequisite chains for all CS & IT Diploma students.':
+            'التحقق من تقدم الخطة الدراسية وسلاسل المتطلبات السابقة لكافة طلبة علوم الحاسوب ودبلوم تقنية المعلومات.',
+        'Schedule 1-on-1 virtual or in-person consultations with First & Second Probation students.':
+            'جدولة جلسات استشارية فردية (افتراضية أو حضورية) مع طلبة الملاحظة الأكاديمية الأولى والثانية.'
+    }
+    if title in seed_titles:
+        title = seed_titles[title]
+    elif title.startswith('Strict Probation Alert:'):
+        student_part = title.replace('Strict Probation Alert:', '').strip()
+        title = f'تنبيه ملاحظة أكاديمية صارمة: {student_part}'
+    elif title.startswith('Academic Probation Alert:'):
+        student_part = title.replace('Academic Probation Alert:', '').strip()
+        title = f'تنبيه ملاحظة أكاديمية: {student_part}'
+    elif title.startswith('Probation Follow-Up:'):
+        student_part = title.replace('Probation Follow-Up:', '').strip()
+        title = f'متابعة ملاحظة أكاديمية: {student_part}'
+
+    if content in seed_contents:
+        content = seed_contents[content]
+    elif 'Standing:' in content:
+        content = localize_standing_in_text(content)
+        content = content.replace('Standing:', 'الوضع الأكاديمي:')
+        content = content.replace('CGPA:', 'المعدل التراكمي:')
+        content = content.replace('SGPA:', 'المعدل الفصلي:')
+        content = content.replace(
+            'Call for advising meeting. Max credit load: 12 cr. Review transcript for retakes.',
+            'استدعاء لجلسة إرشادية عاجلة. الحد الأقصى للعبء الدراسي: ١٢ ساعة معتمدة. مراجعة السجل الأكاديمي لإعادة المقررات المتعثرة.'
+        )
+        content = content.replace(
+            'Mandatory 12-credit cap & repeat failed/D courses (DU Art. 14 & 18). Schedule immediate advising session.',
+            'الحد الأقصى الإلزامي ١٢ ساعة معتمدة مع إعادة المقررات الراسبة أو ذات التقدير المنخفض (المادتان ١٤ و١٨). يرجى جدولة جلسة إرشادية فورية.'
+        )
+
+    out['title'] = title
+    out['content'] = content
+    return out
+
+def localize_standing_in_text(text: str) -> str:
+    """Helper to replace English standing phrases inside composite text."""
+    replacements = [
+        ('Third/Strict Probation', 'الملاحظة الأكاديمية الصارمة / الثالثة'),
+        ('Second Strict Probation', 'الملاحظة الأكاديمية الصارمة الثانية'),
+        ('Strict Probation', 'الملاحظة الأكاديمية الصارمة'),
+        ('Second Probation', 'الملاحظة الأكاديمية الثانية'),
+        ('First Probation', 'الملاحظة الأكاديمية الأولى'),
+        ('Academic Probation Removal', 'رفع الملاحظة الأكاديمية'),
+        ('Normal / Good Standing', 'الوضع الأكاديمي السليم')
+    ]
+    res = text
+    for en_s, ar_s in replacements:
+        res = res.replace(en_s, ar_s)
+    return res
+
+def localize_policy_doc(policy_obj, lang=None):
+    """Localize a PolicyReference object or dict for display in templates."""
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return policy_obj
+    import copy
+    p = copy.copy(policy_obj)
+    title_map = {
+        'DU Undergraduate Academic Regulations': 'لوائح الدراسات الجامعية الأولى بجامعة ظفار',
+        'DU Academic Advising Handbook': 'دليل الإرشاد الأكاديمي بجامعة ظفار',
+        'Cybersecurity Plan Of Study': 'الخطة الدراسية لبكالوريوس الأمن السيبراني',
+        'Cybersecurity Plan of Study': 'الخطة الدراسية لبكالوريوس الأمن السيبراني',
+        'Data Science Plan Of Study': 'الخطة الدراسية لبكالوريوس علم البيانات',
+        'Data Science Plan of Study': 'الخطة الدراسية لبكالوريوس علم البيانات',
+        'Computer Science Plan Of Study': 'الخطة الدراسية لبكالوريوس علوم الحاسوب',
+        'Computer Science Plan of Study': 'الخطة الدراسية لبكالوريوس علوم الحاسوب',
+        'Requirements For Studying Computer Science Diploma': 'متطلبات دراسة دبلوم علوم الحاسوب والانتقال للبكالوريوس',
+        'Requirements for Studying Computer Science Diploma': 'متطلبات دراسة دبلوم علوم الحاسوب والانتقال للبكالوريوس'
+    }
+    desc_map = {
+        'Official Academic Regulations reference guide': 'الدليل المرجعي الرسمي للوائح والأنظمة الأكاديمية بجامعة ظفار',
+        'Official Study Guides & Guidelines reference guide': 'الدليل الإرشادي المرجعي الرسمي للدراسة والتوجيه الأكاديمي',
+        'Official Plan of Study reference guide': 'الدليل المرجعي الرسمي للخطة الدراسية المعتمدة وتوزيع المقررات',
+        'Official Degree Requirements reference guide': 'الدليل المرجعي الرسمي لمتطلبات الدرجة العلمية وشروط التجسير'
+    }
+    t_val = getattr(p, 'title', '') if not isinstance(p, dict) else p.get('title', '')
+    c_val = getattr(p, 'category', '') if not isinstance(p, dict) else p.get('category', '')
+    d_val = getattr(p, 'description', '') if not isinstance(p, dict) else p.get('description', '')
+
+    ar_t = title_map.get(t_val, t_val)
+    ar_c = localize_category(c_val, lang='ar')
+    ar_d = desc_map.get(d_val, d_val)
+    if ar_d == d_val and d_val.startswith('Official ') and d_val.endswith(' reference guide'):
+        ar_d = f'الدليل المرجعي الرسمي — {ar_c}'
+
+    if isinstance(p, dict):
+        p['title'] = ar_t
+        p['category'] = ar_c
+        p['description'] = ar_d
+    else:
+        p.title = ar_t
+        p.category = ar_c
+        p.description = ar_d
+    return p
+
+def localize_settings(settings: dict, lang=None) -> dict:
+    """Return localized application settings dictionary when Arabic is active."""
+    if not settings:
+        return settings
+    lang = lang or get_current_language()
+    if lang != 'ar':
+        return settings
+    import copy
+    s = copy.deepcopy(settings)
+    b = s.get('branding', {})
+    if b.get('app_title') == 'Dhofar University':
+        b['app_title'] = 'جامعة ظفار'
+    if b.get('app_badge') == 'ADVISING':
+        b['app_badge'] = 'الإرشاد الأكاديمي'
+    if 'Dhofar University' in b.get('browser_tab_title', ''):
+        b['browser_tab_title'] = 'منصة الإرشاد الأكاديمي — جامعة ظفار'
+
+    f = s.get('footer', {})
+    if 'Dhofar University' in f.get('organization_line', ''):
+        f['organization_line'] = 'جامعة ظفار — قسم علوم الحاسوب (وحدة الإرشاد الأكاديمي)'
+    if 'Academic Advising' in f.get('tagline', ''):
+        f['tagline'] = 'منصة الإرشاد الأكاديمي الذكي، تدقيق الخطط الدراسية، ومتابعة الطلبة'
+    if 'educational and academic advising purposes' in f.get('disclaimer', ''):
+        f['disclaimer'] = (
+            'إخلاء مسؤولية مؤسسي وتعليمي: تم تطوير هذا النظام لأغراض الإرشاد الأكاديمي والمتابعة التعليمية في جامعة ظفار. '
+            'ورغم مواءمة عمليات التدقيق الأكاديمي مع لوائح الجامعة، يظل نظام معلومات الطلبة الرسمي (SIS) ومكتب المسجل العام هما المرجع القانوني النهائي للسجلات الأكاديمية.'
+        )
+    if 'Dhofar University' in f.get('copyright', ''):
+        f['copyright'] = '© ٢٠٢٦ جامعة ظفار — قسم علوم الحاسوب. جميع الحقوق محفوظة.'
+
+    a = s.get('about', {})
+    if 'Dhofar University' in a.get('app_name', ''):
+        a['app_name'] = 'منصة الإرشاد الأكاديمي وإدارة الطلبة بجامعة ظفار'
+    if 'Enterprise Academic' in a.get('release_name', ''):
+        a['release_name'] = 'إصدار الذكاء الإرشادي الأكاديمي المتكامل'
+    if 'March 2026' in a.get('release_date', ''):
+        a['release_date'] = 'مارس ٢٠٢٦'
+    if 'comprehensive academic advising' in a.get('purpose_statement', ''):
+        a['purpose_statement'] = (
+            'منصة إرشاد أكاديمي شاملة ومنظومة متكاملة لمتابعة الطلبة، مصممة خصيصاً لأعضاء الهيئة التدريسية والمرشدين الأكاديميين '
+            'في قسم علوم الحاسوب بكلية الآداب والعلوم التطبيقية في جامعة ظفار. توحد المنصة تحليل السجلات الأكاديمية، وتدقيق الخطط الدراسية '
+            'لبرامج الدبلوم والبكالوريوس، والتدخل المبكر لطلبة الملاحظة الأكاديمية، وغرف الاجتماعات المرئية التفاعلية.'
+        )
+    if 'support faculty advisors' in a.get('institutional_disclaimer', ''):
+        a['institutional_disclaimer'] = (
+            'تم تصميم هذه المنصة لدعم المرشدين الأكاديميين والطلبة خلال جلسات الإرشاد والتخطيط الفصلي. '
+            'جميع التوصيات والمحاكاة استرشادية وتخضع للتحقق النهائي عبر بوابة التسجيل الرسمية بجامعة ظفار (web.du.edu.om) ولوائح الدراسات الجامعية الأولى.'
+        )
+    if a.get('advisor_name') in ('Dr. Nasser Tabook', 'Nasser Tabook'):
+        a['advisor_name'] = 'د. ناصر تبوك'
+    if 'Academic Advisor' in a.get('advisor_role', ''):
+        a['advisor_role'] = 'المرشد الأكاديمي وأستاذ علوم الحاسوب المساعد'
+    if 'College of Arts' in a.get('college', ''):
+        a['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
+    if 'Computer Science' in a.get('department', ''):
+        a['department'] = 'قسم علوم الحاسوب'
+
+    p = s.get('profile', {})
+    if 'Nasser' in p.get('full_name', ''):
+        p['full_name'] = 'د. ناصر طمطيم تبوك'
+    if 'Assistant Professor' in p.get('title', ''):
+        p['title'] = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
+    if 'College of Arts' in p.get('college', ''):
+        p['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
+    if 'Computer Science' in p.get('department', ''):
+        p['department'] = 'قسم علوم الحاسوب والرياضيات'
+    if 'CAAS Building' in p.get('office_location', ''):
+        p['office_location'] = 'مبنى كلية الآداب والعلوم التطبيقية — قسم علوم الحاسوب، جامعة ظفار، صلالة، سلطنة عُمان'
+    if 'Sunday' in p.get('office_hours', ''):
+        p['office_hours'] = 'الأحد، الثلاثاء، الخميس: ١٠:٠٠ صباحاً – ١:٠٠ ظهراً | الإثنين، الأربعاء: ١١:٠٠ صباحاً – ١٢:٣٠ ظهراً (أو عبر المكتب الافتراضي)'
+    if 'faculty member and Academic Advisor' in p.get('bio', ''):
+        p['bio'] = (
+            'د. ناصر طمطيم تبوك عضو هيئة تدريس ومرشد أكاديمي في قسم علوم الحاسوب بكلية الآداب والعلوم التطبيقية في جامعة ظفار. '
+            'يركز عمله الأكاديمي والإرشادي على تمكين طلبة البكالوريوس والدبلوم في تخصصات علوم الحاسوب، والأمن السيبراني، وعلم البيانات، '
+            'ودعمهم لتحقيق التميز الأكاديمي، والتعافي المنظم من الملاحظة الأكاديمية، والجاهزية المهنية لسوق العمل.'
+        )
+    if 'Every student has the potential' in p.get('advising_mission', ''):
+        p['advising_mission'] = (
+            'كل طالب يمتلك القدرة على التفوق عندما يُسلَّح بخارطة طريق أكاديمية واضحة، وتدخل إرشادي مبكر، وتوجيه شخصي مستمر '
+            'يربط بين متطلبات الخطة الدراسية وطموحاته المهنية المستقبلية.'
+        )
+    if 'Computer Science' in p.get('research_interests', ''):
+        p['research_interests'] = 'علوم الحاسوب، الذكاء الاصطناعي، الأمن السيبراني، علم البيانات، التكنولوجيا التعليمية، ونظم الإرشاد الأكاديمي الذكية'
+
+    adm = s.get('admin', {})
+    if adm.get('display_name') in ('Dr. Nasser Tabook', 'Nasser Tabook'):
+        adm['display_name'] = 'د. ناصر تبوك'
+    if 'Academic Advisor' in adm.get('role_title', ''):
+        adm['role_title'] = 'المرشد الأكاديمي ومشرف النظام'
+
+    return s
+

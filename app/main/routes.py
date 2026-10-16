@@ -81,11 +81,17 @@ def student_detail(student_id):
     from app.advising_engine import audit_student_degree, generate_student_advising_dossier
     from app.persona_engine import generate_student_persona
     from app.outreach_tracker import get_student_outreach_status
+    from app.i18n import get_current_language, localize_course_name
+    lang = get_current_language()
     semesters = get_student_semesters(student.id)
+    if lang == 'ar':
+        for sem in semesters:
+            for c in sem.get('courses', []):
+                c['name'] = localize_course_name(c.get('name', ''), lang='ar')
     study_plan = get_student_study_plan(student)
-    audit = audit_student_degree(student.id)
-    dossier = generate_student_advising_dossier(student.id)
-    persona = generate_student_persona(student.id)
+    audit = audit_student_degree(student.id, lang=lang)
+    dossier = generate_student_advising_dossier(student.id, lang=lang)
+    persona = generate_student_persona(student.id, lang=lang)
     outreach = get_student_outreach_status(student.id)
     
     return render_template(
@@ -2042,7 +2048,8 @@ def admin_save_permissions():
 def advisor_profile_view():
     """Display dedicated faculty advisor public profile, biography, and contact channels"""
     from app.settings_manager import get_settings
-    settings = get_settings()
+    from app.i18n import localize_settings, get_current_language
+    settings = localize_settings(get_settings(), lang=get_current_language())
     profile = settings.get('profile', {})
     return render_template('advisor_profile.html', profile=profile)
 
@@ -2209,12 +2216,14 @@ def api_auto_generate_risk():
     return jsonify({'success': True, 'created_count': count, 'notices': notices})
 
 
+@bp.app_errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
 
 
-
-
-
-
+@bp.app_errorhandler(500)
+def internal_error(error):
+    return render_template('errors/500.html'), 500
 
 
 
