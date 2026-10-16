@@ -226,7 +226,16 @@ def test_arabic_views_integration(client):
     assert 'الصفحة غير موجودة'.encode('utf-8') in resp_404.data
     assert 'dir="rtl"'.encode('utf-8') in resp_404.data
 
-    # 18. Switch back to English and verify clean English restoration across views
+    # 18. About page in Arabic
+    resp_about_ar = client.get('/about')
+    assert resp_about_ar.status_code == 200
+    assert 'منظومة إرشاد طلبة جامعة ظفار'.encode('utf-8') in resp_about_ar.data
+    assert 'إصدار الملتقى الأكاديمي'.encode('utf-8') in resp_about_ar.data
+    assert 'أكتوبر'.encode('utf-8') in resp_about_ar.data
+    assert 'dir="rtl"'.encode('utf-8') in resp_about_ar.data
+
+    # 19. Switch back to English and verify clean English restoration across views
+
     client.get('/set-language/en')
     resp_sched_en = client.get('/section-schedule')
     assert resp_sched_en.status_code == 200
@@ -284,4 +293,10 @@ def test_dynamic_localizers_bilingual():
     en_settings = localize_settings(raw, 'en')
     assert ar_settings['branding']['app_title'] == 'جامعة ظفار'
     assert en_settings['branding']['app_title'] == raw['branding']['app_title']
+    assert ar_settings['about']['app_name'] == 'منظومة إرشاد طلبة جامعة ظفار والاستشارات الأكاديمية'
+    assert ar_settings['about']['release_name'] == 'إصدار الملتقى الأكاديمي المتقدم'
+    assert 'أكتوبر' in ar_settings['about']['release_date']
+    assert 'إرشادية وتحليلية' in ar_settings['about']['purpose_statement']
+    assert en_settings['about']['app_name'] == raw['about']['app_name']
+
 

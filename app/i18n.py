@@ -1428,86 +1428,81 @@ def localize_settings(settings: dict, lang=None) -> dict:
         return settings
     import copy
     s = copy.deepcopy(settings)
+
+    # 1. Branding
     b = s.get('branding', {})
-    if b.get('app_title') == 'Dhofar University':
-        b['app_title'] = 'جامعة ظفار'
-    if b.get('app_badge') == 'ADVISING':
-        b['app_badge'] = 'الإرشاد الأكاديمي'
-    if 'Dhofar University' in b.get('browser_tab_title', ''):
-        b['browser_tab_title'] = 'منصة الإرشاد الأكاديمي — جامعة ظفار'
+    b['app_title'] = 'جامعة ظفار'
+    b['app_badge'] = 'الإرشاد الأكاديمي'
+    b['browser_tab_title'] = 'منصة الإرشاد الأكاديمي — جامعة ظفار'
 
+    # 2. Footer
     f = s.get('footer', {})
-    if 'Dhofar University' in f.get('organization_line', ''):
-        f['organization_line'] = 'جامعة ظفار — قسم علوم الحاسوب (وحدة الإرشاد الأكاديمي)'
-    if 'Academic Advising' in f.get('tagline', ''):
-        f['tagline'] = 'منصة الإرشاد الأكاديمي الذكي، تدقيق الخطط الدراسية، ومتابعة الطلبة'
-    if 'educational and academic advising purposes' in f.get('disclaimer', ''):
-        f['disclaimer'] = (
-            'إخلاء مسؤولية مؤسسي وتعليمي: تم تطوير هذا النظام لأغراض الإرشاد الأكاديمي والمتابعة التعليمية في جامعة ظفار. '
-            'ورغم مواءمة عمليات التدقيق الأكاديمي مع لوائح الجامعة، يظل نظام معلومات الطلبة الرسمي (SIS) ومكتب المسجل العام هما المرجع القانوني النهائي للسجلات الأكاديمية.'
-        )
-    if 'Dhofar University' in f.get('copyright', ''):
-        f['copyright'] = '© ٢٠٢٦ جامعة ظفار — قسم علوم الحاسوب. جميع الحقوق محفوظة.'
+    f['organization_line'] = 'جامعة ظفار • كلية الآداب والعلوم التطبيقية'
+    f['tagline'] = 'نظام إدارة شؤون الطلاب • تحليلات الإرشاد ومركز WebRTC'
+    f['disclaimer'] = (
+        'تم تطوير هذه المنصة المستقلة لإدارة الإرشاد الأكاديمي حصرياً للتوجيه والمتابعة التعليمية والتربوية للطلبة، '
+        'ولا تعتبر نظاماً رسمياً لأي مؤسسة تعليمية وتخضع للمراجعة المباشرة من المرشد الأكاديمي.'
+    )
+    f['copyright'] = '© ٢٠٢٦ مركز الإرشاد الأكاديمي. جميع الحقوق محفوظة.'
 
+    # 3. About & Versioning
     a = s.get('about', {})
-    if 'Dhofar University' in a.get('app_name', ''):
-        a['app_name'] = 'منصة الإرشاد الأكاديمي وإدارة الطلبة بجامعة ظفار'
-    if 'Enterprise Academic' in a.get('release_name', ''):
-        a['release_name'] = 'إصدار الذكاء الإرشادي الأكاديمي المتكامل'
-    if 'March 2026' in a.get('release_date', ''):
-        a['release_date'] = 'مارس ٢٠٢٦'
-    if 'comprehensive academic advising' in a.get('purpose_statement', ''):
-        a['purpose_statement'] = (
-            'منصة إرشاد أكاديمي شاملة ومنظومة متكاملة لمتابعة الطلبة، مصممة خصيصاً لأعضاء الهيئة التدريسية والمرشدين الأكاديميين '
-            'في قسم علوم الحاسوب بكلية الآداب والعلوم التطبيقية في جامعة ظفار. توحد المنصة تحليل السجلات الأكاديمية، وتدقيق الخطط الدراسية '
-            'لبرامج الدبلوم والبكالوريوس، والتدخل المبكر لطلبة الملاحظة الأكاديمية، وغرف الاجتماعات المرئية التفاعلية.'
-        )
-    if 'support faculty advisors' in a.get('institutional_disclaimer', ''):
-        a['institutional_disclaimer'] = (
-            'تم تصميم هذه المنصة لدعم المرشدين الأكاديميين والطلبة خلال جلسات الإرشاد والتخطيط الفصلي. '
-            'جميع التوصيات والمحاكاة استرشادية وتخضع للتحقق النهائي عبر بوابة التسجيل الرسمية بجامعة ظفار (web.du.edu.om) ولوائح الدراسات الجامعية الأولى.'
-        )
-    if a.get('advisor_name') in ('Dr. Nasser Tabook', 'Nasser Tabook'):
-        a['advisor_name'] = 'د. ناصر تبوك'
-    if 'Academic Advisor' in a.get('advisor_role', ''):
-        a['advisor_role'] = 'المرشد الأكاديمي وأستاذ علوم الحاسوب المساعد'
-    if 'College of Arts' in a.get('college', ''):
-        a['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
-    if 'Computer Science' in a.get('department', ''):
-        a['department'] = 'قسم علوم الحاسوب'
+    a['app_name'] = 'منظومة إرشاد طلبة جامعة ظفار والاستشارات الأكاديمية'
+    a['release_name'] = 'إصدار الملتقى الأكاديمي المتقدم'
 
+    # Translate release date (e.g. October 2026 -> أكتوبر ٢٠٢٦)
+    raw_date = str(a.get('release_date', 'October 2026'))
+    month_map = {
+        'january': 'يناير', 'february': 'فبراير', 'march': 'مارس',
+        'april': 'أبريل', 'may': 'مايو', 'june': 'يونيو',
+        'july': 'يوليو', 'august': 'أغسطس', 'september': 'سبتمبر',
+        'october': 'أكتوبر', 'november': 'نوفمبر', 'december': 'ديسمبر'
+    }
+    date_lower = raw_date.lower()
+    translated_date = raw_date
+    for en_m, ar_m in month_map.items():
+        if en_m in date_lower:
+            # Case-insensitive replace of English month name
+            import re
+            translated_date = re.sub(re.escape(en_m), ar_m, translated_date, flags=re.IGNORECASE)
+            break
+    a['release_date'] = translated_date.replace('2026', '٢٠٢٦').replace('2025', '٢٠٢٥')
+
+    a['purpose_statement'] = (
+        'منظومة إرشادية وتحليلية أكاديمية متكاملة مخصصة للمرشدين الأكاديميين لمتابعة تقدم خطط الطلبة الدراسية، '
+        'ورصد الوضع الأكاديمي، وأتمتة تدقيق السجلات، وتسهيل الاستشارات المرئية عبر المكتب الافتراضي الآمن.'
+    )
+    a['institutional_disclaimer'] = (
+        'إشعار: هذا التطبيق أداة تعليمية وإرشادية مستقلة صُممت خصيصاً لمساعدة المرشد الأكاديمي في متابعة أوضاع وحالات طلبته '
+        'في أي وقت، ولا يتبع رسمياً لأي مؤسسة تعليمية.'
+    )
+    a['advisor_name'] = 'د. ناصر تبوك'
+    a['advisor_role'] = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
+    a['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
+    a['department'] = 'قسم علوم الحاسوب'
+
+    # 4. Advisor Profile
     p = s.get('profile', {})
-    if 'Nasser' in p.get('full_name', ''):
-        p['full_name'] = 'د. ناصر طمطيم تبوك'
-    if 'Assistant Professor' in p.get('title', ''):
-        p['title'] = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
-    if 'College of Arts' in p.get('college', ''):
-        p['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
-    if 'Computer Science' in p.get('department', ''):
-        p['department'] = 'قسم علوم الحاسوب والرياضيات'
-    if 'CAAS Building' in p.get('office_location', ''):
-        p['office_location'] = 'مبنى كلية الآداب والعلوم التطبيقية — قسم علوم الحاسوب، جامعة ظفار، صلالة، سلطنة عُمان'
-    if 'Sunday' in p.get('office_hours', ''):
-        p['office_hours'] = 'الأحد، الثلاثاء، الخميس: ١٠:٠٠ صباحاً – ١:٠٠ ظهراً | الإثنين، الأربعاء: ١١:٠٠ صباحاً – ١٢:٣٠ ظهراً (أو عبر المكتب الافتراضي)'
-    if 'faculty member and Academic Advisor' in p.get('bio', ''):
-        p['bio'] = (
-            'د. ناصر طمطيم تبوك عضو هيئة تدريس ومرشد أكاديمي في قسم علوم الحاسوب بكلية الآداب والعلوم التطبيقية في جامعة ظفار. '
-            'يركز عمله الأكاديمي والإرشادي على تمكين طلبة البكالوريوس والدبلوم في تخصصات علوم الحاسوب، والأمن السيبراني، وعلم البيانات، '
-            'ودعمهم لتحقيق التميز الأكاديمي، والتعافي المنظم من الملاحظة الأكاديمية، والجاهزية المهنية لسوق العمل.'
-        )
-    if 'Every student has the potential' in p.get('advising_mission', ''):
-        p['advising_mission'] = (
-            'كل طالب يمتلك القدرة على التفوق عندما يُسلَّح بخارطة طريق أكاديمية واضحة، وتدخل إرشادي مبكر، وتوجيه شخصي مستمر '
-            'يربط بين متطلبات الخطة الدراسية وطموحاته المهنية المستقبلية.'
-        )
-    if 'Computer Science' in p.get('research_interests', ''):
-        p['research_interests'] = 'علوم الحاسوب، الذكاء الاصطناعي، الأمن السيبراني، علم البيانات، التكنولوجيا التعليمية، ونظم الإرشاد الأكاديمي الذكية'
+    p['full_name'] = 'د. ناصر طمطيم تبوك'
+    p['title'] = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
+    p['college'] = 'كلية الآداب والعلوم التطبيقية (CAAS)'
+    p['department'] = 'قسم علوم الحاسوب'
+    p['office_location'] = 'كلية الآداب والعلوم التطبيقية، قسم علوم الحاسوب، مكتب ٢١٤'
+    p['office_hours'] = 'الأحد / الثلاثاء / الخميس: ١٠:٠٠ ص – ١٢:٠٠ م ومواعيد مسبقة (أو عبر المكتب الافتراضي)'
+    p['bio'] = (
+        'د. ناصر طمطيم تبوك عضو هيئة تدريس ومرشد أكاديمي في قسم علوم الحاسوب بكلية الآداب والعلوم التطبيقية بجامعة ظفار. '
+        'مكرس لنجاح الطلبة وتحقيق التميز الأكاديمي وتجاوز الصعوبات الدراسية وتطوير مساراتهم المهنية.'
+    )
+    p['advising_mission'] = (
+        'تمكين الطلبة وإرشادهم بخارطة طريق واضحة لاستكمال متطلبات تخرجهم بنجاح ومعدلات تراكمية متميزة، وتوفير التوجيه الفردي المستمر.'
+    )
+    p['research_interests'] = 'الذكاء الاصطناعي، استخراج البيانات التعليمية، هندسة البرمجيات، ونظم الإرشاد الأكاديمي الذكية'
 
+    # 5. Admin Governance
     adm = s.get('admin', {})
-    if adm.get('display_name') in ('Dr. Nasser Tabook', 'Nasser Tabook'):
-        adm['display_name'] = 'د. ناصر تبوك'
-    if 'Academic Advisor' in adm.get('role_title', ''):
-        adm['role_title'] = 'المرشد الأكاديمي ومشرف النظام'
+    adm['display_name'] = 'د. ناصر تبوك'
+    adm['role_title'] = 'أستاذ مساعد في علوم الحاسوب ومرشد أكاديمي'
 
     return s
+
 
