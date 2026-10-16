@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_SETTINGS = {
     "admin": {
-        "username": "admin",
+        "username": "nasser",
         "staff_id": "DU-ADV-01",
-        "password_hash": generate_password_hash("admin123"),
+        "password_hash": generate_password_hash("Goo@allmona_22"),
         "display_name": "Dr. Nasser Tabook",
         "role_title": "Academic Advisor & Supervisor",
         "avatar_initials": "NT",

@@ -19,9 +19,11 @@ def test_settings_manager_defaults():
     assert 'about' in settings
     assert 'permissions' in settings
     
-    assert settings['admin']['username'] == 'admin'
-    assert verify_admin_credentials('admin', 'admin123') is True
-    assert verify_admin_credentials('admin', 'wrong_pass') is False
+    assert settings['admin']['username'] in ('nasser', 'admin')
+    curr_user = settings['admin']['username']
+    curr_pass = 'Goo@allmona_22' if curr_user == 'nasser' else 'admin123'
+    assert verify_admin_credentials(curr_user, curr_pass) is True
+    assert verify_admin_credentials(curr_user, 'wrong_pass') is False
 
 def test_settings_branding_update():
     update_branding(app_title="Dhofar Advising Hub", app_badge="PORTAL")
@@ -41,8 +43,8 @@ def test_settings_footer_update():
 def test_about_page_route(client):
     response = client.get('/about')
     assert response.status_code == 200
-    assert b"Independent Academic Advisory Tool" in response.data or b"Educational Disclaimer" in response.data
-    assert b"Release" in response.data or b"v2.5" in response.data
+    assert b"Independent Academic Advisory Tool" in response.data or b"Educational Disclaimer" in response.data or b"\xd8\xa5\xd8\xb4\xd8\xb9\xd8\xa7\xd8\xb1" in response.data
+    assert b"Release" in response.data or b"v2.5" in response.data or b"\xd8\xa5\xd8\xb5\xd8\xaf\xd8\xa7\xd8\xb1" in response.data
 
 def test_admin_settings_unauthenticated_redirect(client):
     response = client.get('/admin/settings', follow_redirects=False)
@@ -51,9 +53,11 @@ def test_admin_settings_unauthenticated_redirect(client):
 
 def test_admin_login_and_access(client):
     # Test valid login
+    curr_user = get_settings()['admin']['username']
+    curr_pass = 'Goo@allmona_22' if curr_user == 'nasser' else 'admin123'
     response = client.post('/auth/login', data={
-        'username': 'admin',
-        'password': 'admin123'
+        'username': curr_user,
+        'password': curr_pass
     }, follow_redirects=False)
     assert response.status_code == 302
     

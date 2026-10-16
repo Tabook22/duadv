@@ -1,8 +1,8 @@
 {
   "admin": {
-    "username": "admin",
+    "username": "nasser",
     "staff_id": "DU-FAC-2026",
-    "password_hash": "scrypt:32768:8:1$bGxK1vRs0OaSYuNv$5dfe8e5cbebc67b66cb2c66ce11925fe50a7ffb90c8a88a59088bfab2ddd0615627d5bf8fe2d16e558345372a70c31c1fa018d6e897b93ba81ddfc603c773a7a",
+    "password_hash": "scrypt:32768:8:1$q0HVGgdyS5qN5t5s$7fc23cacc831d666c49f1f51825dca8c6d3b6b51fa8bd729013955cf707ae4f47d8291e4619ac5e05d91dd6c31ab9cc4a7697d7107cc03432c3287ba00729014",
     "display_name": "Dr. Nasser Tabook",
     "role_title": "Assistant Professor of Computer Science",
     "avatar_initials": "NT",
