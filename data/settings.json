@@ -63,5 +63,15 @@
     "allow_guest_video": true,
     "allow_guest_audio": true,
     "meeting_passcode": "1234"
+  },
+  "sis": {
+    "portal_url": "https://web.du.edu.om/ords/f?p=2023",
+    "username": "001097",
+    "password": "TestPassword123!",
+    "semester": "Fall 2026-2027",
+    "auto_download_transcripts": true,
+    "auto_recompile_wiki": true,
+    "replace_roster": true,
+    "last_sync": ""
   }
 }

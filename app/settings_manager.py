@@ -81,6 +81,16 @@ DEFAULT_SETTINGS = {
         "allow_guest_video": True,
         "allow_guest_audio": True,
         "meeting_passcode": ""
+    },
+    "sis": {
+        "portal_url": "https://web.du.edu.om/ords/f?p=2023",
+        "username": "",
+        "password": "",
+        "semester": "Fall 2026-2027",
+        "auto_download_transcripts": True,
+        "auto_recompile_wiki": True,
+        "replace_roster": True,
+        "last_sync": ""
     }
 }
 
@@ -275,6 +285,32 @@ def update_permissions(require_advisor_admission=None, allow_guest_chat=None, al
         perms['allow_guest_audio'] = bool(allow_guest_audio)
     if meeting_passcode is not None:
         perms['meeting_passcode'] = meeting_passcode.strip()
+
+    return save_settings(settings)
+
+def update_sis_settings(portal_url=None, username=None, password=None, semester=None,
+                        auto_download_transcripts=None, auto_recompile_wiki=None,
+                        replace_roster=None, last_sync=None):
+    """Update Dhofar University SIS portal connection, credentials, and sync settings."""
+    settings = json.loads(json.dumps(get_settings()))
+    sis = settings.setdefault('sis', {})
+
+    if portal_url is not None:
+        sis['portal_url'] = portal_url.strip()
+    if username is not None:
+        sis['username'] = username.strip()
+    if password is not None and password != "":
+        sis['password'] = password.strip()
+    if semester is not None:
+        sis['semester'] = semester.strip()
+    if auto_download_transcripts is not None:
+        sis['auto_download_transcripts'] = bool(auto_download_transcripts)
+    if auto_recompile_wiki is not None:
+        sis['auto_recompile_wiki'] = bool(auto_recompile_wiki)
+    if replace_roster is not None:
+        sis['replace_roster'] = bool(replace_roster)
+    if last_sync is not None:
+        sis['last_sync'] = last_sync.strip()
 
     return save_settings(settings)
 

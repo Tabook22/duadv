@@ -54,6 +54,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 py-2 rounded-3" id="tab-sis-btn" data-bs-toggle="pill" data-bs-target="#tab-sis" type="button" role="tab">
+                <i class="fas fa-cloud-arrow-down me-2 text-primary"></i> {% if is_rtl %}بوابة المرشد وبيانات المزامنة (SIS){% else %}Advisor Access & SIS Sync{% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link px-3 py-2 rounded-3" id="tab-profile-btn" data-bs-toggle="pill" data-bs-target="#tab-profile" type="button" role="tab">
                 <i class="fas fa-user-tie me-2 text-info"></i> {% if is_rtl %}السيرة الذاتية وبيانات التواصل{% else %}Advisor Bio & Contacts{% endif %}
             </button>
@@ -486,6 +491,256 @@
             </div>
         </div>
 
+        <!-- 4.5 ADVISOR ACCESS PAGE & SIS INTERNET EXTRACTION HUB -->
+        <div class="tab-pane fade" id="tab-sis" role="tabpanel">
+            <!-- Hero Description Card -->
+            <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4" style="background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.15), transparent 70%);">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-box icon-box-md icon-box-primary shadow-sm" style="width: 52px; height: 52px; font-size: 1.5rem; border-radius: 14px; background: rgba(37, 99, 235, 0.2); display: flex; align-items: center; justify-content: center; color: #60a5fa;">
+                                <i class="fas fa-cloud-arrow-down"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-1">
+                                    {{ 'بوابة دخول المرشد ومركز الاستخراج والمزامنة الأكاديمية' if is_rtl else 'Advisor Portal Access & Internet Extraction Hub' }}
+                                </h5>
+                                <p class="text-white-50 small mb-0" style="max-width: 780px; line-height: 1.5;">
+                                    {{ 'إعدادات الاتصال ببوابة نظام معلومات الطلبة بجامعة ظفار (web.du.edu.om)، وإدارة بيانات الاعتماد، وتنفيذ المزامنة الشاملة لبيانات الطلبة، كشوف الدرجات، جداول الشعب، والخطط الأكاديمية.' if is_rtl else 'Configure Dhofar University Oracle APEX SIS (web.du.edu.om) connection, manage advisor credentials, and automate live synchronization for advisee rosters, transcripts, course schedules, and degree audit dossiers.' }}
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ app_settings.sis.portal_url or 'https://web.du.edu.om/ords/f?p=2023' }}" target="_blank" rel="noopener" class="btn btn-outline-primary px-3 py-2 rounded-3 shadow-sm">
+                            <i class="fas fa-arrow-up-right-from-square me-1"></i> {{ 'فتح بوابة الجامعة (web.du.edu.om)' if is_rtl else 'Launch Official DU SIS (web.du.edu.om)' }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Portal Credentials & Extraction Conditions -->
+                <div class="col-lg-6">
+                    <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 h-100">
+                        <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                            <h5 class="card-title mb-0 text-white fw-bold">
+                                <i class="fas fa-key text-primary me-2"></i> {{ 'بيانات الاعتماد وشروط الاستخراج' if is_rtl else 'Portal Credentials & Extraction Conditions' }}
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="POST" action="{{ url_for('main.admin_save_sis') }}" id="formSisCredentials">
+                                <!-- Base URL -->
+                                <div class="mb-3">
+                                    <label class="form-label text-light small fw-bold">
+                                        {{ 'رابط بوابة النظام الأكاديمي الرئيسي' if is_rtl else 'Main University SIS Portal URL' }}
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-primary">
+                                            <i class="fas fa-globe"></i>
+                                        </span>
+                                        <input type="url" class="form-control bg-dark text-white border-secondary" name="portal_url" value="{{ app_settings.sis.portal_url or 'https://web.du.edu.om/ords/f?p=2023' }}" required>
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        {{ 'رابط الدخول الرسمي المعتمد لجامعة ظفار (Oracle APEX).' if is_rtl else 'Official Dhofar University Oracle APEX entry point (f?p=2023).' }}
+                                    </div>
+                                </div>
+
+                                <!-- Username / Staff ID -->
+                                <div class="mb-3">
+                                    <label class="form-label text-light small fw-bold">
+                                        {{ 'الرقم الوظيفي / اسم مستخدم المرشد' if is_rtl else 'Advisor Staff ID / Portal Username' }}
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-info">
+                                            <i class="fas fa-id-badge"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="username" id="inputSisUsername" value="{{ app_settings.sis.username or '' }}" placeholder="{{ 'مثال: 001097' if is_rtl else 'e.g. 001097' }}">
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        {{ 'الرقم الوظيفي الخاص بالمرشد الأكاديمي للدخول إلى بوابة web.du.edu.om.' if is_rtl else 'Staff ID used for automated authentication against web.du.edu.om.' }}
+                                    </div>
+                                </div>
+
+                                <!-- Password with Eye Toggle -->
+                                <div class="mb-3">
+                                    <label class="form-label text-light small fw-bold">
+                                        {{ 'كلمة مرور بوابة الجامعة للمرشد' if is_rtl else 'Advisor SIS Portal Password' }}
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-warning">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control bg-dark text-white border-secondary" name="password" id="inputSisPassword" value="{{ app_settings.sis.password or '' }}" placeholder="{{ 'اتركه فارغاً إذا كنت لا ترغب بتغييره' if is_rtl else 'Leave blank to retain saved password' }}">
+                                        <button type="button" class="btn btn-outline-secondary" id="btnToggleSisPass" title="{{ 'إظهار / إخفاء كلمة المرور' if is_rtl else 'Show/Hide Password' }}">
+                                            <i class="fas fa-eye" id="iconToggleSisPass"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        {{ 'تُحفظ كلمة المرور بشكل آمن محلياً على الخادم لتنفيذ الاستخراج الآلي دون الحاجة لإدخالها يدوياً كل مرة.' if is_rtl else 'Stored securely on the server to enable headless sync without typing it each time.' }}
+                                    </div>
+                                </div>
+
+                                <!-- Target Semester -->
+                                <div class="mb-4">
+                                    <label class="form-label text-light small fw-bold">
+                                        {{ 'الفصل الدراسي المستهدف لجداول الشعب' if is_rtl else 'Target Semester for Section Schedules' }}
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark border-secondary text-success">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-dark text-white border-secondary" name="semester" value="{{ app_settings.sis.semester or 'Fall 2026-2027' }}" required>
+                                    </div>
+                                    <div class="form-text text-muted">
+                                        {{ 'الفصل الدراسي المطلوب استعلام جدول شعبه الأكاديمية (مثل: Fall 2026-2027).' if is_rtl else 'Semester string used in the Section Schedule query (e.g. Fall 2026-2027).' }}
+                                    </div>
+                                </div>
+
+                                <!-- Conditions & Automated Switches -->
+                                <h6 class="text-white-50 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
+                                    <i class="fas fa-sliders me-1"></i> {{ 'شروط وضوابط الاستخراج التلقائي' if is_rtl else 'Automated Extraction Conditions & Rules' }}
+                                </h6>
+
+                                <div class="mb-3 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchDownloadTranscripts" name="auto_download_transcripts" value="true" {% if app_settings.sis.auto_download_transcripts %}checked{% endif %}>
+                                    <label class="form-check-label text-light small fw-semibold" for="switchDownloadTranscripts">
+                                        {{ 'تنزيل كشوف الدرجات الفردية تلقائياً كملفات PDF عالية الدقة' if is_rtl else 'Download individual student transcripts as high-fidelity PDF during sync' }}
+                                    </label>
+                                    <div class="form-text text-muted small">
+                                        {{ 'يقوم المستخرج بالدخول لصفحة كل طالب وتصدير كشف الدرجات الرسمي عبر Chrome DevTools Protocol.' if is_rtl else 'Renders each student transcript via Chrome DevTools Protocol into data/transcripts.' }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchRecompileWiki" name="auto_recompile_wiki" value="true" {% if app_settings.sis.auto_recompile_wiki %}checked{% endif %}>
+                                    <label class="form-check-label text-light small fw-semibold" for="switchRecompileWiki">
+                                        {{ 'إعادة بناء ملفات موسوعة الإرشاد والخطط الأكاديمية تلقائياً فور انتهاء الاستخراج' if is_rtl else 'Automatically recompile Second-Brain Wiki dossiers & degree plans on sync' }}
+                                    </label>
+                                    <div class="form-text text-muted small">
+                                        {{ 'يحدث تلقائياً ملفات Markdown لجميع الطلبة ومصفوفة الإنذارات في الموسوعة.' if is_rtl else 'Regenerates Markdown dossiers for all advisees and updates probation matrix.' }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4 form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="switchReplaceRoster" name="replace_roster" value="true" {% if app_settings.sis.replace_roster %}checked{% endif %}>
+                                    <label class="form-check-label text-light small fw-semibold" for="switchReplaceRoster">
+                                        {{ 'تحديث واستبدال قائمة الطلبة بالكامل لتطابق النظام الرسمي في البوابة حصراً' if is_rtl else 'Strictly replace advisee roster to match official SIS portal exactly' }}
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-floppy-disk me-1"></i> {{ 'حفظ بيانات الاعتماد والشروط' if is_rtl else 'Save Credentials & Conditions' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live Synchronization & Extraction Execution -->
+                <div class="col-lg-6">
+                    <div class="card bg-dark border-secondary border-opacity-25 shadow-sm rounded-4 h-100">
+                        <div class="card-header bg-dark bg-opacity-50 border-secondary border-opacity-25 py-3">
+                            <h5 class="card-title mb-0 text-white fw-bold">
+                                <i class="fas fa-satellite-dish text-success me-2"></i> {{ 'مركز تنفيذ المزامنة والاستخراج المباشر' if is_rtl else 'Live Execution & Synchronization Hub' }}
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Connectivity & Status Banner -->
+                            <div class="p-3 rounded-3 bg-dark bg-opacity-75 border border-secondary border-opacity-30 mb-4">
+                                <div class="row g-2 text-center text-md-start align-items-center">
+                                    <div class="col-md-4">
+                                        <small class="text-white-50 d-block">{{ 'بوابة الجامعة المستهدفة:' if is_rtl else 'Target Host:' }}</small>
+                                        <span class="text-white fw-bold small"><i class="fas fa-server text-info me-1"></i> web.du.edu.om</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-white-50 d-block">{{ 'حالة بيانات الاعتماد:' if is_rtl else 'Credentials Status:' }}</small>
+                                        {% if app_settings.sis.password %}
+                                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">
+                                                <i class="fas fa-circle-check me-1"></i> {{ 'محفوظة وجاهزة' if is_rtl else 'Saved & Ready' }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">
+                                                <i class="fas fa-circle-exclamation me-1"></i> {{ 'غير مكتملة' if is_rtl else 'Not Saved' }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-white-50 d-block">{{ 'آخر مزامنة ناجحة:' if is_rtl else 'Last Synced:' }}</small>
+                                        <span class="badge bg-secondary text-white-50" id="badgeSisLastSync">
+                                            {{ app_settings.sis.last_sync or ('لم تتم بعد' if is_rtl else 'Never') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Synchronization Action Cards -->
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                <!-- Action 1: Advisees Roster & Standings -->
+                                <button type="button" class="btn btn-outline-primary p-3 text-start d-flex justify-content-between align-items-center rounded-3 w-100" id="btnSyncAdviseesDirect">
+                                    <div>
+                                        <div class="text-white fw-bold mb-1">
+                                            <i class="fas fa-user-graduate text-primary me-2"></i> {{ 'مزامنة قائمة الطلبة والحالات الأكاديمية' if is_rtl else 'Sync Advisee Student Roster & Standings' }}
+                                        </div>
+                                        <div class="text-white-50 small" style="font-size: 0.8rem;">
+                                            {{ 'استخراج قائمة الطلبة الرسمية من لوحة المرشد وتصنيف حالات الإنذار (الأول، الثاني، المشروط).' if is_rtl else 'Extracts official advisee list and calculates probation standings (P1, P2, Strict Probation).' }}
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary bg-opacity-25 text-primary fs-7 px-3 py-2 ms-2">
+                                        <i class="fas fa-play me-1"></i> {{ 'تشغيل' if is_rtl else 'Run' }}
+                                    </span>
+                                </button>
+
+                                <!-- Action 2: Section Schedule Offerings -->
+                                <button type="button" class="btn btn-outline-info p-3 text-start d-flex justify-content-between align-items-center rounded-3 w-100" id="btnSyncScheduleDirect">
+                                    <div>
+                                        <div class="text-white fw-bold mb-1">
+                                            <i class="fas fa-calendar-days text-info me-2"></i> {{ 'مزامنة جدول الشعب والمقررات المطروحة' if is_rtl else 'Sync Section Schedule & Course Offerings' }}
+                                        </div>
+                                        <div class="text-white-50 small" style="font-size: 0.8rem;">
+                                            {{ 'استعلام المقررات، الشعب، القاعات، وأوقات المحاضرات لفصل الخريف 2026-2027 وتصدير ملف PDF.' if is_rtl else 'Extracts course timetable, rooms, section capacities, and generates official landscape PDF.' }}
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-info bg-opacity-25 text-info fs-7 px-3 py-2 ms-2">
+                                        <i class="fas fa-play me-1"></i> {{ 'تشغيل' if is_rtl else 'Run' }}
+                                    </span>
+                                </button>
+
+                                <!-- Action 3: Master Sync (All in One) -->
+                                <button type="button" class="btn btn-success p-3 text-start d-flex justify-content-between align-items-center rounded-3 w-100 shadow-sm" id="btnSyncMasterDirect">
+                                    <div>
+                                        <div class="text-white fw-bold mb-1">
+                                            <i class="fas fa-arrows-rotate text-white me-2"></i> {{ 'بدء الاستخراج الشامل المتكامل (الكل في واحد)' if is_rtl else 'Execute Full Automated Master Extraction' }}
+                                        </div>
+                                        <div class="text-white-50 small" style="font-size: 0.8rem;">
+                                            {{ 'استخراج كامل للطلبة، كشوف الدرجات الرسمية، جدول الشعب، وإعادة تجميع الموسوعة الإرشادية الذكية.' if is_rtl else 'Comprehensive pipeline: advisees + PDF transcripts + timetable + Second-Brain Wiki dossiers.' }}
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-white text-dark fw-bold fs-7 px-3 py-2 ms-2">
+                                        <i class="fas fa-bolt me-1"></i> {{ 'مزامنة شاملة' if is_rtl else 'Full Sync' }}
+                                    </span>
+                                </button>
+                            </div>
+
+                            <!-- Live Progress & Streaming Terminal Box -->
+                            <div id="sisSyncConsoleContainer" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-white small fw-bold" id="sisSyncStepBadge">
+                                        <i class="fas fa-spinner fa-spin text-primary me-1"></i> {{ 'جاري التنفيذ...' if is_rtl else 'Executing Sync Pipeline...' }}
+                                    </span>
+                                    <span class="text-info small fw-bold" id="sisSyncPercentText">0%</span>
+                                </div>
+                                <div class="progress mb-3 bg-black bg-opacity-50" style="height: 10px; border-radius: 6px;">
+                                    <div id="sisSyncProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <div class="p-3 rounded-3 bg-black text-light font-monospace small" style="max-height: 200px; overflow-y: auto; font-size: 0.78rem; line-height: 1.5; border: 1px solid rgba(255,255,255,0.1);" id="sisSyncTerminalLogs">
+                                    <div class="text-white-50">&gt; {{ 'جاهز لبدء عملية المزامنة...' if is_rtl else 'Ready to begin synchronization pipeline...' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 5. ADVISOR BIOGRAPHY & PUBLIC PROFILE -->
         <div class="tab-pane fade" id="tab-profile" role="tabpanel">
             <div class="row g-4">
@@ -855,6 +1110,155 @@ document.addEventListener('DOMContentLoaded', function() {
     if (footerOrg && pFooterOrg) footerOrg.addEventListener('input', () => pFooterOrg.textContent = footerOrg.value);
     if (footerTag && pFooterTag) footerTag.addEventListener('input', () => pFooterTag.textContent = footerTag.value);
     if (footerDisc && pFooterDisc) footerDisc.addEventListener('input', () => pFooterDisc.textContent = footerDisc.value);
+
+    // SIS Password Visibility Toggle
+    const toggleSisBtn = document.getElementById('btnToggleSisPass');
+    const inputSisPass = document.getElementById('inputSisPassword');
+    const iconSisPass = document.getElementById('iconToggleSisPass');
+    if (toggleSisBtn && inputSisPass) {
+        toggleSisBtn.addEventListener('click', function() {
+            if (inputSisPass.type === 'password') {
+                inputSisPass.type = 'text';
+                if (iconSisPass) { iconSisPass.classList.remove('fa-eye'); iconSisPass.classList.add('fa-eye-slash'); }
+            } else {
+                inputSisPass.type = 'password';
+                if (iconSisPass) { iconSisPass.classList.remove('fa-eye-slash'); iconSisPass.classList.add('fa-eye'); }
+            }
+        });
+    }
+
+    // URL Hash-based Tab Activation
+    if (window.location.hash) {
+        const hash = window.location.hash;
+        const targetBtn = document.querySelector(`button[data-bs-target="${hash}"]`);
+        if (targetBtn) {
+            const tabTrigger = new bootstrap.Tab(targetBtn);
+            tabTrigger.show();
+        }
+    }
+
+    // Live SIS Extraction Center Handlers
+    const IS_RTL = {{ 'true' if is_rtl else 'false' }};
+    const btnSyncAdvisees = document.getElementById('btnSyncAdviseesDirect');
+    const btnSyncSchedule = document.getElementById('btnSyncScheduleDirect');
+    const btnSyncMaster = document.getElementById('btnSyncMasterDirect');
+    const consoleContainer = document.getElementById('sisSyncConsoleContainer');
+    const progressBar = document.getElementById('sisSyncProgressBar');
+    const percentText = document.getElementById('sisSyncPercentText');
+    const stepBadge = document.getElementById('sisSyncStepBadge');
+    const terminalLogs = document.getElementById('sisSyncTerminalLogs');
+    const badgeLastSync = document.getElementById('badgeSisLastSync');
+
+    function appendLog(msg, isError = false) {
+        if (!terminalLogs) return;
+        const row = document.createElement('div');
+        row.className = isError ? 'text-danger py-1' : 'text-light py-0';
+        const time = new Date().toLocaleTimeString();
+        row.innerHTML = `<span class="text-white-50">[${time}]</span> ${msg}`;
+        terminalLogs.appendChild(row);
+        terminalLogs.scrollTop = terminalLogs.scrollHeight;
+    }
+
+    async function runAdviseesStream(withTranscripts = false) {
+        if (!consoleContainer) return;
+        consoleContainer.style.display = 'block';
+        terminalLogs.innerHTML = '';
+        progressBar.style.width = '5%';
+        percentText.textContent = '5%';
+        stepBadge.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> ' + (IS_RTL ? 'جاري الاتصال بنظام الجامعة...' : 'Connecting to Oracle APEX...');
+        appendLog(IS_RTL ? 'بدء تشغيل محرك الاستخراج الآلي...' : 'Starting automated extraction engine...');
+
+        try {
+            const prefix = window.location.pathname.startsWith('/duadv') ? '/duadv' : '';
+            const res = await fetch(`${prefix}/api/sync-students/stream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    download_transcripts: withTranscripts
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || (IS_RTL ? 'فشل الاتصال بالبوابة' : 'Portal connection failed'));
+            }
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buf = '';
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                buf += decoder.decode(value, { stream: true });
+                const lines = buf.split('\n');
+                buf = lines.pop();
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const payload = JSON.parse(line.slice(6));
+                        if (payload.type === 'progress') {
+                            progressBar.style.width = `${payload.percent}%`;
+                            percentText.textContent = `${payload.percent}%`;
+                            stepBadge.textContent = payload.step;
+                            appendLog(payload.message);
+                        } else if (payload.type === 'error') {
+                            appendLog(payload.message, true);
+                            stepBadge.innerHTML = '<i class="fas fa-circle-xmark text-danger me-1"></i> ' + (IS_RTL ? 'فشل الاستخراج' : 'Extraction Error');
+                        } else if (payload.type === 'done') {
+                            progressBar.style.width = '100%';
+                            percentText.textContent = '100%';
+                            stepBadge.innerHTML = '<i class="fas fa-circle-check text-success me-1"></i> ' + (IS_RTL ? 'اكتمل بنجاح!' : 'Sync Complete!');
+                            appendLog(payload.message);
+                            if (badgeLastSync) badgeLastSync.textContent = new Date().toLocaleString();
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            appendLog(err.message, true);
+            stepBadge.innerHTML = '<i class="fas fa-circle-xmark text-danger me-1"></i> ' + (IS_RTL ? 'خطأ' : 'Error');
+        }
+    }
+
+    async function runScheduleSync() {
+        if (!consoleContainer) return;
+        consoleContainer.style.display = 'block';
+        terminalLogs.innerHTML = '';
+        progressBar.style.width = '20%';
+        percentText.textContent = '20%';
+        stepBadge.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> ' + (IS_RTL ? 'جاري استعلام جدول الشعب...' : 'Querying Section Schedule...');
+        appendLog(IS_RTL ? 'الاتصال ببوابة web.du.edu.om لاستعلام الشعب المطروحة...' : 'Connecting to web.du.edu.om for section offerings...');
+
+        try {
+            const prefix = window.location.pathname.startsWith('/duadv') ? '/duadv' : '';
+            const res = await fetch(`${prefix}/api/sync-section-schedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                progressBar.style.width = '100%';
+                percentText.textContent = '100%';
+                stepBadge.innerHTML = '<i class="fas fa-circle-check text-success me-1"></i> ' + (IS_RTL ? 'تمت مزامنة الجدول!' : 'Schedule Synced!');
+                appendLog(data.message || 'Schedule synchronization successful.');
+                if (badgeLastSync) badgeLastSync.textContent = new Date().toLocaleString();
+            } else {
+                throw new Error(data.message || (IS_RTL ? 'فشل استعلام الشعب' : 'Failed to query sections'));
+            }
+        } catch (err) {
+            appendLog(err.message, true);
+            stepBadge.innerHTML = '<i class="fas fa-circle-xmark text-danger me-1"></i> ' + (IS_RTL ? 'خطأ' : 'Error');
+        }
+    }
+
+    if (btnSyncAdvisees) btnSyncAdvisees.addEventListener('click', () => runAdviseesStream(false));
+    if (btnSyncSchedule) btnSyncSchedule.addEventListener('click', () => runScheduleSync());
+    if (btnSyncMaster) btnSyncMaster.addEventListener('click', async () => {
+        await runAdviseesStream(true);
+        await runScheduleSync();
+    });
 });
 </script>
 {% endblock %}

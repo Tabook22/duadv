@@ -138,12 +138,16 @@ def sync_students_stream():
     import json
     
     data = request.get_json() or {}
-    username = data.get('username')
-    password = data.get('password')
-    download_transcripts = data.get('download_transcripts', False)
+    from app.settings_manager import get_settings, update_sis_settings
+    sis_cfg = get_settings().get('sis', {})
+    username = data.get('username') or sis_cfg.get('username')
+    password = data.get('password') or sis_cfg.get('password')
+    download_transcripts = data.get('download_transcripts')
+    if download_transcripts is None:
+        download_transcripts = sis_cfg.get('auto_download_transcripts', False)
 
     if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Username and password required'}), 400
+        return jsonify({'status': 'error', 'message': 'Username and password required. Please configure them in Admin Settings -> Advisor Access & SIS Sync.'}), 400
 
     def generate():
         import queue
@@ -204,6 +208,12 @@ def sync_students_stream():
                 except Exception as we:
                     current_app.logger.warning(f"Wiki recompile warning: {we}")
 
+                try:
+                    from datetime import datetime
+                    update_sis_settings(last_sync=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                except Exception:
+                    pass
+
                 progress_cb(100, "Completed", f"Sync complete! {len(students_data)} advisee profiles updated successfully.")
                 q.put({
                     "type": "done",
@@ -251,12 +261,16 @@ def sync_students():
     manager = None
     try:
         data = request.get_json() or {}
-        username = data.get('username')
-        password = data.get('password')
-        download_transcripts = data.get('download_transcripts', False)
+        from app.settings_manager import get_settings, update_sis_settings
+        sis_cfg = get_settings().get('sis', {})
+        username = data.get('username') or sis_cfg.get('username')
+        password = data.get('password') or sis_cfg.get('password')
+        download_transcripts = data.get('download_transcripts')
+        if download_transcripts is None:
+            download_transcripts = sis_cfg.get('auto_download_transcripts', False)
         
         if not username or not password:
-            return jsonify({'status': 'error', 'message': 'Username and password required'}), 400
+            return jsonify({'status': 'error', 'message': 'Username and password required. Please configure them in Admin Settings -> Advisor Access & SIS Sync.'}), 400
         
         manager = UniversitySystemManager()
         
@@ -1073,12 +1087,14 @@ def api_sync_section_schedule():
     from app.schedule_engine import save_section_schedule
     from app.wiki_compiler import compile_schedule_wiki
 
-    username = request.form.get('username') or request.json.get('username', '001097') if request.is_json else request.form.get('username', '001097')
-    password = request.form.get('password') or request.json.get('password', '') if request.is_json else request.form.get('password', '')
-    semester = request.form.get('semester') or request.json.get('semester', 'Fall 2026-2027') if request.is_json else request.form.get('semester', 'Fall 2026-2027')
+    from app.settings_manager import get_settings, update_sis_settings
+    sis_cfg = get_settings().get('sis', {})
+    username = request.form.get('username') or (request.json.get('username') if request.is_json else None) or sis_cfg.get('username') or '001097'
+    password = request.form.get('password') or (request.json.get('password') if request.is_json else None) or sis_cfg.get('password') or ''
+    semester = request.form.get('semester') or (request.json.get('semester') if request.is_json else None) or sis_cfg.get('semester') or 'Fall 2026-2027'
 
     if not password:
-        return jsonify({'status': 'error', 'message': 'Password is required to authenticate with DU SIS'}), 400
+        return jsonify({'status': 'error', 'message': 'Password is required to authenticate with DU SIS. Please configure it in Admin Settings -> Advisor Access & SIS Sync.'}), 400
 
     manager = UniversitySystemManager(headless=True)
     try:
@@ -1104,6 +1120,12 @@ def api_sync_section_schedule():
                 compile_schedule_wiki(sections, semester=semester)
             except Exception:
                 pass
+
+        try:
+            from datetime import datetime
+            update_sis_settings(last_sync=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        except Exception:
+            pass
 
         return jsonify({
             'status': 'success',
@@ -2042,6 +2064,38 @@ def admin_save_permissions():
     else:
         flash(f'Failed to update permissions: {msg}', 'danger')
     return redirect(url_for('main.admin_settings'))
+
+@bp.route('/admin/settings/sis', methods=['POST'])
+def admin_save_sis():
+    """Save Dhofar University SIS portal credentials, access URL, and extraction conditions"""
+    if not session.get('is_admin'):
+        flash('Administrator credentials required.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    from app.settings_manager import update_sis_settings
+    from app.i18n import is_rtl
+    portal_url = request.form.get('portal_url')
+    username = request.form.get('username')
+    password = request.form.get('password')
+    semester = request.form.get('semester')
+    auto_download_transcripts = request.form.get('auto_download_transcripts') == 'true'
+    auto_recompile_wiki = request.form.get('auto_recompile_wiki') == 'true'
+    replace_roster = request.form.get('replace_roster') == 'true'
+
+    success, msg = update_sis_settings(
+        portal_url=portal_url,
+        username=username,
+        password=password,
+        semester=semester,
+        auto_download_transcripts=auto_download_transcripts,
+        auto_recompile_wiki=auto_recompile_wiki,
+        replace_roster=replace_roster
+    )
+    if success:
+        flash('Dhofar University SIS credentials and synchronization conditions saved successfully!' if not is_rtl() else 'تم حفظ بيانات اعتماد ورابط وشروط استخراج بوابة الجامعة بنجاح!', 'success')
+    else:
+        flash(f'Failed to update SIS settings: {msg}', 'danger')
+    return redirect(url_for('main.admin_settings') + '#tab-sis')
 
 @bp.route('/advisor')
 @bp.route('/profile')

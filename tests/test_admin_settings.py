@@ -166,3 +166,39 @@ def test_admin_save_profile_post(client):
     assert b"nasser@nasserdiary.com" in pub_resp.data
     assert b"Office 214" in pub_resp.data
 
+def test_admin_save_sis_settings_post(client):
+    with client.session_transaction() as sess:
+        sess['is_admin'] = True
+        sess['admin_username'] = 'nasser'
+
+    # Test saving SIS configuration
+    response = client.post('/admin/settings/sis', data={
+        'portal_url': 'https://web.du.edu.om/ords/f?p=2023',
+        'username': '001097',
+        'password': 'TestPassword123!',
+        'semester': 'Fall 2026-2027',
+        'auto_download_transcripts': 'true',
+        'auto_recompile_wiki': 'true',
+        'replace_roster': 'true'
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"Dhofar University SIS credentials and synchronization conditions saved successfully" in response.data or b"\xd8\xaa\xd9\x85 \xd8\xad\xd9\x81\xd8\xb8" in response.data
+    
+    # Verify settings persisted
+    settings = get_settings()
+    assert 'sis' in settings
+    assert settings['sis']['username'] == '001097'
+    assert settings['sis']['password'] == 'TestPassword123!'
+    assert settings['sis']['semester'] == 'Fall 2026-2027'
+    assert settings['sis']['auto_download_transcripts'] is True
+    assert settings['sis']['auto_recompile_wiki'] is True
+
+    # Verify tab-sis and buttons are present on settings page
+    resp_settings = client.get('/admin/settings')
+    assert resp_settings.status_code == 200
+    assert b"id=\"tab-sis-btn\"" in resp_settings.data
+    assert b"id=\"tab-sis\"" in resp_settings.data
+    assert b"web.du.edu.om" in resp_settings.data
+
+
